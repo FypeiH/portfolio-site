@@ -1,22 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Icon } from "./Icon";
+import { useEffect, useState, type ReactNode } from "react";
 
 type CopyState = "idle" | "copied" | "failed";
 
 interface CopyEmailButtonProps {
   email: string;
   labels: { copy: string; copyAria: string; copied: string; failed: string };
+  /** Rendered on the server, so the icon map never reaches the client bundle. */
+  icons: { copy: ReactNode; check: ReactNode };
 }
 
 const RESET_AFTER_MS = 2000;
 
-export function CopyEmailButton({ email, labels }: CopyEmailButtonProps) {
+export function CopyEmailButton({ email, labels, icons }: CopyEmailButtonProps) {
   const [state, setState] = useState<CopyState>("idle");
 
   useEffect(() => {
-    if (state !== "copied") return;
+    if (state === "idle") return;
     const timer = window.setTimeout(() => setState("idle"), RESET_AFTER_MS);
     return () => window.clearTimeout(timer);
   }, [state]);
@@ -38,7 +39,7 @@ export function CopyEmailButton({ email, labels }: CopyEmailButtonProps) {
         aria-label={labels.copyAria}
         className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
       >
-        <Icon name={state === "copied" ? "check" : "copy"} />
+        {state === "copied" ? icons.check : icons.copy}
         {labels.copy}
       </button>
       <span

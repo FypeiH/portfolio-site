@@ -1,8 +1,8 @@
-import Image from "next/image";
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { AVATAR_THUMB_PX, avatarThumbPath } from "@/lib/content/conventions";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Profile } from "@/lib/content/types";
@@ -25,13 +25,15 @@ export function HeroSection({ profile }: { profile: Profile }) {
       <div className="mx-auto max-w-5xl px-5 pb-20 pt-14 md:px-8 md:pb-28 md:pt-24">
         <div className="flex flex-wrap items-center gap-4">
           {profile.avatar && (
-            <Image
-              src={profile.avatar.src}
+            // Plain <img>: a 2× thumbnail is all a 112 px avatar needs, and next/image would add client JS.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarThumbPath(profile.avatar.src)}
               alt={profile.avatar.alt}
-              width={112}
-              height={112}
-              sizes="112px"
-              loading="eager"
+              width={AVATAR_THUMB_PX / 2}
+              height={AVATAR_THUMB_PX / 2}
+              decoding="async"
+              fetchPriority="low"
               className="size-24 rounded-full border border-border object-cover md:size-28"
             />
           )}

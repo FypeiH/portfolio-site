@@ -1,4 +1,5 @@
 import { analyzeBody, bodyProblems } from "./body";
+import { avatarThumbPath, projectFile } from "./conventions";
 import { isDiagramCurrent, renderedDiagramPath } from "./diagrams";
 import type { ContentFlags } from "./flags";
 import { findPlaceholders, formatHits } from "./placeholders";
@@ -85,6 +86,8 @@ function checkPublicFiles({ profile, projects }: ContentSnapshot, files: Content
   const issues: ContentIssue[] = [];
   if (missing(profile.cv.href)) issues.push({ severity: "launch", message: `Resume file is missing: public${profile.cv.href}` });
   if (profile.avatar && missing(profile.avatar.src)) issues.push({ severity: "error", message: `Avatar is missing: public${profile.avatar.src}` });
+  if (profile.avatar && missing(avatarThumbPath(profile.avatar.src)))
+    issues.push({ severity: "error", message: `Avatar thumbnail is missing: public${avatarThumbPath(profile.avatar.src)} (run pnpm avatar)` });
   for (const p of projects) {
     if (p.cover && missing(p.cover.src)) issues.push({ severity: "error", message: `Cover of "${p.slug}" is missing: public${p.cover.src}` });
     if (p.diagram?.kind === "image" && missing(p.diagram.src))
@@ -127,4 +130,3 @@ function checkPlaceholders(projects: Project[], files: ContentFiles): ContentIss
     : [{ severity: "launch", message: `${hits.length} content placeholders left in published content:\n${formatHits(hits)}` }];
 }
 
-const projectFile = (slug: string) => `content/projects/${slug}.mdx`;

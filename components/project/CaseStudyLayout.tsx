@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { HomeLink } from "@/components/ui/HomeLink";
 import type { ReactNode } from "react";
 import { Callout } from "@/components/ui/Callout";
 import { getUi } from "@/lib/content/load";
@@ -54,9 +54,9 @@ export function CaseStudyLayout({ project, prev, next, children }: CaseStudyLayo
         <h2 id="case-study-cta" className="text-lg font-semibold">
           {ui.caseStudyCtaTitle}
         </h2>
-        <Link href="/#contact" className="mt-4 inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-medium text-bg hover:bg-accent-strong">
+        <HomeLink href="/#contact" className="mt-4 inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-medium text-bg hover:bg-accent-strong">
           {ui.caseStudyCta}
-        </Link>
+        </HomeLink>
       </section>
       <div className="mt-12">
         <ProjectPager prev={prev} next={next} />

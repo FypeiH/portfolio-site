@@ -1,19 +1,11 @@
 import Link from "next/link";
 import { TagList } from "@/components/ui/Tag";
+import { EMPLOYMENT_LABEL_KEYS, WORK_MODE_LABEL_KEYS } from "@/lib/content/labels";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Experience } from "@/lib/content/types";
 import { formatYearMonth, toDateTime } from "@/lib/format";
 
-const EMPLOYMENT_LABEL_KEYS = {
-  "full-time": "typeFullTime",
-  "part-time": "typePartTime",
-  internship: "typeInternship",
-  freelance: "typeFreelance",
-  research: "typeResearch",
-} as const;
-
-const WORK_MODE_LABEL_KEYS = { remote: "modeRemote", hybrid: "modeHybrid", onsite: "modeOnsite" } as const;
 
 interface TimelineItemProps {
   item: Experience;

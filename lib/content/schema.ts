@@ -1,21 +1,16 @@
 import { z } from "zod";
+import { isYearMonth, SLUG_PATTERN, YEAR_MONTH_PATTERN } from "./conventions";
 
 export const PlaceholderSchema = z.templateLiteral(["{{", z.string(), "}}"]);
 
 /** Outside CONTENT_STRICT, a value that is exactly a `{{…}}` placeholder is tolerated (spec §3.3). */
 const pending = <T extends z.ZodType>(schema: T) => z.union([schema, PlaceholderSchema]);
 
-/**
- * Same runtime tolerance, but the static type stays the plain enum, so a placeholder in content/*.ts
- * needs an explicit `@ts-expect-error` that disappears once the real value is filled in.
- */
-const tolerated = <T extends z.ZodType>(schema: T): T => pending(schema) as unknown as T;
-
 const text = (maxLength: number) => pending(z.string().trim().min(1).max(maxLength));
-const yearMonth = pending(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use YYYY-MM"));
+const yearMonth = pending(z.string().regex(YEAR_MONTH_PATTERN, "Use YYYY-MM"));
 const yearMonthOrPresent = z.union([yearMonth, z.literal("present")]);
 const url = pending(z.url());
-const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use kebab-case");
+const slug = z.string().regex(SLUG_PATTERN, "Use kebab-case");
 const publicPath = z.string().startsWith("/");
 
 export const LinkSchema = z.object({
@@ -61,7 +56,7 @@ export const ProfileSchema = z.object({
   lookingFor: z.object({
     roles: z.array(text(40)).min(1).max(3),
     areas: z.array(text(40)).max(5).optional(),
-    workModes: z.array(tolerated(z.enum(["remote", "hybrid", "onsite"]))).min(1),
+    workModes: z.array(pending(z.enum(["remote", "hybrid", "onsite"]))).min(1),
     locations: z.array(text(80)).min(1),
     startDate: text(60).optional(),
     note: text(200).optional(),
@@ -82,7 +77,7 @@ export const ExperienceSchema = z
     company: text(60),
     companyUrl: url.optional(),
     role: text(60),
-    employmentType: tolerated(z.enum(["full-time", "part-time", "internship", "freelance", "research"])),
+    employmentType: pending(z.enum(["full-time", "part-time", "internship", "freelance", "research"])),
     location: text(40).optional(),
     workMode: z.enum(["remote", "hybrid", "onsite"]).optional(),
     start: yearMonth,
@@ -190,6 +185,5 @@ export const ProjectFrontmatterSchema = z
   });
 
 function isChronological(start: string, end: string): boolean {
-  const isYearMonth = (value: string) => /^\d{4}-\d{2}$/.test(value);
   return !isYearMonth(start) || !isYearMonth(end) || start <= end;
 }

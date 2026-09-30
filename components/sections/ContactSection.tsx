@@ -38,6 +38,7 @@ export function ContactSection({ email, links, cv }: ContactSectionProps) {
             <CopyEmailButton
               email={address}
               labels={{ copy: ui.copyEmail, copyAria: ui.copyEmailAria, copied: ui.copied, failed: ui.copyFailed }}
+              icons={{ copy: <Icon name="copy" />, check: <Icon name="check" /> }}
             />
           </div>
         )}

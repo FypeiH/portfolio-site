@@ -3,11 +3,13 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { cache } from "react";
 import { experience } from "@/content/experience";
 import { profile } from "@/content/profile";
 import { site } from "@/content/site";
 import { skills } from "@/content/skills";
+import { PROJECTS_DIR, projectFile, SLUG_PATTERN } from "./conventions";
 import { renderedDiagramPath, svgSize, type DiagramImage } from "./diagrams";
 import { readContentFlags } from "./flags";
 import { collectContentIssues, type ContentFiles, type ContentIssue } from "./rules";
@@ -24,8 +26,6 @@ import { ContentError, parseContent } from "./validate";
 import { findAdjacent, selectFeatured, selectVisibleProjects } from "./visibility";
 
 const ROOT = process.cwd();
-const PROJECTS_DIR = "content/projects";
-const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 const repoFiles: ContentFiles = {
   exists: (file) => fs.existsSync(path.join(/*turbopackIgnore: true*/ ROOT, file)),
@@ -43,15 +43,35 @@ function readProjects(): Project[] {
     .readdirSync(path.join(ROOT, PROJECTS_DIR))
     .filter((name) => name.endsWith(".mdx") && !name.startsWith("_"))
     .map((name) => {
-      const file = `${PROJECTS_DIR}/${name}`;
       const slug = name.slice(0, -".mdx".length);
-      if (!SLUG.test(slug)) throw new ContentError(`${file}: file name must be a kebab-case slug.`);
+      const file = projectFile(slug);
+      if (!SLUG_PATTERN.test(slug)) throw new ContentError(`${file}: file name must be a kebab-case slug.`);
       const { data } = matter(repoFiles.read(file) ?? "");
       return { ...parseContent(ProjectFrontmatterSchema, data, file), slug };
     });
 }
 
-const reported = new Set<string>();
+/**
+ * `next build` loads content in several worker processes. The first one to create this marker prints
+ * the warnings; `.next` is emptied at the start of every build, so each build prints them once.
+ */
+const WARNINGS_MARKER = ".next/content-warnings.txt";
+/** Outside builds (dev), content is reloaded per request: print each distinct set of warnings once per process. */
+const printedInProcess = new Set<string>();
+
+function claimWarnings(text: string): boolean {
+  if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) {
+    if (printedInProcess.has(text)) return false;
+    printedInProcess.add(text);
+    return true;
+  }
+  try {
+    fs.writeFileSync(path.join(/*turbopackIgnore: true*/ ROOT, WARNINGS_MARKER), text, { flag: "wx" });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function report(issues: ContentIssue[], strict: boolean): void {
   const blocking = issues.filter((i) => i.severity === "error" || strict);
@@ -59,11 +79,15 @@ function report(issues: ContentIssue[], strict: boolean): void {
     const mode = strict ? " (CONTENT_STRICT=true)" : "";
     throw new ContentError(`Content check failed${mode}:\n- ${blocking.map((i) => i.message).join("\n- ")}`);
   }
-  for (const { message } of issues) {
-    if (reported.has(message)) continue;
-    reported.add(message);
-    console.warn(`[content] ${message}`);
-  }
+  const text = issues.map(({ message }) => `[content] ${message}`).join("\n");
+  if (text && claimWarnings(text)) console.warn(text);
+}
+
+/** Narrows the validated record to UiStrings after checking that every declared key survived parsing. */
+function withUiKeys(parsed: Record<string, string>): UiStrings {
+  const missing = Object.keys(site.ui).filter((key) => typeof parsed[key] !== "string");
+  if (missing.length > 0) throw new ContentError(`content/site.ts: ui is missing ${missing.join(", ")}.`);
+  return parsed as UiStrings;
 }
 
 const loadContent = cache(() => {
@@ -76,12 +100,12 @@ const loadContent = cache(() => {
     projects: readProjects().sort((a, b) => a.order - b.order),
   };
   report(collectContentIssues(snapshot, repoFiles, flags), flags.strict);
-  return { ...snapshot, visibleProjects: selectVisibleProjects(snapshot.projects, flags.showDrafts) };
+  return { ...snapshot, ui: withUiKeys(snapshot.site.ui), visibleProjects: selectVisibleProjects(snapshot.projects, flags.showDrafts) };
 });
 
 export const getSite = (): SiteConfig => loadContent().site;
-/** UI strings with their literal keys (the validated copy is identical). */
-export const getUi = (): UiStrings => site.ui;
+/** The zod-validated UI strings, typed with the literal keys declared in content/site.ts. */
+export const getUi = (): UiStrings => loadContent().ui;
 export const getProfile = () => loadContent().profile;
 export const getExperience = () => loadContent().experience;
 export const getSkills = () => loadContent().skills;

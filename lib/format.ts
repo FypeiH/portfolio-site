@@ -1,3 +1,4 @@
+import { isYearMonth } from "@/lib/content/conventions";
 import { isPlaceholder } from "@/lib/content/placeholders";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -19,5 +20,5 @@ export function formatPeriod(start: string, end: string | undefined, presentLabe
 
 /** Machine-readable value for <time dateTime>, or undefined for placeholders and "present". */
 export function toDateTime(value: string): string | undefined {
-  return /^\d{4}-\d{2}$/.test(value) ? value : undefined;
+  return isYearMonth(value) ? value : undefined;
 }

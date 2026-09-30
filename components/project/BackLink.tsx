@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { HomeLink } from "@/components/ui/HomeLink";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { PREVIOUS_ROUTE_KEY } from "@/components/motion/RouteTracker";
@@ -17,8 +17,8 @@ export function BackLink({ label }: { label: string }) {
   };
 
   return (
-    <Link href="/#projects" onClick={onClick} className="inline-flex min-h-11 items-center text-sm text-muted hover:text-fg">
+    <HomeLink href="/#projects" onClick={onClick} className="inline-flex min-h-11 items-center text-sm text-muted hover:text-fg">
       ← {label}
-    </Link>
+    </HomeLink>
   );
 }

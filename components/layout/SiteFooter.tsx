@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { HomeLink } from "@/components/ui/HomeLink";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 import { getSite, getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
@@ -24,9 +24,9 @@ export function SiteFooter() {
         </p>
         <p className="flex items-center gap-4">
           <span>{fill(ui.footerCopyright, { year: new Date().getFullYear() })}</span>
-          <Link href="/#top" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-fg">
+          <HomeLink href="/#top" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-fg">
             {ui.backToTop}
-          </Link>
+          </HomeLink>
         </p>
       </div>
     </footer>

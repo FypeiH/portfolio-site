@@ -1,14 +1,15 @@
 import { ImageResponse } from "next/og";
-import { getProfile, getProjectBySlug, getProjects, getUi } from "@/lib/content/load";
+import { notFound } from "next/navigation";
+import { getProfile, getProjectBySlug, getUi } from "@/lib/content/load";
 import { fill } from "@/lib/content/ui";
 import { loadOgFonts, OG_SIZE, OgFrame, ogColors } from "@/lib/og";
 
-
 const MAX_TAGS = 4;
 
-export function generateStaticParams() {
-  return getProjects().map((project) => ({ slug: project.slug }));
-}
+// No `dynamicParams = false` here: with generateImageMetadata the image id is a second dynamic
+// segment that generateStaticParams can't list, so Next 16.3 would 404 the published images too.
+// Unknown and draft slugs still 404 through notFound() below (covered by tests/e2e-production).
+export { projectStaticParams as generateStaticParams } from "@/lib/content/static-params";
 
 export function generateImageMetadata({ params }: { params: { slug: string } }) {
   const title = getProjectBySlug(params.slug)?.title ?? "";
@@ -17,15 +18,16 @@ export function generateImageMetadata({ params }: { params: { slug: string } }) 
 
 export default async function ProjectOpenGraphImage({ params }: { params: Promise<{ slug: string }> }) {
   const project = getProjectBySlug((await params).slug);
+  if (!project) notFound();
   const fonts = await loadOgFonts();
   return new ImageResponse(
     (
       <OgFrame>
         <div style={{ fontSize: 28, color: ogColors.accent }}>{getProfile().name}</div>
-        <div style={{ marginTop: 20, fontSize: 68, fontWeight: 700, maxWidth: 1000 }}>{project?.title}</div>
-        <div style={{ marginTop: 24, fontSize: 30, color: ogColors.muted, maxWidth: 950 }}>{project?.summary}</div>
+        <div style={{ marginTop: 20, fontSize: 68, fontWeight: 700, maxWidth: 1000 }}>{project.title}</div>
+        <div style={{ marginTop: 24, fontSize: 30, color: ogColors.muted, maxWidth: 950 }}>{project.summary}</div>
         <div style={{ marginTop: 40, display: "flex", gap: 12 }}>
-          {project?.stack.slice(0, MAX_TAGS).map((tech) => (
+          {project.stack.slice(0, MAX_TAGS).map((tech) => (
             <div key={tech} style={{ fontSize: 24, padding: "8px 18px", border: `1px solid ${ogColors.border}`, borderRadius: 9999, color: ogColors.fg }}>
               {tech}
             </div>

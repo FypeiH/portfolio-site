@@ -1,13 +1,13 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Section } from "@/components/ui/Section";
+import { WORK_MODE_LABEL_KEYS } from "@/lib/content/labels";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Profile } from "@/lib/content/types";
 import type { UiStrings } from "@/lib/content/ui";
 import { formatPeriod, formatYearMonth } from "@/lib/format";
 
-const WORK_MODE_LABEL_KEYS = { remote: "modeRemote", hybrid: "modeHybrid", onsite: "modeOnsite" } as const;
 const LEVEL_LABEL_KEYS = { native: "levelNative", advanced: "levelAdvanced", intermediate: "levelIntermediate", basic: "levelBasic" } as const;
 
 const knownOnly = (values: readonly string[] | undefined) => (values ?? []).flatMap((value) => known(value) ?? []);

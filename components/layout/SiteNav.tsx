@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { HomeLink } from "@/components/ui/HomeLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type FocusEvent } from "react";
 import type { NavItem, SectionId } from "@/lib/content/types";
@@ -26,9 +26,9 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
 
   const links = items.map((item) => (
     <li key={item.id}>
-      <Link href={`/#${item.id}`} aria-current={active === item.id ? "true" : undefined} className={linkClass} onClick={close}>
+      <HomeLink href={`/#${item.id}`} aria-current={active === item.id ? "true" : undefined} className={linkClass} onClick={close}>
         {item.label}
-      </Link>
+      </HomeLink>
     </li>
   ));
 

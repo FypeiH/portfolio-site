@@ -8,8 +8,13 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
 ];
 
+/** Same test as lib/env.ts; evaluated at build time, which is when Vercel sets VERCEL_ENV too. */
+const isProductionBuild = process.env.VERCEL_ENV === "production";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Keeps the analytics client chunk out of preview and local builds, where it is never rendered.
+  turbopack: isProductionBuild ? {} : { resolveAlias: { "@vercel/analytics/next": "./components/analytics/AnalyticsOff.tsx" } },
   images: { formats: ["image/avif", "image/webp"] },
   async redirects() {
     return [{ source: "/projects", destination: "/#projects", permanent: true }];

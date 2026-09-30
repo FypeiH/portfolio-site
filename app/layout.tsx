@@ -1,7 +1,7 @@
-import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
+import { ProductionAnalytics } from "@/components/analytics/ProductionAnalytics";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SkipLink } from "@/components/layout/SkipLink";
@@ -12,7 +12,8 @@ import { isProductionDeployment } from "@/lib/env";
 import { siteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+// No preload: the woff2 request competed with the intro paragraph, the LCP element (Sonar review).
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter", preload: false });
 
 /** Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3). */
 const MARK_JS = "document.documentElement.classList.add('js')";
@@ -46,7 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SiteFooter />
         <RevealObserver />
         <RouteTracker />
-        {isProductionDeployment() && <Analytics />}
+        <ProductionAnalytics />
       </body>
     </html>
   );

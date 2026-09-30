@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Diagram } from "@/components/mdx/Diagram";
 import { CaseStudyLayout } from "@/components/project/CaseStudyLayout";
 import { JsonLdScript } from "@/components/ui/JsonLdScript";
-import { getAdjacentProjects, getDiagramImage, getProfile, getProjectBySlug, getProjects, getUi } from "@/lib/content/load";
+import { getAdjacentProjects, getDiagramImage, getProfile, getProjectBySlug, getUi } from "@/lib/content/load";
 import { siteUrl } from "@/lib/site-url";
 import { projectJsonLd } from "@/lib/seo";
 
@@ -11,9 +11,7 @@ type Params = Promise<{ slug: string }>;
 
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return getProjects().map((project) => ({ slug: project.slug }));
-}
+export { projectStaticParams as generateStaticParams } from "@/lib/content/static-params";
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const project = getProjectBySlug((await params).slug);

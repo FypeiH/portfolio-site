@@ -1,3 +1,5 @@
+import "server-only";
+
 export interface ContentFlags {
   /** Production guard: any shipped placeholder, missing asset or launch rule breaks the build. */
   strict: boolean;

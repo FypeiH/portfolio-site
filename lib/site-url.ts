@@ -1,3 +1,5 @@
+import "server-only";
+
 const LOCAL_URL = "http://localhost:3000";
 
 type UrlEnv = Record<string, string | undefined>;
