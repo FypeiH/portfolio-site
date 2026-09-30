@@ -14,9 +14,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test",
+    "e2e": "pnpm e2e:preview && pnpm e2e:production",
+    "e2e:preview": "playwright test",
+    "e2e:production": "playwright test -c playwright.production.config.ts",
     "content:check": "tsx scripts/check-content.ts",
     "diagrams": "tsx scripts/render-diagrams.ts",
+    "avatar": "tsx scripts/avatar-thumb.ts",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
@@ -64,7 +67,8 @@
       "unrs-resolver"
     ],
     "overrides": {
-      "playwright-core": "1.63.0"
+      "playwright-core": "1.63.0",
+      "lodash-es": ">=4.18.0"
     }
   }
 }
