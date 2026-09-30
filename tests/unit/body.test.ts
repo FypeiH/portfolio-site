@@ -10,13 +10,13 @@ describe("analyzeBody", () => {
 });
 
 describe("bodyProblems (PM rule: full format only for featured case studies)", () => {
-  it("requires 300 words and 6 sections for featured projects", () => {
-    expect(bodyProblems(analyzeBody(mdxBody(6, 300)), true)).toEqual([]);
-    expect(bodyProblems(analyzeBody(mdxBody(6, 200)), true)).toEqual([
+  it("requires 300 words and 4 sections for featured projects", () => {
+    expect(bodyProblems(analyzeBody(mdxBody(4, 300)), true)).toEqual([]);
+    expect(bodyProblems(analyzeBody(mdxBody(4, 200)), true)).toEqual([
       expect.stringContaining("featured case studies need at least 300"),
     ]);
     expect(bodyProblems(analyzeBody(mdxBody(3, 400)), true)).toEqual([
-      expect.stringContaining("featured case studies need at least 6"),
+      expect.stringContaining("featured case studies need at least 4"),
     ]);
   });
 

@@ -9,8 +9,9 @@ const paths = process.argv.slice(2).length ? process.argv.slice(2) : ["/", "/pro
 const outDir = ".lighthouse";
 mkdirSync(outDir, { recursive: true });
 
-const budget = { performance: 95, accessibility: 100, "best-practices": 100, seo: 100, lcpMs: 2000, cls: 0.05, tbtMs: 150 };
-const jsBudgetKb = (path) => (path === "/" ? 150 : 120);
+const budget = { performance: 95, accessibility: 100, "best-practices": 100, seo: 100, lcpMs: 2500, cls: 0.05, tbtMs: 150 };
+// PM (FIL-8): LCP budget is the Core Web Vitals "good" threshold; one JS budget for every page.
+const JS_BUDGET_KB = 155;
 let failed = false;
 
 for (const path of paths) {
@@ -42,10 +43,10 @@ for (const path of paths) {
   };
   const misses = [
     ...["performance", "accessibility", "best-practices", "seo"].filter((k) => result[k] < budget[k]),
-    ...(result.lcpMs >= budget.lcpMs ? ["lcp"] : []),
+    ...(result.lcpMs > budget.lcpMs ? ["lcp"] : []),
     ...(result.cls >= budget.cls ? ["cls"] : []),
     ...(result.tbtMs >= budget.tbtMs ? ["tbt"] : []),
-    ...(result.jsKb > jsBudgetKb(path) ? ["js"] : []),
+    ...(result.jsKb > JS_BUDGET_KB ? ["js"] : []),
   ];
   console.log(path, JSON.stringify(result), misses.length ? `OVER BUDGET: ${misses.join(", ")}` : "within budget");
   if (misses.length) failed = true;

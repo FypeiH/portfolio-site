@@ -24,7 +24,7 @@ See `.env.example`.
 
 | Variable | Effect |
 | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL. Falls back to `https://$VERCEL_PROJECT_PRODUCTION_URL`, then `http://localhost:3000` (`lib/site-url.ts`). |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL. Falls back to `https://$VERCEL_PROJECT_PRODUCTION_URL`, then `http://localhost:3000` (`lib/site-url.ts`). Leave it unset for now: the site uses its `*.vercel.app` production URL, which Vercel provides through `VERCEL_PROJECT_PRODUCTION_URL`. Set it when a custom domain exists. |
 | `SHOW_DRAFTS=true` | Preview mode: drafts are rendered, linked and marked with a badge. |
 | `CONTENT_STRICT=true` | Production guard: launch issues become build errors. Can't be combined with `SHOW_DRAFTS`. |
 | `VERCEL_ENV=production` | Enables indexing and Vercel Analytics. Every other environment is `noindex`. |
@@ -57,4 +57,12 @@ pnpm e2e                                   # Playwright + axe; builds preview an
 BASE_URL=http://localhost:3100 CHROME_PATH=/usr/bin/google-chrome pnpm lighthouse   # against a running `pnpm start -p 3100`
 ```
 
+Lighthouse budgets (mobile preset, per page): Performance ≥ 95, Accessibility, Best Practices and SEO 100, LCP ≤ 2500 ms (Core Web Vitals "good"), CLS < 0.05, TBT < 150 ms, JavaScript transfer ≤ 155 KB on every page.
+
 Locally, Lighthouse shows two known differences from a Vercel deployment. Outside `VERCEL_ENV=production`, SEO is lowered by the intentional `noindex`. With it set, Best Practices is lowered by the `/_vercel/insights` script, which only exists on Vercel.
+
+## Deferred (not in v1)
+
+- Sticky architecture diagram with step highlighting on case studies (spec §4.2).
+- AI demo section (`features.demoSection` is `false`).
+- Custom domain: the site runs on `*.vercel.app` until one is chosen.

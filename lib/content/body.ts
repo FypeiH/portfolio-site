@@ -3,9 +3,9 @@ export interface BodyStats {
   sections: number;
 }
 
-/** Rules from spec §3.6, narrowed by the PM: only featured case studies need the full format. */
+/** Rules from spec §3.6, narrowed by the PM: featured case studies need 300 words and 4 sections (FIL-8 sign-off). */
 export const BODY_RULES = {
-  featured: { minWords: 300, minSections: 6 },
+  featured: { minWords: 300, minSections: 4 },
   standard: { minWords: 0, minSections: 3 },
   maxWords: 1200,
 } as const;
