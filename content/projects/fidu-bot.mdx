@@ -15,7 +15,7 @@ diagram:
   kind: "mermaid"
   source: "content/diagrams/fidu-bot.mmd"
   alt: "FIDU flow: Binance market data, indicator calculation, rule evaluation, then a buy or sell order"
-  caption: "At each 5-minute candle close the bot syncs its clock with Binance, fetches the latest 100 candles, computes MACD, RSI, Stochastic RSI, EMA 9 and a volume average, then buys (up to 3 entries), sells partially or sells everything."
+  caption: "At each 5-minute candle close the bot syncs its clock with Binance, fetches the latest 100 candles, computes MACD, RSI, Stochastic RSI, EMA 9 and a volume average, then buys (up to 3 entries by default), sells partially or sells everything."
 featured: true
 order: 2
 status: "published"
@@ -42,12 +42,12 @@ The bot runs market analysis and executes buy and sell orders on its own, agains
 
 <Diagram />
 
-FIDU is a single Python process with five steps in a loop:
+FIDU is a single Python process with five steps in a loop. The indicator settings and risk rules below are defaults: every buy and sell parameter can be changed by the user.
 
 1. **Scheduler.** Sleeps until the next 5-minute candle closes.
 2. **Market data.** Fetches the latest 100 OHLCV candles and the account balance through CCXT.
-3. **Indicators.** Computes MACD (12/26/9), RSI (14), Stochastic RSI, EMA 9 and a 10-period volume average with TA-Lib and NumPy.
-4. **Rules.** Evaluates buy and sell conditions against those indicators.
+3. **Indicators.** Computes MACD (12/26/9), RSI (14), Stochastic RSI, EMA 9 and a 10-period volume average with TA-Lib and NumPy (default settings).
+4. **Rules.** Evaluates the user-configurable buy and sell conditions against those indicators.
 5. **Orders.** Places market orders on Binance Testnet, then goes back to sleep.
 
 Configuration and keys are loaded with python-decouple, and PyInstaller packages the bot as an `.exe` that still reads the same `.env` file.
@@ -57,4 +57,4 @@ Configuration and keys are loaded with python-decouple, and PyInstaller packages
 - **Requirements first.** I started by gathering my friend's requirements and turning his calculations into explicit buy and sell rules, instead of designing a strategy of my own.
 - **Manual, configurable parameters.** All buy and sell parameters are set by the user. He can tune the strategy without touching the code. The trade-off: the bot is only as good as the values it's given.
 - **Candle-aligned scheduling instead of fixed polling.** Every evaluation runs on a closed candle, so the signals don't change halfway through a candle. The cost is latency: the bot reacts at most once per 5-minute candle.
-- **Explicit risk rules.** A maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.
+- **Explicit risk rules, with configurable defaults.** By default, a maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.

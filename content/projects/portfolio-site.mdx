@@ -2,12 +2,12 @@
 title: "Portfolio website"
 summary: "Statically generated Next.js site with typed, build-validated content, MDX case studies and CSS scroll-driven animations."
 problem: "Recruiters scan a portfolio in seconds, often on a phone; tech leads open the projects and the code. One site has to serve both, fast and without friction."
-solution: "A single static page with anchor navigation plus one MDX page per case study. Content is typed and validated with zod at build time; motion is CSS-first."
+solution: "A single static page with anchor navigation plus one MDX page per case study. Content is typed and validated with zod at build time; animation is CSS-only."
 visibility: "public" # repo public (rev. 5, Q8)
 organization: "Personal project"
 role: "individual"
 period: { start: "2026-09", end: "present" } # research and architecture are dated Sept 2026; adjust to the real dates
-stack: ["Next.js", "TypeScript", "Tailwind CSS", "MDX", "Zod", "Mermaid", "Motion", "Vercel"]
+stack: ["Next.js", "TypeScript", "Tailwind CSS", "MDX", "Zod", "Mermaid", "Vercel"]
 metrics: [] # v1: no Results/"What I'd do differently" sections (deferred to post-launch). Add only real, measured numbers after launch (e.g. Lighthouse on the production URL), with context "production"
 links:
   repo: "https://github.com/FypeiH/portfolio-site" # TODO (non-blocking): confirm once the repo is created
@@ -45,7 +45,7 @@ The site had to answer "who, what and what next" in under 10 seconds, put projec
 - **Content.** Profile, experience, skills and UI strings live in typed TypeScript files; case studies are MDX with YAML frontmatter. zod schemas are the single source of truth for the types.
 - **Validation at build.** An invalid field breaks the build with the file and field name. Cross-checks cover slugs, dates and image files, and a strict mode fails production builds if any content placeholder is left.
 - **Diagrams.** Mermaid sources are rendered to SVG locally or in CI and committed. The build compares a hash to catch out-of-date diagrams, so there is no Mermaid runtime in the browser.
-- **Motion.** CSS scroll-driven animations where the browser supports them, an IntersectionObserver fallback where it doesn't, and nothing at all with reduced motion.
+- **Animation.** CSS scroll-driven animations where the browser supports them, an IntersectionObserver fallback where it doesn't, and nothing at all with reduced motion.
 
 ## Decisions & trade-offs
 
