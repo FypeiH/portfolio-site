@@ -1,0 +1,6 @@
+graph LR
+  J["JSON data + PT/EN translation files"] --> T["ngx-translate"]
+  T --> C["Angular components: personal info, experience, skills"]
+  C --> V["A4 CV view (Tailwind CSS)"]
+  V -->|"Download CV"| H["html-to-image"]
+  H --> P["jsPDF: A4 PDF"]

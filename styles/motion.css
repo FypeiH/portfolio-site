@@ -1,0 +1,95 @@
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(var(--reveal-distance, 24px)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes reveal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes draw-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes hero-out {
+  to { transform: translateY(-10%); opacity: 0.2; }
+}
+@keyframes node-pulse {
+  50% { opacity: 0.35; }
+}
+
+.scroll-progress { display: none; }
+.site-header::before { opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-node { animation: node-pulse 6s ease-in-out infinite; }
+
+  /* Native path: CSS scroll-driven animations (work without JS). The `animation` shorthand resets the timeline, so timeline/range come after it. */
+  @supports (animation-timeline: view()) {
+    [data-reveal] {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry calc(10% + var(--i, 0) * 4%) cover calc(30% + var(--i, 0) * 4%);
+    }
+    [data-reveal="fade"] { animation-name: reveal-fade; }
+
+    .timeline { view-timeline: --tl block; }
+    .timeline-line {
+      transform-origin: top;
+      animation: draw-y linear both;
+      animation-timeline: --tl;
+      animation-range: cover 10% cover 70%;
+    }
+
+    .scroll-progress {
+      display: block;
+      transform-origin: left;
+      animation: grow-x linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    .site-header::before {
+      animation: fade-in linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 120px;
+    }
+
+    .hero-bg {
+      animation: hero-out linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
+  }
+
+  /* Fallback: IntersectionObserver, only once RevealObserver has set .reveal-io. */
+  @supports not (animation-timeline: view()) {
+    html.reveal-io [data-reveal] {
+      transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      transition-delay: calc(var(--i, 0) * 60ms);
+    }
+    html.reveal-io [data-reveal]:not([data-revealed]) {
+      opacity: 0;
+      transform: translateY(var(--reveal-distance, 24px));
+    }
+    html.reveal-io [data-reveal="fade"]:not([data-revealed]) { transform: none; }
+  }
+}
+
+@media print {
+  [data-reveal],
+  .timeline-line,
+  .hero-bg {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .site-header,
+  .scroll-progress { display: none !important; }
+}

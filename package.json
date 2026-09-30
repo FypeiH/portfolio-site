@@ -1,0 +1,67 @@
+{
+  "name": "portfolio-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "dev": "next dev",
+    "dev:preview": "cross-env SHOW_DRAFTS=true next dev",
+    "build": "next build",
+    "build:preview": "cross-env SHOW_DRAFTS=true next build",
+    "build:production": "cross-env CONTENT_STRICT=true next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "content:check": "tsx scripts/check-content.ts",
+    "diagrams": "tsx scripts/render-diagrams.ts",
+    "lighthouse": "node scripts/lighthouse.mjs"
+  },
+  "dependencies": {
+    "@mdx-js/loader": "^3.1.1",
+    "@mdx-js/react": "^3.1.1",
+    "@next/mdx": "16.3.7",
+    "@vercel/analytics": "^2.0.1",
+    "gray-matter": "^4.0.3",
+    "next": "16.3.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/eslintrc": "^3.3.7",
+    "@mermaid-js/mermaid-cli": "^12.0.0",
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.7",
+    "lighthouse": "^13.5.0",
+    "puppeteer": "25.12.0",
+    "sharp": "0.35.5",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+graph TD
+  S["Scheduler: next 5-min candle close"] --> T["Sync time with Binance"]
+  T --> A["Binance API via CCXT: OHLCV + balance"]
+  A --> C["Indicators (TA-Lib): MACD, RSI, StochRSI, EMA9, Volume MA"]
+  C --> D{"Evaluate rules"}
+  D -->|"Buy signal and fewer than 3 entries"| E["Market buy"]
+  D -->|"Extreme overbought"| F["Sell 100%"]
+  D -->|"Moderate overbought"| G["Partial sell"]
+  D -->|"No signal"| S

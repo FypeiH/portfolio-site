@@ -1,0 +1,14 @@
+graph LR
+  subgraph Content["content/"]
+    TS["TypeScript: profile, experience, skills, UI strings"]
+    MDX["MDX case studies + frontmatter"]
+    MMD["Mermaid sources (.mmd)"]
+  end
+  MMD -->|"pnpm diagrams (local/CI)"| SVG["Pre-rendered SVGs (committed)"]
+  TS --> Z{"zod validation + cross-checks"}
+  MDX --> Z
+  SVG -->|"hash check"| Z
+  Z -->|"invalid"| X["Build fails: file + field"]
+  Z -->|"valid"| B["Next.js build (SSG)"]
+  B --> V["Static pages on Vercel"]
+  V --> U["Browser: HTML + CSS scroll-driven motion"]

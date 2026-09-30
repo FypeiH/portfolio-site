@@ -1,0 +1,54 @@
+---
+# TEMPLATE (spec §3.5): copy to <slug>.mdx. Files starting with "_" are ignored by the loader.
+# Public project: set visibility "public", add links.repo; diagram and impact become optional.
+# Private/nda: no repo; diagram + impact required (V2/V3). "nda" also needs confidentialityNote.
+title: "{{TODO: project title, ≤ 60 chars}}"
+summary: "{{TODO: card summary ≤ 140 chars. Verb + what + for whom}}"
+problem: "{{TODO: ≤ 200 chars}}"
+solution: "{{TODO: ≤ 200 chars}}"
+impact: "{{TODO: 40–220 chars; required without a public repo; qualitative is fine}}"
+visibility: "{{TODO: public | private | nda}}"
+organization: "{{TODO: company name or Personal project}}"
+role: "{{TODO: individual | team}}"
+roleNote: "{{TODO: ≤ 100 chars; required if team}}"
+period: { start: "{{TODO: YYYY-MM}}", end: "{{TODO: YYYY-MM or present}}" }
+stack: ["{{TODO: tech 1}}", "{{TODO: tech 2}}"] # 2–8 items, ≤ 20 chars each
+metrics: [] # only real numbers: { value, label, context: production | academic | personal | benchmark }
+links: {} # public: { repo: "https://github.com/..." }
+diagram:
+  kind: "mermaid"
+  source: "content/diagrams/your-slug.mmd" # TODO (template): rename to the project slug
+  alt: "{{TODO: 20–160 chars}}"
+  caption: "{{TODO: text description of the flow, 40–400 chars}}"
+featured: false
+order: 99
+status: "draft"
+updatedAt: "{{TODO: YYYY-MM}}"
+---
+
+## Context & problem
+
+`{{TODO: 2–4 sentences. What data had to be collected, from where, and what the process looked like before the tool.}}`
+
+## Constraints
+
+`{{TODO: 2–4 bullets, e.g. data sources and formats, volume, schedule, reliability or security requirements, deadlines}}`
+
+## Architecture
+
+<Diagram />
+
+`{{TODO: explain the flow step by step, matching the confirmed diagram}}`
+
+## Decisions & trade-offs
+
+- `{{TODO: decision 1: what was chosen, the alternative, and why}}`
+- `{{TODO: decision 2 (optional)}}`
+
+## Results
+
+`{{TODO: impact in more detail. Qualitative unless there are real production numbers}}`
+
+## What I'd do differently
+
+`{{TODO: 2–4 bullets of lessons}}`

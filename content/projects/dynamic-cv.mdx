@@ -1,0 +1,58 @@
+---
+title: "Dynamic CV"
+summary: "Angular web app to customize my resume with real-time preview, PT/EN translation and one-click A4 PDF export."
+problem: "{{TODO: why Filipe built it instead of using a Word/Canva template, in one sentence (≤ 200 chars) (Q-DCV)}}"
+solution: "Component-based Angular app: CV data lives in JSON and translation files, ngx-translate switches PT/EN, and html-to-image plus jsPDF export an A4 PDF."
+visibility: "public"
+organization: "Personal project"
+role: "individual"
+period: { start: "2025-04", end: "present" } # commits from Apr 2025 to Aug 2026; still maintained
+stack: ["Angular", "TypeScript", "Tailwind CSS", "ngx-translate", "jsPDF", "html-to-image", "Angular Material"]
+metrics: []
+links:
+  repo: "https://github.com/FypeiH/CV"
+  demo: "{{TODO: public deploy URL, or delete this line if there is none (Q-DCV)}}"
+diagram:
+  kind: "mermaid"
+  source: "content/diagrams/dynamic-cv.mmd"
+  alt: "Dynamic CV flow: JSON data and translation files feed Angular components, which render the CV and export it to PDF"
+  caption: "CV content is stored in JSON and PT/EN translation files. Angular components (personal info, experience, skills) render it with ngx-translate; the export button captures the A4 layout with html-to-image and writes a PDF with jsPDF."
+featured: true
+order: 3
+status: "draft" # switch to "published" once the TODOs below are filled
+updatedAt: "2026-08"
+seo:
+  description: "Case study: an Angular app that keeps CV data in JSON, switches between Portuguese and English and exports a print-ready A4 PDF in the browser."
+---
+
+## Context & problem
+
+Dynamic CV is the web app I use to customize my resume. It shows changes in a real-time preview, switches between Portuguese and English, and exports an A4 PDF in one click. I've kept it updated since April 2025.
+
+`{{TODO: 2–4 sentences on the motivation. What was wrong with the previous way of keeping a CV (e.g. two language versions drifting apart, editing layout by hand)? (Q-DCV)}}`
+
+## Constraints
+
+- **One page, print-ready.** The output has to fit a single A4 page and print cleanly, while also working as a responsive web page.
+- **Easy to update, in two languages.** Changing a job or a skill shouldn't mean editing layout code, and the Portuguese and English versions have to stay in sync.
+- **No backend.** `{{TODO: confirm this was a deliberate constraint (e.g. free static hosting, no server to maintain) or delete this line}}`
+
+## Architecture
+
+<Diagram />
+
+It's an Angular 18 app built from reusable components: `app-personal-info`, `app-professional-info`, `app-experience-item` and `app-skill-item`. The content lives in JSON files, and ngx-translate supplies the Portuguese and English text. Tailwind CSS handles the A4 layout. For export, html-to-image turns the rendered page into an image, and jsPDF scales it to A4 and writes the PDF.
+
+## Decisions & trade-offs
+
+- **Client-side PDF export.** html-to-image and jsPDF generate the PDF in the browser, so the app needs no server. `{{TODO: the trade-off Filipe observed (e.g. an image-based PDF means the text isn't selectable or searchable, or file size), only if true (Q-DCV)}}`
+- **Data separate from layout.** Content sits in JSON and translation files, so updating the CV never touches a component, and both languages share one layout.
+- **Reusable components per CV block.** Experience and skill entries are rendered from one component each, so adding an entry is a data change, not a template change.
+
+## Results
+
+`{{TODO: honest, qualitative outcome, e.g. whether this is the CV Filipe uses for applications today (only if true). No numbers unless measured (Q-DCV)}}`
+
+## What I'd do differently
+
+`{{TODO: Filipe's lessons in 2–4 bullets (Q-DCV). Before publishing, also update the repo README: it mentions both Angular 17 and 18, "Junior Fullstack Developer… currently completing my BSc" and "passionate"}}`

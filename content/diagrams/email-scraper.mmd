@@ -1,0 +1,7 @@
+graph LR
+  P["Booking platforms (several)"] -->|"Confirmation emails"| G["Gmail inbox"]
+  G -->|"Gmail API"| R["Email reader (C# / .NET)"]
+  R --> T{"Identify platform template"}
+  T --> X["Extract visitor data (template rules)"]
+  X --> V["Validate and map fields"]
+  V --> DB[("Database: visitors per tour")]

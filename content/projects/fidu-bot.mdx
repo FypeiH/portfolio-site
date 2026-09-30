@@ -1,0 +1,68 @@
+---
+title: "Crypto Trading Bot (FIDU)"
+summary: "Python bot that trades SOL/USDT on Binance Testnet from MACD, RSI and Stochastic RSI signals, with built-in risk limits."
+problem: "{{TODO: why Filipe built it, in one sentence (≤ 200 chars). E.g. what he wanted to learn or automate (Q-FIDU)}}"
+solution: "A loop aligned to 5-minute candle closes fetches market data via CCXT, computes indicators with TA-Lib and places market orders under buy and partial-sell rules."
+visibility: "public"
+organization: "Personal project"
+role: "individual"
+period: { start: "2025-07", end: "2025-08" }
+stack: ["Python", "CCXT", "TA-Lib", "NumPy", "python-decouple", "PyInstaller"]
+metrics: [] # no backtest, so no metrics. Never show unverified profits.
+links:
+  repo: "https://github.com/FypeiH/fidu-bot"
+diagram:
+  kind: "mermaid"
+  source: "content/diagrams/fidu-bot.mmd"
+  alt: "FIDU flow: Binance market data, indicator calculation, rule evaluation, then a buy or sell order"
+  caption: "At each 5-minute candle close the bot syncs its clock with Binance, fetches the latest 100 candles, computes MACD, RSI, Stochastic RSI, EMA 9 and a volume average, then buys (up to 3 entries), sells partially or sells everything."
+featured: true
+order: 2
+status: "draft" # switch to "published" once the TODOs below are filled
+updatedAt: "2025-08"
+disclaimer: "Educational project. Runs against Binance Testnet (sandbox mode); not financial advice. AGPL-3.0."
+seo:
+  description: "Case study: a Python trading bot on Binance Testnet. Candle-aligned scheduling, TA-Lib indicators, CCXT and explicit risk limits."
+---
+
+## Context & problem
+
+I built FIDU to run market analysis and execute buy and sell orders automatically, based on my own trading logic. It trades a single pair, SOL/USDT, and runs against Binance Testnet, so no real money is involved.
+
+`{{TODO: 2–4 sentences on the motivation. What did Filipe want to learn or prove (e.g. working with a real exchange API, scheduling, indicator maths)? Why crypto and why this pair? (Q-FIDU)}}`
+
+## Constraints
+
+- **Exchange API limits and clock drift.** Exchange APIs reject requests with a skewed timestamp and limit how often a client can call. The bot enables CCXT's built-in rate limiting and re-syncs with Binance server time before each call.
+- **Safety first.** Sandbox (Testnet) mode is switched on in code, so a misconfigured run can't touch a real account.
+- **Secrets out of the code.** API keys live in a `.env` file, including when the bot runs as a packaged Windows executable.
+- `{{TODO: any other constraint Filipe worked under (time, budget, hardware, where it runs) or delete this line (Q-FIDU)}}`
+
+## Architecture
+
+<Diagram />
+
+FIDU is a single Python process with five steps in a loop:
+
+1. **Scheduler.** Sleeps until the next 5-minute candle closes.
+2. **Market data.** Fetches the latest 100 OHLCV candles and the account balance through CCXT.
+3. **Indicators.** Computes MACD (12/26/9), RSI (14), Stochastic RSI, EMA 9 and a 10-period volume average with TA-Lib and NumPy.
+4. **Rules.** Evaluates buy and sell conditions against those indicators.
+5. **Orders.** Places market orders on Binance Testnet, then goes back to sleep.
+
+Configuration and keys are loaded with python-decouple, and PyInstaller packages the bot as an `.exe` that still reads the same `.env` file.
+
+## Decisions & trade-offs
+
+- **Candle-aligned scheduling instead of fixed polling.** Every evaluation runs on a closed candle, so the signals don't change halfway through a candle. The cost is latency: the bot reacts at most once per 5-minute candle.
+- **Explicit risk limits in code.** A maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.
+- **CCXT instead of a Binance-only SDK.** `{{TODO: confirm why CCXT was chosen (e.g. unified API, built-in rate limiting) and what it cost, or delete this line}}`
+- `{{TODO: one more decision with the alternative Filipe rejected and why (Q-FIDU)}}`
+
+## Results
+
+`{{TODO: honest, qualitative results on Testnet (e.g. how long it ran, what worked, what broke). No profit/loss figures and no numbers unless measured (Q-FIDU)}}`
+
+## What I'd do differently
+
+`{{TODO: Filipe's lessons in 2–4 bullets. Spec suggestions to consider, only if he agrees: align the README with the code (partial-sell percentage and rule table), add tests or a simple backtest before touching real markets (Q-FIDU)}}`

@@ -1,0 +1,76 @@
+---
+# PRIVATE project (spec D13, V2/V3): no repo link; diagram + impact required.
+# Source: portfolio-input/altyra-projects.md §3 (Filipe, 30/09/2026). No numeric metrics exist: none are shown.
+title: "Email Scraper for TakeFreeTours"
+summary: "C# integration that reads booking confirmations from several platforms via the Gmail API and turns them into validated database records."
+problem: "Each tour's visitors were entered by hand from booking confirmation emails sent by several booking platforms, each with its own email format."
+solution: "A .NET integration reads the inbox through the Gmail API, detects which platform template each email uses, extracts and validates the visitor data and inserts it into the database."
+impact: "It worked as intended and drastically reduced the manual entry of tour visitors from booking confirmation emails."
+visibility: "private" # {{TODO: confirm with Altyra/TakeFreeTours whether this can be published by name, or switch to "nda" and generalize (NDA check)}}
+organization: "Altyra Solutions"
+experienceId: "altyra"
+confidentialityNote: "Proprietary code from my work at Altyra Solutions; no source code is shared."
+role: "team" # source: "practically all the development"; confirm individual vs team
+roleNote: "I did practically all the development, from the Gmail integration to parsing and data handling."
+period: { start: "2024-03", end: "2025-02" } # Altyra employment dates; exact project dates not in the source
+stack: ["C#", ".NET", "Gmail API"]
+metrics: [] # the source states there are no numeric metrics
+links: {} # V2: no repo for private projects
+diagram:
+  kind: "mermaid"
+  source: "content/diagrams/email-scraper.mmd"
+  alt: "Email scraper flow: booking confirmations in Gmail are read via the Gmail API, matched to a platform template, validated and inserted into the database"
+  caption: "Booking platforms send confirmation emails to a Gmail inbox. A C#/.NET integration reads them through the Gmail API, identifies which platform template each email uses, extracts the visitor data, validates and maps it to the expected fields, and inserts it into the database."
+featured: true
+order: 1
+status: "draft" # publish after the NDA check and the TODOs below
+updatedAt: "2026-09"
+seo:
+  description: "Case study: a C#/.NET integration that reads multi-platform booking confirmations via the Gmail API, detects each template and inserts validated data."
+---
+
+## Context & problem
+
+TakeFreeTours runs tours, and its visitors book them through several booking platforms. Every booking arrives as a confirmation email, and every platform formats that email its own way.
+
+Before this project, the visitors for each tour were entered into the database by hand, one confirmation email at a time. It was slow, repetitive work, and it had to keep pace with every new booking.
+
+`{{TODO: optional, 1–2 sentences of context if Filipe can share it: roughly how many platforms, who did the manual entry, how often. No invented numbers}}`
+
+## Constraints
+
+- **Several platforms, several formats.** Each booking platform sends a differently structured confirmation email, so there was no single format to parse.
+- **Clean data only.** Extracted values had to be validated and mapped to the fields the system expects before they reached the database.
+- **Gmail as the entry point.** The confirmations land in a Gmail inbox, so the integration had to work through the Gmail API.
+- `{{TODO: other constraints, if any: authentication/permissions, schedule, deadlines, or delete this line}}`
+
+## Architecture
+
+<Diagram />
+
+The flow has five steps:
+
+1. **Receive.** Booking platforms send their confirmation emails to a Gmail inbox.
+2. **Read.** The C#/.NET integration reads the emails through the Gmail API.
+3. **Identify.** It works out which platform's template each email follows.
+4. **Extract and validate.** It pulls the visitor data out using that template's rules, then validates it and maps it to the expected parameters.
+5. **Insert.** Validated records are written to the database.
+
+`{{TODO: how it runs (scheduled job, background service or manual trigger), how processed emails are tracked so they aren't imported twice, and which database it writes to}}`
+
+## Decisions & trade-offs
+
+- **Read the inbox directly through the Gmail API.** The inbox the confirmations already arrive in becomes the input, so nobody has to forward, export or copy anything.
+- **Identify the template first, then parse.** Each platform gets its own extraction rules instead of one parser trying to handle every format. The trade-off: when a platform changes its email layout, its template has to be updated.
+- **Validate before inserting.** Bad or incomplete data is caught before it reaches the database, instead of being fixed there afterwards.
+- `{{TODO: what happens to emails that match no template or fail validation (skipped, flagged, logged?), and why}}`
+
+## Results
+
+The scraper worked as intended and drastically reduced the manual entry of tour visitors. No numeric metrics were tracked, so there are no figures to report.
+
+`{{TODO: optional qualitative detail, e.g. what the team did with the time saved, or whether it was still running when Filipe left. Only if true}}`
+
+## What I'd do differently
+
+`{{TODO: Filipe's lessons, 2–4 bullets (e.g. monitoring for unknown templates, tests with sample emails per platform), only if he agrees}}`

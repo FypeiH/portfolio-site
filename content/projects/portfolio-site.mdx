@@ -1,0 +1,65 @@
+---
+title: "Portfolio website"
+summary: "Statically generated Next.js site with typed, build-validated content, MDX case studies and CSS scroll-driven animations."
+problem: "Recruiters scan a portfolio in seconds, often on a phone; tech leads open the projects and the code. One site has to serve both, fast and without friction."
+solution: "A single static page with anchor navigation plus one MDX page per case study. Content is typed and validated with zod at build time; motion is CSS-first."
+visibility: "public" # only if the repo is public (spec Q8). If it stays private: set "private", delete links.repo and add `impact` (40–220 chars).
+organization: "Personal project"
+role: "{{TODO: individual | team. Confirm how the site was built and who did what; if team, add roleNote (≤ 100 chars)}}"
+period: { start: "2026-09", end: "present" } # research and architecture are dated Sept 2026; adjust to the real dates
+stack: ["Next.js", "TypeScript", "Tailwind CSS", "MDX", "Zod", "Mermaid", "Motion", "Vercel"]
+metrics: [] # add only real, measured numbers after launch (e.g. Lighthouse on the production URL), with context "production"
+links:
+  repo: "{{TODO: public repo URL of this site (spec Q8)}}"
+diagram:
+  kind: "mermaid"
+  source: "content/diagrams/portfolio-site.mmd"
+  alt: "Portfolio build flow: typed content and MDX are validated with zod, built as static pages by Next.js and served by Vercel"
+  caption: "Content lives in TypeScript files and MDX case studies. At build time zod validates every field and cross-reference, Mermaid diagrams are checked against their pre-rendered SVGs, and Next.js generates static pages that Vercel serves to the browser."
+featured: true
+order: 4
+status: "draft" # publish after launch, once the TODOs are filled
+updatedAt: "2026-09"
+seo:
+  description: "Case study: how this portfolio is built. Next.js static generation, zod-validated content, MDX case studies and accessible, CSS-first scroll animation."
+---
+
+## Context & problem
+
+A portfolio has two very different readers. Recruiters arrive from LinkedIn or a CV, often on a phone, and scan for role, stack, experience, availability and a way to get in touch. Tech leads open one or two projects and the GitHub repo, looking for decisions, trade-offs and a sense of production.
+
+The site had to answer "who, what and what next" in under 10 seconds, put projects and contact one click away, and be a piece of evidence in itself: fast, accessible and built with care.
+
+## Constraints
+
+- **Content first, animation second.** Everything must be readable without JavaScript, with reduced motion and when printed. Animation is decoration, never a condition for seeing information.
+- **Performance budget.** Targets set before building: LCP under 2.0 s and CLS under 0.05 in lab tests on mobile, and at most 150 KB of JavaScript on the home page.
+- **Accessibility.** WCAG 2.2 AA: skip link, landmarks, visible focus, 44 px touch targets and no information conveyed by motion alone.
+- **Honest content.** Some of my work is proprietary, so the site had to present projects without a public repo, without leaking code or inventing numbers.
+
+## Architecture
+
+<Diagram />
+
+- **Pages.** One landing page with anchored sections (Projects, Experience, Skills, About, Contact) and a statically generated page per case study at `/projects/[slug]`. Unknown slugs return a 404.
+- **Content.** Profile, experience, skills and UI strings live in typed TypeScript files; case studies are MDX with YAML frontmatter. zod schemas are the single source of truth for the types.
+- **Validation at build.** An invalid field breaks the build with the file and field name. Cross-checks cover slugs, dates and image files, and a strict mode fails production builds if any content placeholder is left.
+- **Diagrams.** Mermaid sources are rendered to SVG locally or in CI and committed. The build compares a hash to catch out-of-date diagrams, so there is no Mermaid runtime in the browser.
+- **Motion.** CSS scroll-driven animations where the browser supports them, an IntersectionObserver fallback where it doesn't, and nothing at all with reduced motion.
+
+## Decisions & trade-offs
+
+- **CSS scroll-driven animations instead of GSAP ScrollTrigger.** They run off the main thread and ship no JavaScript. The cost: browsers without support (Firefox, at the time of writing) need a fallback, and there are no pinned sections. Sticky positioning covers the one place that needed it.
+- **Native scrolling, no smooth-scroll library.** Scroll feels the way the visitor's device expects, and CSS smooth scrolling is switched off with reduced motion.
+- **No 3D or WebGL.** The hero background is a small inline SVG, which keeps the largest content element as text and the page light.
+- **A visibility model for projects.** Each project is public, private or under NDA. Private projects can't link a repo and must include an architecture diagram and a written impact, enforced by the schema rather than by memory.
+- **Few client components.** Most of the site renders on the server. Adding a client component needs a reason in the pull request.
+- **A plain, clickable email.** No obfuscation and no contact form: one click to email, one click to copy the address.
+
+## Results
+
+`{{TODO: after launch, add real results only, e.g. Lighthouse scores and Core Web Vitals measured on the production URL, with the date. No numbers until they are measured}}`
+
+## What I'd do differently
+
+`{{TODO: Filipe's lessons after building and launching the site, 2–4 bullets}}`
