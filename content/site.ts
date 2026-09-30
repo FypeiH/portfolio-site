@@ -124,6 +124,8 @@ export const site = {
     metaStack: "Stack",
     metaLinks: "Links",
     impactLabel: "Impact",
+    problemLabel: "Problem",
+    solutionLabel: "Solution",
     whyNoCode: "Why no code?", // callout title on private/nda projects (spec §3.4)
     disclaimerLabel: "Note",
     diagramLabel: "Architecture diagram",
