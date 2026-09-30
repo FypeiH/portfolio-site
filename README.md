@@ -16,7 +16,9 @@ pnpm dev:preview    # also renders draft projects
 
 Everything visitors read lives in `content/` (`site.ts`, `profile.ts`, `experience.ts`, `skills.ts`, `projects/*.mdx`, `diagrams/*.mmd`). The schemas are in `lib/content/schema.ts`, and the cross-file rules (references, featured order, diagram hashes, placeholders, body length) are in `lib/content/rules.ts`. `pnpm content:check` runs the same checks without building.
 
-Placeholders use the `{{TODO: ...}}` form. They are allowed in drafts but never rendered. The strict guard scans only published projects, their diagrams and the global content files. It ignores drafts and files whose names start with `_`.
+Placeholders use the `{{TODO: ...}}` form. They are allowed in drafts but never rendered. The strict guard (`lib/content/scan.ts`) scans every file under `content/` except drafts, diagrams used only by drafts and files or folders whose names start with `_`. It decodes HTML entities and JS escapes, joins markers split across lines and flags `{{…}}`, `[TODO…]`, `TODO`, `TBD`, `FIXME` and `lorem ipsum`. Comments (TS/JS, YAML, MDX, Mermaid `%%`) are skipped because they never render. `pnpm content:check` uses the same file set and scan, so the two can't disagree.
+
+`pnpm build:production` then runs `scripts/check-output.ts` on what the build emitted (every prerendered HTML page, RSC payload, sitemap and robots). That second check also catches a placeholder that only appears at render time, for example one assembled in a JSX expression.
 
 ## Environment
 
@@ -25,18 +27,25 @@ See `.env.example`.
 | Variable | Effect |
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL. Falls back to `https://$VERCEL_PROJECT_PRODUCTION_URL`, then `http://localhost:3000` (`lib/site-url.ts`). Leave it unset for now: the site uses its `*.vercel.app` production URL, which Vercel provides through `VERCEL_PROJECT_PRODUCTION_URL`. Set it when a custom domain exists. |
-| `SHOW_DRAFTS=true` | Preview mode: drafts are rendered, linked and marked with a badge. |
+| `SHOW_DRAFTS=true` | Preview mode: drafts are rendered, linked and marked with a badge. Ignored when `VERCEL_ENV=production`. |
 | `CONTENT_STRICT=true` | Production guard: launch issues become build errors. Can't be combined with `SHOW_DRAFTS`. |
-| `VERCEL_ENV=production` | Enables indexing and Vercel Analytics. Every other environment is `noindex`, and its build aliases `@vercel/analytics/next` to a no-op (`next.config.ts`), so no analytics code ships. |
+| `VERCEL_ENV=production` | Enables indexing and Vercel Analytics (pageviews only). Every other environment is `noindex`, and its build aliases `@vercel/analytics/next` to a no-op (`next.config.ts`), so no analytics code ships. |
+
+These flags are read **at build time only**. `next.config.ts` inlines them (`lib/build-env.ts`), and the draft pages and OG images a build didn't prerender are 404s (`dynamicParams = false`). Setting `SHOW_DRAFTS` or `VERCEL_ENV` on `next start` or in a runtime function can't reveal drafts in a production build.
 
 ## Build modes
 
 ```bash
 pnpm build             # default: errors fail, launch issues are warnings
 pnpm build:preview     # SHOW_DRAFTS=true
-pnpm build:production  # CONTENT_STRICT=true, use this for the production deployment
+pnpm build:production  # CONTENT_STRICT=true, then the rendered-output check; for the production deployment
+pnpm build:vercel      # what Vercel runs: build:production when VERCEL_ENV=production, build otherwise
 pnpm start             # serve the last build
 ```
+
+`vercel.json` sets `buildCommand` to `pnpm build:vercel` (`scripts/build-vercel.mjs`), so production deployments always get the strict build and previews get the normal one. To render drafts on previews, set `SHOW_DRAFTS=true` in the Vercel Preview environment.
+
+Case-study OG images are at `/projects/<slug>/opengraph-image`, prerendered for published projects only.
 
 ## Diagrams
 
@@ -48,10 +57,11 @@ PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome pnpm diagrams   # path to any l
 
 ## Avatar
 
-The hero shows the profile photo at 112 px from a 224 px WebP next to the source (`filipe-bravo-224.webp`). Regenerate it after changing the photo; the build fails if it is missing.
+The hero shows the profile photo at 112 px from a 224 px WebP next to the source (`filipe-bravo-224.webp`). Regenerate it after changing the photo. `pnpm avatar` records the photo's SHA-256 in `assets/avatar-thumb.json`. The build fails if the thumbnail is missing, and `pnpm avatar --check`, `pnpm content:check` and `pnpm test` fail if it was made from a different photo.
 
 ```bash
-pnpm avatar
+pnpm avatar           # regenerate
+pnpm avatar --check   # verify only
 ```
 
 ## Checks
@@ -65,7 +75,7 @@ pnpm e2e                                   # both suites below, one after the ot
 pnpm e2e:preview                           # Playwright + axe, 5 browsers; preview build on :3200
 pnpm e2e:production                        # Chromium; production build on :3201: drafts are 404 and never linked
 pnpm build && pnpm start -p 3100           # then, in another terminal:
-BASE_URL=http://localhost:3100 CHROME_PATH=/usr/bin/google-chrome RUNS=3 pnpm lighthouse
+BASE_URL=http://localhost:3100 CHROME_PATH=/usr/bin/google-chrome pnpm lighthouse   # RUNS=5 by default
 ```
 
 ### Performance budgets
@@ -80,18 +90,20 @@ Lighthouse, mobile preset, per page (PM sign-off, FIL-8):
 | CLS | < 0.05 |
 | TBT | < 150 ms |
 | JavaScript, Brotli | ≤ 150 KB on `/`, ≤ 125 KB on a case study |
-| First-party JavaScript on `/`, Brotli | ≤ 35 KB |
+| Non-root JavaScript on `/`, Brotli | ≤ 35 KB |
 
-`scripts/lighthouse.mjs` gates on Brotli sizes computed locally (quality 11) from the scripts Lighthouse saw loaded. That is a proxy for what Vercel serves. Gzip sizes are printed for information only. "Framework" means Next's `rootMainFiles` (React, the Next runtime and Turbopack); every other script counts as first-party.
+`scripts/lighthouse.mjs` gates on Brotli sizes computed locally (quality 11) from the scripts Lighthouse saw loaded. That is a proxy for what Vercel serves. Gzip sizes are printed for information only. "Root" means Next's `rootMainFiles` (React, the Next runtime and Turbopack); every other script counts as "non-root". Each page runs `RUNS` times (default 5). Every run is printed, and the budgets are checked on the run with the median LCP, because LCP under simulated throttling is bimodal on `/`. In some runs Lantern counts the script downloads in the LCP chain, which gives about 2.5 s instead of about 1.96 s.
 
 **The official measurement happens on the Vercel preview during the deploy phase.** Local runs use simulated throttling, and LCP on `/` varies from run to run.
 
-Locally, Lighthouse differs from a Vercel deployment in two known ways:
+Locally, Lighthouse differs from a Vercel deployment in three known ways:
 - Outside `VERCEL_ENV=production`, pages are `noindex` on purpose. The script ignores that one SEO audit unless `EXPECT_INDEXABLE=true`, which you should set when running against production.
+- `next start` serves gzip and Vercel serves Brotli. The home HTML is about 17.5 KB gzip against about 12.3 KB Brotli, so locally it takes one extra simulated round trip.
 - With `VERCEL_ENV=production`, Best Practices is lowered by the `/_vercel/insights` script, which only exists on Vercel.
 
 ## Deferred (not in v1)
 
+- Vercel Speed Insights and custom `track()` events (spec §7.5). PM decision, answering spec §7.5 / Q9: v1 ships only Vercel Analytics pageviews, in production.
 - Sticky architecture diagram with step highlighting on case studies (spec §4.2).
 - AI demo section (`features.demoSection` is `false`).
 - Custom domain: the site runs on `*.vercel.app` until one is chosen.

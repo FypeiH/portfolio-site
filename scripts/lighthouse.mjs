@@ -6,15 +6,16 @@
 //
 // JS size gate: Brotli (quality 11) computed locally from each script Lighthouse saw loaded, the
 // local proxy for what Vercel serves. Gzip (level 9) is reported for information only.
-// "Framework" = Next's rootMainFiles from .next/build-manifest.json (React, Next runtime, Turbopack);
-// every other script on the page is first-party. jsServedKb is Lighthouse's transfer size as served
+// "Root" = Next's rootMainFiles from .next/build-manifest.json (React, Next runtime, Turbopack), shared
+// by every route; "non-root" = every other script on the page. jsServedKb is Lighthouse's transfer size as served
 // by `next start` (gzip, headers included), also for information.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 const base = process.env.BASE_URL ?? "http://localhost:3000";
-const runs = Number(process.env.RUNS ?? 1);
+/** Budgets are evaluated on the run with the median LCP (Sonar); every run is printed. */
+const runs = Number(process.env.RUNS ?? 5);
 /** Set EXPECT_INDEXABLE=true against a production deployment; everywhere else noindex is intended. */
 const expectIndexable = process.env.EXPECT_INDEXABLE === "true";
 const paths = process.argv.slice(2).length ? process.argv.slice(2) : ["/", "/projects/email-scraper"];
@@ -32,12 +33,12 @@ const BUDGET = {
   tbtMs: 150,
   /** Brotli JS per page: 150 KB on the home page, 125 KB on case studies. */
   jsBrotliKb: (path) => (path === "/" ? 150 : 125),
-  /** Brotli first-party JS, home page only. */
-  firstPartyBrotliKb: { "/": 35 },
+  /** Brotli JS outside Next's rootMainFiles (app code and route-specific chunks), home page only. */
+  nonRootBrotliKb: { "/": 35 },
 };
 
 const manifestFile = ".next/build-manifest.json";
-const frameworkFiles = new Set(
+const rootFiles = new Set(
   existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, "utf8")).rootMainFiles.map((f) => `/_next/${f}`) : [],
 );
 
@@ -57,25 +58,25 @@ async function jsSizes(lhr) {
   const scripts = (lhr.audits["network-requests"]?.details?.items ?? []).filter(
     (item) => item.resourceType === "Script" && item.statusCode === 200,
   );
-  const totals = { gzip: 0, brotli: 0, firstPartyGzip: 0, firstPartyBrotli: 0 };
+  const totals = { gzip: 0, brotli: 0, nonRootGzip: 0, nonRootBrotli: 0 };
   for (const { url } of scripts) {
     const body = await download(url);
     const gzip = gzipSync(body, { level: 9 }).length;
     const brotli = brotliCompressSync(body, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
     totals.gzip += gzip;
     totals.brotli += brotli;
-    if (!frameworkFiles.has(new URL(url).pathname)) {
-      totals.firstPartyGzip += gzip;
-      totals.firstPartyBrotli += brotli;
+    if (!rootFiles.has(new URL(url).pathname)) {
+      totals.nonRootGzip += gzip;
+      totals.nonRootBrotli += brotli;
     }
   }
   return {
     scripts: scripts.length,
     jsGzipKb: kb(totals.gzip),
     jsBrotliKb: kb(totals.brotli),
-    firstPartyGzipKb: kb(totals.firstPartyGzip),
-    firstPartyBrotliKb: kb(totals.firstPartyBrotli),
-    frameworkBrotliKb: kb(totals.brotli - totals.firstPartyBrotli),
+    nonRootGzipKb: kb(totals.nonRootGzip),
+    nonRootBrotliKb: kb(totals.nonRootBrotli),
+    rootBrotliKb: kb(totals.brotli - totals.nonRootBrotli),
   };
 }
 
@@ -87,7 +88,7 @@ function seoIgnoringNoindex(lhr) {
 }
 
 function overBudget(path, r) {
-  const firstPartyLimit = BUDGET.firstPartyBrotliKb[path];
+  const nonRootLimit = BUDGET.nonRootBrotliKb[path];
   return [
     ...["performance", "accessibility", "best-practices"].filter((k) => r[k] < BUDGET[k]),
     ...((expectIndexable ? r.seo : r.seoWithoutNoindex) < BUDGET.seo ? ["seo"] : []),
@@ -95,14 +96,15 @@ function overBudget(path, r) {
     ...(r.cls >= BUDGET.cls ? ["cls"] : []),
     ...(r.tbtMs >= BUDGET.tbtMs ? ["tbt"] : []),
     ...(r.jsBrotliKb > BUDGET.jsBrotliKb(path) ? [`js ${r.jsBrotliKb} > ${BUDGET.jsBrotliKb(path)} KB br`] : []),
-    ...(firstPartyLimit !== undefined && r.firstPartyBrotliKb > firstPartyLimit
-      ? [`first-party js ${r.firstPartyBrotliKb} > ${firstPartyLimit} KB br`]
+    ...(nonRootLimit !== undefined && r.nonRootBrotliKb > nonRootLimit
+      ? [`non-root js ${r.nonRootBrotliKb} > ${nonRootLimit} KB br`]
       : []),
   ];
 }
 
 let failed = false;
 for (const path of paths) {
+  const results = [];
   for (let run = 1; run <= runs; run++) {
     const name = `${path === "/" ? "home" : path.replaceAll("/", "_").replace(/^_/, "")}-${run}`;
     const out = `${outDir}/${name}.json`;
@@ -131,9 +133,15 @@ for (const path of paths) {
       ),
       ...(await jsSizes(lhr)),
     };
-    const misses = overBudget(path, result);
-    console.log(`${path} run ${run}`, JSON.stringify(result), misses.length ? `OVER BUDGET: ${misses.join("; ")}` : "within budget");
-    if (misses.length) failed = true;
+    results.push(result);
+    console.log(`${path} run ${run}`, JSON.stringify(result));
   }
+  const median = [...results].sort((a, b) => a.lcpMs - b.lcpMs)[Math.floor(results.length / 2)];
+  const misses = overBudget(path, median);
+  console.log(
+    `${path} median run (LCP ${median.lcpMs} ms; all: ${results.map((r) => r.lcpMs).join("/")})`,
+    misses.length ? `OVER BUDGET: ${misses.join("; ")}` : "within budget",
+  );
+  if (misses.length) failed = true;
 }
 process.exitCode = failed ? 1 : 0;

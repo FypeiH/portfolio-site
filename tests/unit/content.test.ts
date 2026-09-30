@@ -6,15 +6,13 @@ import { experience } from "@/content/experience";
 import { profile } from "@/content/profile";
 import { site } from "@/content/site";
 import { skills } from "@/content/skills";
-import { collectContentIssues, type ContentFiles } from "@/lib/content/rules";
+import { repoFiles } from "@/lib/content/repo-files";
+import { collectContentIssues } from "@/lib/content/rules";
 import { ExperienceListSchema, ProfileSchema, ProjectFrontmatterSchema, SiteConfigSchema, SkillGroupListSchema } from "@/lib/content/schema";
 import { parseContent } from "@/lib/content/validate";
 
 const root = path.resolve(import.meta.dirname, "../..");
-const files: ContentFiles = {
-  exists: (file) => fs.existsSync(path.join(root, file)),
-  read: (file) => (fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), "utf8") : undefined),
-};
+const files = repoFiles(root);
 const projects = fs
   .readdirSync(path.join(root, "content/projects"))
   .filter((name) => name.endsWith(".mdx") && !name.startsWith("_"))

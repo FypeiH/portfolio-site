@@ -1,20 +1,17 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
 import { getProfile, getProjectBySlug, getUi } from "@/lib/content/load";
-import { fill } from "@/lib/content/ui";
 import { loadOgFonts, OG_SIZE, OgFrame, ogColors } from "@/lib/og";
 
 const MAX_TAGS = 4;
 
-// No `dynamicParams = false` here: with generateImageMetadata the image id is a second dynamic
-// segment that generateStaticParams can't list, so Next 16.3 would 404 the published images too.
-// Unknown and draft slugs still 404 through notFound() below (covered by tests/e2e-production).
+// Static exports (no generateImageMetadata): the build prerenders one image per slug the page
+// renders, and every other slug is a 404 whatever the runtime env says (QA FIL-8).
+export const size = OG_SIZE;
+export const contentType = "image/png";
+export const alt = getUi().ogImageAlt;
+export const dynamicParams = false;
 export { projectStaticParams as generateStaticParams } from "@/lib/content/static-params";
-
-export function generateImageMetadata({ params }: { params: { slug: string } }) {
-  const title = getProjectBySlug(params.slug)?.title ?? "";
-  return [{ id: "og", size: OG_SIZE, contentType: "image/png", alt: fill(getUi().ogProjectAlt, { title }) }];
-}
 
 export default async function ProjectOpenGraphImage({ params }: { params: Promise<{ slug: string }> }) {
   const project = getProjectBySlug((await params).slug);

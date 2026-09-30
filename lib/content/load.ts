@@ -11,8 +11,9 @@ import { site } from "@/content/site";
 import { skills } from "@/content/skills";
 import { PROJECTS_DIR, projectFile, SLUG_PATTERN } from "./conventions";
 import { renderedDiagramPath, svgSize, type DiagramImage } from "./diagrams";
-import { readContentFlags } from "./flags";
-import { collectContentIssues, type ContentFiles, type ContentIssue } from "./rules";
+import { buildContentFlags } from "./flags";
+import { repoFiles } from "./repo-files";
+import { collectContentIssues, type ContentIssue } from "./rules";
 import {
   ExperienceListSchema,
   ProfileSchema,
@@ -27,26 +28,18 @@ import { findAdjacent, selectFeatured, selectVisibleProjects } from "./visibilit
 
 const ROOT = process.cwd();
 
-const repoFiles: ContentFiles = {
-  exists: (file) => fs.existsSync(path.join(/*turbopackIgnore: true*/ ROOT, file)),
-  read: (file) => {
-    try {
-      return fs.readFileSync(path.join(/*turbopackIgnore: true*/ ROOT, file), "utf8");
-    } catch {
-      return undefined;
-    }
-  },
-};
+const files = repoFiles(ROOT);
 
 function readProjects(): Project[] {
-  return fs
-    .readdirSync(path.join(ROOT, PROJECTS_DIR))
-    .filter((name) => name.endsWith(".mdx") && !name.startsWith("_"))
+  return files
+    .list(PROJECTS_DIR)
+    .map((file) => file.slice(PROJECTS_DIR.length + 1))
+    .filter((name) => name.endsWith(".mdx") && !name.startsWith("_") && !name.includes("/"))
     .map((name) => {
       const slug = name.slice(0, -".mdx".length);
       const file = projectFile(slug);
       if (!SLUG_PATTERN.test(slug)) throw new ContentError(`${file}: file name must be a kebab-case slug.`);
-      const { data } = matter(repoFiles.read(file) ?? "");
+      const { data } = matter(files.read(file) ?? "");
       return { ...parseContent(ProjectFrontmatterSchema, data, file), slug };
     });
 }
@@ -68,8 +61,10 @@ function claimWarnings(text: string): boolean {
   try {
     fs.writeFileSync(path.join(/*turbopackIgnore: true*/ ROOT, WARNINGS_MARKER), text, { flag: "wx" });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    // Another worker printed them already; anything else is a real error.
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") return false;
+    throw error;
   }
 }
 
@@ -91,7 +86,7 @@ function withUiKeys(parsed: Record<string, string>): UiStrings {
 }
 
 const loadContent = cache(() => {
-  const flags = readContentFlags();
+  const flags = buildContentFlags();
   const snapshot = {
     site: parseContent(SiteConfigSchema, site, "content/site.ts"),
     profile: parseContent(ProfileSchema, profile, "content/profile.ts"),
@@ -99,7 +94,7 @@ const loadContent = cache(() => {
     skills: parseContent(SkillGroupListSchema, skills, "content/skills.ts"),
     projects: readProjects().sort((a, b) => a.order - b.order),
   };
-  report(collectContentIssues(snapshot, repoFiles, flags), flags.strict);
+  report(collectContentIssues(snapshot, files, flags), flags.strict);
   return { ...snapshot, ui: withUiKeys(snapshot.site.ui), visibleProjects: selectVisibleProjects(snapshot.projects, flags.showDrafts) };
 });
 
@@ -121,6 +116,6 @@ export function getDiagramImage({ diagram }: Project): DiagramImage | undefined 
   if (!diagram) return undefined;
   if (diagram.kind === "image") return diagram;
   const src = renderedDiagramPath(diagram.source);
-  const size = svgSize(repoFiles.read(`public${src}`) ?? "");
+  const size = svgSize(files.read(`public${src}`) ?? "");
   return size && { src, alt: diagram.alt, caption: diagram.caption, ...size };
 }

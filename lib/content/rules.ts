@@ -2,7 +2,8 @@ import { analyzeBody, bodyProblems } from "./body";
 import { avatarThumbPath, projectFile } from "./conventions";
 import { isDiagramCurrent, renderedDiagramPath } from "./diagrams";
 import type { ContentFlags } from "./flags";
-import { findPlaceholders, formatHits } from "./placeholders";
+import { formatHits } from "./placeholders";
+import { findShippedPlaceholders, type ContentTree } from "./scan";
 import type { Experience, Profile, Project, SiteConfig, SkillGroup } from "./types";
 import { selectVisibleProjects } from "./visibility";
 
@@ -15,9 +16,8 @@ export interface ContentSnapshot {
 }
 
 /** Repo-relative file access ("content/…", "public/…"), injected so the rules stay testable. */
-export interface ContentFiles {
+export interface ContentFiles extends ContentTree {
   exists(path: string): boolean;
-  read(path: string): string | undefined;
 }
 
 /** "error" always breaks the build; "launch" breaks it only under CONTENT_STRICT. */
@@ -25,8 +25,6 @@ export interface ContentIssue {
   severity: "error" | "launch";
   message: string;
 }
-
-export const CORE_CONTENT_FILES = ["content/site.ts", "content/profile.ts", "content/experience.ts", "content/skills.ts"];
 
 const FEATURED_RANGE = { min: 3, max: 4 };
 
@@ -118,13 +116,14 @@ function checkBodies(projects: Project[], files: ContentFiles): ContentIssue[] {
   );
 }
 
-/** Scans the global files plus published projects and their diagrams; drafts and `_` files never ship (PM decision). */
+/** Scans all of content/ except drafts, diagrams only drafts use and `_` files (PM decision; same set as content:check). */
 function checkPlaceholders(projects: Project[], files: ContentFiles): ContentIssue[] {
-  const shipped = selectVisibleProjects(projects, false).flatMap((p) => [
-    projectFile(p.slug),
-    ...(p.diagram?.kind === "mermaid" ? [p.diagram.source] : []),
-  ]);
-  const hits = [...CORE_CONTENT_FILES, ...shipped].flatMap((file) => findPlaceholders(files.read(file) ?? "", file));
+  const known = projects.map((p) => ({
+    file: projectFile(p.slug),
+    published: p.status === "published",
+    diagram: p.diagram?.kind === "mermaid" ? p.diagram.source : undefined,
+  }));
+  const hits = findShippedPlaceholders(files, known);
   return hits.length === 0
     ? []
     : [{ severity: "launch", message: `${hits.length} content placeholders left in published content:\n${formatHits(hits)}` }];

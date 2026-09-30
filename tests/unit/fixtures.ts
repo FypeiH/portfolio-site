@@ -38,7 +38,11 @@ export function project(overrides: Partial<Project> & { slug: string }): Project
 }
 
 export function memoryFiles(files: Record<string, string>): ContentFiles {
-  return { exists: (path) => path in files, read: (path) => files[path] };
+  return {
+    exists: (path) => path in files,
+    read: (path) => files[path],
+    list: (dir) => Object.keys(files).filter((path) => path.startsWith(`${dir}/`)),
+  };
 }
 
 const sentence = "This sentence has exactly ten words in it for counting. ";
