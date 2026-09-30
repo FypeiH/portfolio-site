@@ -5,6 +5,7 @@
  */
 import { spawnSync } from "node:child_process";
 
+// Same test as isVercelProduction() in lib/build-env.ts, the source of truth (a .ts module, not importable from this plain .mjs).
 const script = process.env.VERCEL_ENV === "production" ? "build:production" : "build";
 console.log(`build:vercel: VERCEL_ENV=${process.env.VERCEL_ENV ?? "(unset)"} → pnpm ${script}`);
 const result = spawnSync("pnpm", ["run", script], { stdio: "inherit", shell: process.platform === "win32" });

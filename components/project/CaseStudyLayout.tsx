@@ -1,6 +1,10 @@
 import { HomeLink } from "@/components/ui/HomeLink";
-import type { ReactNode } from "react";
+import type { MDXComponents } from "mdx/types";
+import type { ComponentType } from "react";
+import { Diagram } from "@/components/mdx/Diagram";
 import { Callout } from "@/components/ui/Callout";
+import type { DiagramImage } from "@/lib/content/diagrams";
+import { keyFactsPlacement } from "@/lib/content/diagram-slots";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Project } from "@/lib/content/types";
@@ -8,6 +12,7 @@ import { fill } from "@/lib/content/ui";
 import { formatYearMonth, toDateTime } from "@/lib/format";
 import { BackLink } from "./BackLink";
 import { DraftBadge } from "./DraftBadge";
+import { KeyFacts } from "./KeyFacts";
 import { ProjectMeta } from "./ProjectMeta";
 import { ProjectPager } from "./ProjectPager";
 
@@ -15,13 +20,29 @@ interface CaseStudyLayoutProps {
   project: Project;
   prev?: Project;
   next?: Project;
-  children: ReactNode;
+  /** The compiled MDX body; the layout supplies its `<Diagram />` component. */
+  body: ComponentType<{ components?: MDXComponents }>;
+  diagram?: DiagramImage;
+  /** `<Diagram />` uses in the body (getDiagramSlots), decided before rendering. */
+  diagramSlots: number;
 }
 
-export function CaseStudyLayout({ project, prev, next, children }: CaseStudyLayoutProps) {
+export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diagramSlots }: CaseStudyLayoutProps) {
   const ui = getUi();
   const impact = known(project.impact);
   const updatedAt = known(project.updatedAt);
+  // Spec §3.4: problem → solution → impact once for private/nda projects: after the diagram when the
+  // body has exactly one <Diagram />, otherwise right after the header (keyFactsPlacement).
+  const placement = keyFactsPlacement(project.visibility, diagramSlots);
+  const facts = (
+    <KeyFacts project={project} impact={impact} labels={{ impactLabel: ui.impactLabel, problemLabel: ui.problemLabel, solutionLabel: ui.solutionLabel }} />
+  );
+  const DiagramSlot = () => (
+    <>
+      {diagram && <Diagram image={diagram} label={ui.diagramLabel} />}
+      {placement === "diagram" && facts}
+    </>
+  );
 
   return (
     <article className="mx-auto max-w-3xl px-5 pb-20 pt-8 md:px-8">
@@ -45,7 +66,10 @@ export function CaseStudyLayout({ project, prev, next, children }: CaseStudyLayo
           </div>
         )}
       </div>
-      <div className="prose-case-study mt-4">{children}</div>
+      <div className="prose-case-study mt-4">
+        {placement === "header" && facts}
+        <Body components={{ Diagram: DiagramSlot }} />
+      </div>
       {updatedAt && (
         <p className="mt-12 text-sm text-muted">
           <time dateTime={toDateTime(updatedAt)}>{fill(ui.updatedOn, { date: formatYearMonth(updatedAt) })}</time>

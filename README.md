@@ -18,7 +18,18 @@ Everything visitors read lives in `content/` (`site.ts`, `profile.ts`, `experien
 
 Placeholders use the `{{TODO: ...}}` form. They are allowed in drafts but never rendered. The strict guard (`lib/content/scan.ts`) scans every file under `content/` except drafts, diagrams used only by drafts and files or folders whose names start with `_`. It decodes HTML entities and JS escapes, joins markers split across lines and flags `{{…}}`, `[TODO…]`, `TODO`, `TBD`, `FIXME` and `lorem ipsum`. Comments (TS/JS, YAML, MDX, Mermaid `%%`) are skipped because they never render. `pnpm content:check` uses the same file set and scan, so the two can't disagree.
 
-`pnpm build:production` then runs `scripts/check-output.ts` on what the build emitted (every prerendered HTML page, RSC payload, sitemap and robots). That second check also catches a placeholder that only appears at render time, for example one assembled in a JSX expression.
+Case rules: bare `TODO` counts only in uppercase, so "built a Todo app" is fine. `todo:` and `[todo…]` count in any case, and so do `TBD`, `FIXME` and `lorem ipsum`. Zero-width characters (U+200B–U+200D, U+2060, U+FEFF) are removed before scanning, and so are MDX string expressions: `{"{"}{"{"}x{"}"}{"}"}` reads as `{{x}}`.
+
+Two exceptions keep legitimate text from failing the build:
+
+- **`{{ … }}` inside code.** Inside an inline code span or a fenced code block of an MDX body, `{{ … }}` is allowed (for example an Angular `{{ user.name }}`) unless it looks like a placeholder: its inner text contains a marker (`{{TODO: …}}`, `{{ tbd }}`) or is an all-caps slot (`{{PROJECT_NAME}}`). Outside code, `{{ … }}` always counts.
+- **`placeholder-ok` opt-out.** Write `placeholder-ok` inside a comment: `{/* placeholder-ok */}` in MDX, `# placeholder-ok` in frontmatter, `// placeholder-ok` in `.ts`, `%% placeholder-ok` in Mermaid. A comment that shares its line with content exempts that line. A comment alone on its line exempts the block below it, up to the next blank line; a fenced code block below it is exempted whole. Comments never render, so readers don't see the marker.
+
+`pnpm build:production` then runs `scripts/check-output.ts` on what the build emitted (every prerendered HTML page, RSC payload, sitemap and robots). That second check also catches a placeholder that only appears at render time, for example one assembled in a JSX expression. It uses the same markers and case rules, and removes the seams React leaves between adjacent strings (`<!-- -->` in HTML, `"{","{"` in the RSC payload). The only marker texts it allows are the exact ones the source scan exempted: a `{{ user.name }}` in code, or a marker on a `placeholder-ok` line. So once one `TBD` is exempted, that exact text is allowed anywhere else it renders.
+
+## Case-study labels
+
+`site.ui.problemLabel` and `site.ui.solutionLabel` are optional. When set, they label the problem and solution in the problem → solution → impact block of private/nda case studies, styled like the Impact label. When absent, both show as plain paragraphs. That block is rendered once: right after the diagram when the body has exactly one `<Diagram />`, otherwise right after the header.
 
 ## Environment
 

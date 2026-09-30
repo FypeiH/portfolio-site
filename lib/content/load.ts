@@ -10,6 +10,7 @@ import { profile } from "@/content/profile";
 import { site } from "@/content/site";
 import { skills } from "@/content/skills";
 import { PROJECTS_DIR, projectFile, SLUG_PATTERN } from "./conventions";
+import { countDiagramSlots } from "./diagram-slots";
 import { renderedDiagramPath, svgSize, type DiagramImage } from "./diagrams";
 import { buildContentFlags } from "./flags";
 import { repoFiles } from "./repo-files";
@@ -79,10 +80,10 @@ function report(issues: ContentIssue[], strict: boolean): void {
 }
 
 /** Narrows the validated record to UiStrings after checking that every declared key survived parsing. */
-function withUiKeys(parsed: Record<string, string>): UiStrings {
+function withUiKeys(parsed: Record<string, string | undefined>): UiStrings {
   const missing = Object.keys(site.ui).filter((key) => typeof parsed[key] !== "string");
   if (missing.length > 0) throw new ContentError(`content/site.ts: ui is missing ${missing.join(", ")}.`);
-  return parsed as UiStrings;
+  return parsed as unknown as UiStrings;
 }
 
 const loadContent = cache(() => {
@@ -111,6 +112,9 @@ export const getFeaturedProjects = () => selectFeatured(getProjects());
 export const getProjectBySlug = (slug: string) => getProjects().find((p) => p.slug === slug);
 export const getAdjacentProjects = (slug: string) => findAdjacent(getProjects(), slug);
 export const getProjectTitles = (): ReadonlyMap<string, string> => new Map(getProjects().map((p) => [p.slug, p.title]));
+
+/** How many `<Diagram />` slots the case study body has (KeyFacts placement, spec §3.4). */
+export const getDiagramSlots = (slug: string) => countDiagramSlots(matter(files.read(projectFile(slug)) ?? "").content);
 
 export function getDiagramImage({ diagram }: Project): DiagramImage | undefined {
   if (!diagram) return undefined;
