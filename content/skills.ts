@@ -8,14 +8,27 @@ export const skills = [
     id: "backend",
     label: "Backend",
     items: [
-      { name: "C#", projects: ["email-scraper", "takefreetours"] },
-      { name: ".NET", projects: ["email-scraper", "takefreetours"] },
+      { name: "C# / .NET", projects: ["email-scraper", "takefreetours"] }, // merged (rev. 6) to make room for the AI group within 25
       { name: "Python", projects: ["fidu-bot"] },
       { name: "Node.js" },
       { name: "REST APIs", projects: ["takefreetours"] },
-      { name: "SQL" },
+      { name: "SQL / SQL Server", projects: ["email-scraper"] },
       { name: "PHP" },
       { name: "PayPal API" }, // Altyra (law firm website); experience only, no case study
+    ],
+  },
+  {
+    // Evidence (rev. 6, "Outras respostas do Filipe"): degree AI course, Hugging Face AI Agents Course certificate
+    // (full certification in progress) and the agent workflow that built this site. Keep notes exact; no overclaiming.
+    id: "ai-ml",
+    label: "AI",
+    items: [
+      {
+        name: "AI agents",
+        note: "Hugging Face AI Agents Course certificate (full certification in progress); agent workflow behind this site",
+        projects: ["portfolio-site"],
+      },
+      { name: "AI fundamentals", note: "Theoretical Artificial Intelligence course in my degree" },
     ],
   },
   {
@@ -28,8 +41,7 @@ export const skills = [
       { name: "React" },
       { name: "HTML5 / CSS3" },
       { name: "Tailwind CSS", projects: ["dynamic-cv"] },
-      { name: "Angular Material", projects: ["dynamic-cv"] },
-      { name: "Syncfusion" }, // Altyra internship
+      { name: "Angular Material / Syncfusion", projects: ["dynamic-cv"] }, // UI component libraries; Syncfusion from the Altyra internship. Merged (rev. 6)
       // "WordPress / Elementor" removed to stay within 25 items (spec); still shown in the Gigantic experience stack.
     ],
   },
@@ -53,6 +65,4 @@ export const skills = [
       { name: "Gmail API", projects: ["email-scraper"] },
     ],
   },
-  // { id: "ai-ml", label: "AI / ML", items: [] },
-  // Optional (not a build blocker): uncomment only with real AI/ML evidence from Filipe (spec Q-IA).
 ] satisfies SkillGroup[];

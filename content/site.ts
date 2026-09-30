@@ -7,7 +7,7 @@
 import type { SiteConfig } from "@/lib/content/types";
 
 export const site = {
-  url: "{{TODO: canonical site URL, custom domain or *.vercel.app (spec Q3)}}",
+  // Canonical URL is not content: lib/site-url.ts reads NEXT_PUBLIC_SITE_URL, then VERCEL_PROJECT_PRODUCTION_URL (PM decision).
   locale: "en",
 
   // 5 items: "Demo" is removed because the AI demo is out of v1 (PM decision; spec §1.2 allows it when demoSection = false).
@@ -22,7 +22,7 @@ export const site = {
   // AI demo is Phase B (PM decision). Section not rendered in v1.
   features: { demoSection: false },
 
-  repoUrl: "{{TODO: public URL of this site's repo, or delete the line if the repo stays private (spec Q8)}}",
+  repoUrl: "https://github.com/FypeiH/portfolio-site", // TODO (non-blocking): confirm once the repo is created
   builtWith: ["Next.js", "Tailwind CSS"],
 
   // Phase B only. Left empty on purpose: no copy for the demo in v1 (PM decision).

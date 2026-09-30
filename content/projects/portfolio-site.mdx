@@ -3,14 +3,14 @@ title: "Portfolio website"
 summary: "Statically generated Next.js site with typed, build-validated content, MDX case studies and CSS scroll-driven animations."
 problem: "Recruiters scan a portfolio in seconds, often on a phone; tech leads open the projects and the code. One site has to serve both, fast and without friction."
 solution: "A single static page with anchor navigation plus one MDX page per case study. Content is typed and validated with zod at build time; motion is CSS-first."
-visibility: "public" # only if the repo is public (spec Q8). If it stays private: set "private", delete links.repo and add `impact` (40–220 chars).
+visibility: "public" # repo public (rev. 5, Q8)
 organization: "Personal project"
-role: "{{TODO: individual | team. Confirm how the site was built and who did what; if team, add roleNote (≤ 100 chars)}}"
+role: "individual"
 period: { start: "2026-09", end: "present" } # research and architecture are dated Sept 2026; adjust to the real dates
 stack: ["Next.js", "TypeScript", "Tailwind CSS", "MDX", "Zod", "Mermaid", "Motion", "Vercel"]
-metrics: [] # add only real, measured numbers after launch (e.g. Lighthouse on the production URL), with context "production"
+metrics: [] # v1: no Results/"What I'd do differently" sections (deferred to post-launch). Add only real, measured numbers after launch (e.g. Lighthouse on the production URL), with context "production"
 links:
-  repo: "{{TODO: public repo URL of this site (spec Q8)}}"
+  repo: "https://github.com/FypeiH/portfolio-site" # TODO (non-blocking): confirm once the repo is created
 diagram:
   kind: "mermaid"
   source: "content/diagrams/portfolio-site.mmd"
@@ -18,7 +18,7 @@ diagram:
   caption: "Content lives in TypeScript files and MDX case studies. At build time zod validates every field and cross-reference, Mermaid diagrams are checked against their pre-rendered SVGs, and Next.js generates static pages that Vercel serves to the browser."
 featured: true
 order: 3
-status: "draft" # publish after launch, once the TODOs are filled
+status: "published"
 updatedAt: "2026-09"
 seo:
   description: "Case study: how this portfolio is built. Next.js static generation, zod-validated content, MDX case studies and accessible, CSS-first scroll animation."
@@ -55,11 +55,4 @@ The site had to answer "who, what and what next" in under 10 seconds, put projec
 - **A visibility model for projects.** Each project is public, private or under NDA. Private projects can't link a repo and must include an architecture diagram and a written impact, enforced by the schema rather than by memory.
 - **Few client components.** Most of the site renders on the server. Adding a client component needs a reason in the pull request.
 - **A plain, clickable email.** No obfuscation and no contact form: one click to email, one click to copy the address.
-
-## Results
-
-`{{TODO: after launch, add real results only, e.g. Lighthouse scores and Core Web Vitals measured on the production URL, with the date. No numbers until they are measured}}`
-
-## What I'd do differently
-
-`{{TODO: Filipe's lessons after building and launching the site, 2–4 bullets}}`
+- **Built with an AI-agent workflow.** I set up and orchestrated a workflow where AI agents handled market analysis, architecture, copywriting, implementation, code audit and QA. I directed the work, reviewed what each agent produced and made the decisions.

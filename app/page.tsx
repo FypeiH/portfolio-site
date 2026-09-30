@@ -6,9 +6,9 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { ProjectsSection } from "@/components/sections/ProjectsSection";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { JsonLdScript } from "@/components/ui/JsonLdScript";
-import { getExperience, getFeaturedProjects, getProfile, getProjectTitles, getSite, getSkills } from "@/lib/content/load";
+import { getExperience, getFeaturedProjects, getProfile, getProjectTitles, getSkills } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
-import { resolveSiteUrl } from "@/lib/env";
+import { siteUrl } from "@/lib/site-url";
 import { personJsonLd } from "@/lib/seo";
 
 export default function HomePage() {
@@ -27,7 +27,7 @@ export default function HomePage() {
       <AboutSection profile={profile} />
       <ContactSection email={profile.email} links={profile.links} cv={profile.cv} />
       <div id="page-end" aria-hidden="true" />
-      <JsonLdScript data={personJsonLd(profile, skills, resolveSiteUrl(getSite().url))} />
+      <JsonLdScript data={personJsonLd(profile, skills, siteUrl())} />
     </>
   );
 }

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { Diagram } from "@/components/mdx/Diagram";
 import { CaseStudyLayout } from "@/components/project/CaseStudyLayout";
 import { JsonLdScript } from "@/components/ui/JsonLdScript";
-import { getAdjacentProjects, getDiagramImage, getProfile, getProjectBySlug, getProjects, getSite, getUi } from "@/lib/content/load";
-import { resolveSiteUrl } from "@/lib/env";
+import { getAdjacentProjects, getDiagramImage, getProfile, getProjectBySlug, getProjects, getUi } from "@/lib/content/load";
+import { siteUrl } from "@/lib/site-url";
 import { projectJsonLd } from "@/lib/seo";
 
 type Params = Promise<{ slug: string }>;
@@ -42,7 +42,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
       <CaseStudyLayout project={project} prev={prev} next={next}>
         <Body components={{ Diagram: () => (diagram ? <Diagram image={diagram} label={diagramLabel} /> : null) }} />
       </CaseStudyLayout>
-      <JsonLdScript data={projectJsonLd(project, getProfile().name, resolveSiteUrl(getSite().url))} />
+      <JsonLdScript data={projectJsonLd(project, getProfile().name, siteUrl())} />
     </>
   );
 }

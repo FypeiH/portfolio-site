@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { ProjectFrontmatterSchema } from "@/lib/content/schema";
 import { privateProject, publicProject } from "./fixtures";
 
+const omit = <T extends object>(data: T, key: keyof T) => Object.fromEntries(Object.entries(data).filter(([k]) => k !== key));
+
 const issues = (data: unknown) => {
   const result = ProjectFrontmatterSchema.safeParse(data);
   return result.success ? [] : result.error.issues.map((issue) => issue.message);
@@ -19,13 +21,11 @@ describe("ProjectFrontmatterSchema visibility rules (spec §3.3)", () => {
   });
 
   it("V3: rejects a private project without a diagram", () => {
-    const { diagram: _diagram, ...withoutDiagram } = privateProject;
-    expect(issues(withoutDiagram)).toContain("V3: a project without a public repo needs an architecture diagram");
+    expect(issues(omit(privateProject, "diagram"))).toContain("V3: a project without a public repo needs an architecture diagram");
   });
 
   it("V3: rejects a private project without an impact", () => {
-    const { impact: _impact, ...withoutImpact } = privateProject;
-    expect(issues(withoutImpact)).toContain("V3: a project without a public repo needs an impact description");
+    expect(issues(omit(privateProject, "impact"))).toContain("V3: a project without a public repo needs an impact description");
   });
 
   it("V4: rejects an nda project without a confidentiality note", () => {

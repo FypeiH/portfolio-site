@@ -34,16 +34,32 @@ describe("collectContentIssues", () => {
     expect(issues).toContainEqual({ severity: "launch", message: expect.stringContaining("1 featured projects are published") });
   });
 
-  it("scans placeholders only in shipped content: drafts are skipped unless previewed", () => {
+  it("scans placeholders only in published projects, never in drafts, even in preview", () => {
     const files = cleanFiles(["a", "b", "c"], { "content/projects/email-scraper.mdx": "`{{TODO: x}}`" });
     const snapshot = { ...base, projects: [...published, emailScraper] };
-    expect(collectContentIssues(snapshot, files, flags).some((i) => i.message.includes("placeholders"))).toBe(false);
-    expect(collectContentIssues(snapshot, files, { ...flags, showDrafts: true }).some((i) => i.message.includes("placeholders"))).toBe(true);
+    for (const showDrafts of [false, true]) {
+      expect(collectContentIssues(snapshot, files, { ...flags, showDrafts }).some((i) => i.message.includes("placeholders"))).toBe(false);
+    }
   });
 
-  it("applies the short-body rule to non-featured previewed projects", () => {
-    const files = cleanFiles(["a", "b", "c"], { "content/projects/email-scraper.mdx": mdxBody(3, 90) });
-    const issues = collectContentIssues({ ...base, projects: [...published, emailScraper] }, files, { ...flags, showDrafts: true });
+  it("flags placeholders in published projects, their diagrams and the global files", () => {
+    const diagram = { kind: "mermaid" as const, source: "content/diagrams/a.mmd", alt: "x".repeat(20), caption: "y".repeat(40) };
+    const withDiagram = [project({ slug: "a", order: 1, diagram }), ...published.slice(1)];
+    const files = cleanFiles(["a", "b", "c"], {
+      "content/diagrams/a.mmd": 'A["{{TODO: tech}}"]',
+      "public/diagrams/a.svg": `${hashComment('A["{{TODO: tech}}"]')}<svg/>`,
+      "content/profile.ts": 'tagline: "{{TODO: tagline}}"',
+    });
+    const [issue] = collectContentIssues({ ...base, projects: [...withDiagram, emailScraper] }, files, flags);
+    expect(issue?.message).toContain("2 content placeholders");
+    expect(issue?.message).toContain("content/diagrams/a.mmd:1");
+    expect(issue?.message).toContain("content/profile.ts:1");
+  });
+
+  it("applies the short-body rule to published non-featured projects", () => {
+    const shortProject = project({ slug: "short", featured: false, order: 8 });
+    const files = cleanFiles(["a", "b", "c"], { "content/projects/short.mdx": mdxBody(3, 90) });
+    const issues = collectContentIssues({ ...base, projects: [...published, shortProject, emailScraper] }, files, flags);
     expect(issues.filter((i) => i.message.includes("Case study"))).toEqual([]);
   });
 

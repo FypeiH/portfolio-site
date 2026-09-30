@@ -8,13 +8,13 @@ solution: "A scheduled .NET job reads the inbox via the Gmail API, detects each 
 impact: "It worked as intended and drastically reduced the manual entry of tour visitors from booking confirmation emails."
 visibility: "private" # kept private (coordinator). Real names authorized by Filipe; no code or screenshots (confidentiality agreement)
 organization: "Altyra Solutions"
-experienceId: "altyra" # post-internship entry; see the timing TODO in experience.ts
+experienceId: "altyra" # spec allows one experience: linked to the hired period, where it continued; the internship start is stated in the body and in altyra-internship.projects
 confidentialityNote: "Proprietary code under a confidentiality agreement with Altyra Solutions; no source code or screenshots are shared."
 role: "team" # source: took over a scaffold, did ~95% alone (self-estimate), occasional help from a small team -> "team" + roleNote, no percentage
 roleNote: "Took over a scaffolded project and built almost all of it myself, with occasional team support."
-period: { start: "2024-03", end: "2025-02" } # Altyra employment dates; exact project dates not in the source
+period: { start: "2024-03", end: "2025-02" } # started during the internship (Mar–Aug 2024; exact month not in the source, so the internship start is used), continued until Feb 2025
 stack: ["C#", ".NET", "Gmail API", "SQL Server"]
-metrics: [] # the source states there are no numeric metrics
+metrics: [] # the source states there are no numeric metrics. v1: no "What I'd do differently" section
 links: {} # V2: no repo for private projects
 diagram:
   kind: "mermaid"
@@ -23,7 +23,7 @@ diagram:
   caption: "On a schedule, a C#/.NET job reads booking confirmations from Gmail via the Gmail API, identifies each platform template, extracts and validates the visitor data, checks SQL Server for duplicates and inserts new records. Unknown templates and invalid data raise an alert with the Gmail message ID in the management app."
 featured: true
 order: 1
-status: "draft" # publish after the TODOs below
+status: "published"
 updatedAt: "2026-09"
 seo:
   description: "Case study: a scheduled C#/.NET job that reads multi-platform booking emails via the Gmail API, validates and deduplicates them into SQL Server."
@@ -35,9 +35,7 @@ TakeFreeTours runs tours, and its visitors book them through several booking pla
 
 Before this project, the visitors for each tour were entered into the database by hand, one confirmation email at a time. It was slow, repetitive work, and it had to keep pace with every new booking.
 
-I took over the project once it had been scaffolded and built almost all of it myself, from the Gmail integration to parsing and data handling, with occasional help from a small team busy with other clients.
-
-`{{TODO: optional, 1 sentence of extra context if Filipe can share it: roughly how many platforms, who did the manual entry. No invented numbers}}`
+I started the project during my internship and continued it after I was hired, until February 2025. It had already been scaffolded when I took it over, and I built almost all of it myself, from the Gmail integration to parsing and data handling, with occasional help from a small team busy with other clients.
 
 ## Constraints
 
@@ -62,7 +60,7 @@ The scraper is a scheduled C#/.NET job that writes to SQL Server. Each run follo
 
 ## Decisions & trade-offs
 
-- **Scheduled runs.** The job runs on a schedule instead of processing each email the moment it arrives. It's simpler to operate, at the cost of new bookings appearing on the next run rather than instantly.
+- **Scheduled runs.** The job runs on a schedule rather than reacting to each email as it arrives. The trade-off: new bookings appear after the next run, not instantly.
 - **Identify the template first, then parse.** Each platform gets its own extraction rules instead of one parser trying to handle every format. The trade-off: when a platform changes its email layout, its template has to be updated.
 - **Validate and deduplicate before inserting.** Bad data and repeated bookings are stopped by validation and by queries against the database before anything is written, instead of being cleaned up afterwards.
 - **Alert instead of guess.** When the scraper can't process an email, it doesn't skip it or insert partial data. It sends an alert with the Gmail message ID to the management app, so the exact email can be found and handled by hand.
@@ -70,9 +68,3 @@ The scraper is a scheduled C#/.NET job that writes to SQL Server. Each run follo
 ## Results
 
 The scraper worked as intended and drastically reduced the manual entry of tour visitors. Manual work was left for the exceptions the alerts flag. No numeric metrics were tracked, so there are no figures to report.
-
-`{{TODO: optional qualitative detail, e.g. whether it was still running when Filipe left. Only if true}}`
-
-## What I'd do differently
-
-`{{TODO: Filipe's lessons, 2–4 bullets (e.g. tests with sample emails per platform), only if he agrees}}`

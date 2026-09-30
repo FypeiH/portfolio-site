@@ -26,17 +26,17 @@ export const experience = [
     id: "altyra",
     company: "Altyra Solutions",
     role: "Fullstack Developer",
-    // @ts-expect-error TODO placeholder: spec §3.3 tolerates an exact placeholder in enum fields at runtime. Delete this comment when the value is filled.
-    employmentType: "{{TODO: contract type after the internship: full-time | part-time | freelance (not confirmed in the source)}}",
+    // Filipe: "contratado" (hired) after the internship. Spec enum has no neutral "employee" value; "full-time" per coordinator (rev. 5).
+    employmentType: "full-time",
     location: "Lisbon",
-    start: "2024-09", // internship ended Aug 2024; the source says he then stayed on until Feb 2025
+    start: "2024-09", // internship ended Aug 2024; hired afterwards, until Feb 2025
     end: "2025-02",
-    summary: "Stayed on after my internship, on flexible hours alongside the start of my degree, building web and mobile features for client projects.",
-    // {{TODO: confirm the Email Scraper was built after the internship (Sep 2024 – Feb 2025). If it was during the internship, move this bullet, the project link and the Gmail API tag to "altyra-internship" and set experienceId in email-scraper.mdx}}
+    summary: "Hired after my internship, on flexible hours alongside the start of my degree, building web and mobile features for client projects.",
+    // Email Scraper: started during the internship, continued and finished here (source, rev. 5). Also listed in altyra-internship.projects.
     highlights: [
-      "Built an email scraper for TakeFreeTours (C#, Gmail API) that turns booking confirmations from several platforms into validated visitor records, drastically reducing manual entry.",
+      "Continued the scheduled email scraper for TakeFreeTours I started as an intern (C#, Gmail API, SQL Server) that turns multi-platform booking confirmations into validated, deduplicated visitor records.",
     ],
-    stack: ["C#", ".NET", "Gmail API"],
+    stack: ["C#", ".NET", "Gmail API", "SQL Server"],
     projects: ["email-scraper"],
   },
   {
@@ -55,7 +55,7 @@ export const experience = [
       "Integrated PayPal payments into the Ramos Correia & Associados law firm website (Angular, .NET), now live in production.",
     ],
     stack: ["C#", ".NET", "Angular", "TypeScript", ".NET MAUI", "Blazor", "SQL", "Tailwind CSS", "Angular Material", "Syncfusion", "PayPal API", "Azure DevOps"],
-    projects: ["takefreetours", "benched"],
+    projects: ["takefreetours", "benched", "email-scraper"],
   },
   {
     id: "ocr",

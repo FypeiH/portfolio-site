@@ -36,8 +36,8 @@ export function collectContentIssues(content: ContentSnapshot, files: ContentFil
     ...checkFeatured(content.projects),
     ...checkPublicFiles(content, files),
     ...checkDiagrams(content.projects, files),
-    ...checkPlaceholders(content.projects, files, flags),
-    ...checkBodies(content.projects, files, flags),
+    ...checkPlaceholders(content.projects, files),
+    ...checkBodies(content.projects, files),
   ];
 }
 
@@ -105,8 +105,9 @@ function checkDiagrams(projects: Project[], files: ContentFiles): ContentIssue[]
   });
 }
 
-function checkBodies(projects: Project[], files: ContentFiles, flags: ContentFlags): ContentIssue[] {
-  return selectVisibleProjects(projects, flags.showDrafts).flatMap((p) =>
+/** Body format of published case studies (featured: full format; others: short format). */
+function checkBodies(projects: Project[], files: ContentFiles): ContentIssue[] {
+  return selectVisibleProjects(projects, false).flatMap((p) =>
     bodyProblems(analyzeBody(files.read(projectFile(p.slug)) ?? ""), p.featured).map((problem) => ({
       severity: "launch" as const,
       message: `Case study "${p.slug}": ${problem}.`,
@@ -114,15 +115,16 @@ function checkBodies(projects: Project[], files: ContentFiles, flags: ContentFla
   );
 }
 
-function checkPlaceholders(projects: Project[], files: ContentFiles, flags: ContentFlags): ContentIssue[] {
-  const shipped = selectVisibleProjects(projects, flags.showDrafts).flatMap((p) => [
+/** Scans the global files plus published projects and their diagrams; drafts and `_` files never ship (PM decision). */
+function checkPlaceholders(projects: Project[], files: ContentFiles): ContentIssue[] {
+  const shipped = selectVisibleProjects(projects, false).flatMap((p) => [
     projectFile(p.slug),
     ...(p.diagram?.kind === "mermaid" ? [p.diagram.source] : []),
   ]);
   const hits = [...CORE_CONTENT_FILES, ...shipped].flatMap((file) => findPlaceholders(files.read(file) ?? "", file));
   return hits.length === 0
     ? []
-    : [{ severity: "launch", message: `${hits.length} content placeholders left in shipped content:\n${formatHits(hits)}` }];
+    : [{ severity: "launch", message: `${hits.length} content placeholders left in published content:\n${formatHits(hits)}` }];
 }
 
 const projectFile = (slug: string) => `content/projects/${slug}.mdx`;

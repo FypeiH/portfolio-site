@@ -1,14 +1,14 @@
 ---
 title: "Crypto Trading Bot (FIDU)"
 summary: "Python bot that trades SOL/USDT on Binance Testnet from MACD, RSI and Stochastic RSI signals, with built-in risk limits."
-problem: "{{TODO: why Filipe built it, in one sentence (≤ 200 chars). E.g. what he wanted to learn or automate (Q-FIDU)}}"
+problem: "A friend who traded on Binance wanted his trading automated so he wouldn't miss opportunities."
 solution: "A loop aligned to 5-minute candle closes fetches market data via CCXT, computes indicators with TA-Lib and places market orders under buy and partial-sell rules."
 visibility: "public"
 organization: "Personal project"
 role: "individual"
 period: { start: "2025-07", end: "2025-08" }
 stack: ["Python", "CCXT", "TA-Lib", "NumPy", "python-decouple", "PyInstaller"]
-metrics: [] # no backtest, so no metrics. Never show unverified profits.
+metrics: [] # no backtest, so no metrics. Never show unverified profits. v1: no Results / "What I'd do differently" sections (no source data)
 links:
   repo: "https://github.com/FypeiH/fidu-bot"
 diagram:
@@ -18,7 +18,7 @@ diagram:
   caption: "At each 5-minute candle close the bot syncs its clock with Binance, fetches the latest 100 candles, computes MACD, RSI, Stochastic RSI, EMA 9 and a volume average, then buys (up to 3 entries), sells partially or sells everything."
 featured: true
 order: 2
-status: "draft" # switch to "published" once the TODOs below are filled
+status: "published"
 updatedAt: "2025-08"
 disclaimer: "Educational project. Runs against Binance Testnet (sandbox mode); not financial advice. AGPL-3.0."
 seo:
@@ -27,16 +27,16 @@ seo:
 
 ## Context & problem
 
-I built FIDU to run market analysis and execute buy and sell orders automatically, based on my own trading logic. It trades a single pair, SOL/USDT, and runs against Binance Testnet, so no real money is involved.
+A friend who traded on Binance asked me to automate his trading so he wouldn't miss opportunities. I gathered his requirements and built the automation around the calculations he suggested for the crypto he chose, SOL/USDT.
 
-`{{TODO: 2–4 sentences on the motivation. What did Filipe want to learn or prove (e.g. working with a real exchange API, scheduling, indicator maths)? Why crypto and why this pair? (Q-FIDU)}}`
+The bot runs market analysis and executes buy and sell orders on its own, against Binance Testnet, so no real money is involved. Every buy and sell parameter is set manually by the user, not hard-wired into the strategy.
 
 ## Constraints
 
+- **Someone else's strategy.** The trading logic had to follow my friend's calculations, with buy and sell parameters the user sets.
 - **Exchange API limits and clock drift.** Exchange APIs reject requests with a skewed timestamp and limit how often a client can call. The bot enables CCXT's built-in rate limiting and re-syncs with Binance server time before each call.
 - **Safety first.** Sandbox (Testnet) mode is switched on in code, so a misconfigured run can't touch a real account.
 - **Secrets out of the code.** API keys live in a `.env` file, including when the bot runs as a packaged Windows executable.
-- `{{TODO: any other constraint Filipe worked under (time, budget, hardware, where it runs) or delete this line (Q-FIDU)}}`
 
 ## Architecture
 
@@ -54,15 +54,7 @@ Configuration and keys are loaded with python-decouple, and PyInstaller packages
 
 ## Decisions & trade-offs
 
+- **Requirements first.** I started by gathering my friend's requirements and turning his calculations into explicit buy and sell rules, instead of designing a strategy of my own.
+- **Manual, configurable parameters.** All buy and sell parameters are set by the user. He can tune the strategy without touching the code. The trade-off: the bot is only as good as the values it's given.
 - **Candle-aligned scheduling instead of fixed polling.** Every evaluation runs on a closed candle, so the signals don't change halfway through a candle. The cost is latency: the bot reacts at most once per 5-minute candle.
-- **Explicit risk limits in code.** A maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.
-- **CCXT instead of a Binance-only SDK.** `{{TODO: confirm why CCXT was chosen (e.g. unified API, built-in rate limiting) and what it cost, or delete this line}}`
-- `{{TODO: one more decision with the alternative Filipe rejected and why (Q-FIDU)}}`
-
-## Results
-
-`{{TODO: honest, qualitative results on Testnet (e.g. how long it ran, what worked, what broke). No profit/loss figures and no numbers unless measured (Q-FIDU)}}`
-
-## What I'd do differently
-
-`{{TODO: Filipe's lessons in 2–4 bullets. Spec suggestions to consider, only if he agrees: align the README with the code (partial-sell percentage and rule table), add tests or a simple backtest before touching real markets (Q-FIDU)}}`
+- **Explicit risk rules.** A maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.

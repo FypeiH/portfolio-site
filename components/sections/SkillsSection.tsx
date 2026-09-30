@@ -27,17 +27,20 @@ export function SkillsSection({ groups, projectTitles }: SkillsSectionProps) {
               {group.items.map((item) => {
                 const slug = item.projects?.find((candidate) => projectTitles.has(candidate));
                 const title = slug && projectTitles.get(slug);
+                const chip =
+                  slug && title ? (
+                    <Link href={`/projects/${slug}`} title={fill(ui.skillSeeIn, { project: title })} className={`${chipClass} gap-1 text-accent hover:border-accent`}>
+                      {item.name}
+                      <span aria-hidden="true">↗</span>
+                      <span className="sr-only">, {fill(ui.skillSeeIn, { project: title })}</span>
+                    </Link>
+                  ) : (
+                    <span className={chipClass}>{item.name}</span>
+                  );
                 return (
-                  <li key={item.name}>
-                    {slug && title ? (
-                      <Link href={`/projects/${slug}`} title={fill(ui.skillSeeIn, { project: title })} className={`${chipClass} gap-1 text-accent hover:border-accent`}>
-                        {item.name}
-                        <span aria-hidden="true">↗</span>
-                        <span className="sr-only">, {fill(ui.skillSeeIn, { project: title })}</span>
-                      </Link>
-                    ) : (
-                      <span className={chipClass}>{item.name}</span>
-                    )}
+                  <li key={item.name} className={item.note ? "w-full" : undefined}>
+                    {chip}
+                    {item.note && <p className="mt-1 text-xs text-muted">{item.note}</p>}
                   </li>
                 );
               })}

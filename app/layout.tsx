@@ -7,8 +7,9 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { RouteTracker } from "@/components/motion/RouteTracker";
-import { getProfile, getSite, getUi } from "@/lib/content/load";
-import { isProductionDeployment, resolveSiteUrl } from "@/lib/env";
+import { getProfile, getUi } from "@/lib/content/load";
+import { isProductionDeployment } from "@/lib/env";
+import { siteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
@@ -20,7 +21,7 @@ export function generateMetadata(): Metadata {
   const { seo, name } = getProfile();
   const indexable = isProductionDeployment();
   return {
-    metadataBase: resolveSiteUrl(getSite().url),
+    metadataBase: siteUrl(),
     title: { default: seo.title, template: `%s · ${name}` },
     description: seo.description,
     alternates: { canonical: "/" },

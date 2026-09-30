@@ -37,10 +37,12 @@ describe("current content (Will, rev. 2)", () => {
     }
   });
 
-  it("is not launch-ready yet: the production guard reports blockers", () => {
+  it("frozen content (rev. 6): 3 featured published and no placeholders in published content", () => {
+    const published = projects.filter((p) => p.status === "published");
+    expect(published.filter((p) => p.featured).map((p) => p.slug).sort()).toEqual(["email-scraper", "fidu-bot", "portfolio-site"]);
+    expect(projects.find((p) => p.slug === "dynamic-cv")?.featured).toBe(false);
     const messages = collectContentIssues(snapshot, files, { strict: true, showDrafts: false }).map((i) => i.message);
-    expect(messages).toContainEqual(expect.stringContaining("0 featured projects are published"));
-    expect(messages).toContainEqual(expect.stringContaining("content placeholders left"));
+    expect(messages.filter((m) => m.includes("placeholders") || m.includes("featured projects are published"))).toEqual([]);
   });
 
   it("resolves every project-to-experience reference (V7), including the altyra-internship split", () => {

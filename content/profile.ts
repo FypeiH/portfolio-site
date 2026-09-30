@@ -23,14 +23,12 @@ export const profile = {
   availability: { status: "open", label: "Open to software engineering roles" },
 
   lookingFor: {
-    // 1st from the CV; 2nd and 3rd from the portfolio focus (PM title). Confirm with Filipe (spec Q-PROCURA).
-    roles: ["Software Engineer", "Backend Engineer", "AI Engineer"],
-    areas: ["{{TODO: focus area 1, e.g. an industry or problem space (Q-PROCURA)}}"], // 0–5 × ≤ 40; delete the line if none
-    // @ts-expect-error TODO placeholder: spec §3.3 tolerates an exact placeholder in enum fields at runtime. Delete this comment when the value is filled.
-    workModes: ["{{TODO: remote | hybrid | onsite (one or more) (Q-PROCURA)}}"],
-    locations: ["{{TODO: where Filipe wants to work, e.g. city or 'Remote (EU)' (Q-PROCURA)}}"],
-    startDate: "{{TODO: earliest start date, or delete this line (Q-PROCURA)}}",
-    note: "I want to keep growing through challenging projects, continuous learning and long-term professional development.", // from the CV
+    // Source: altyra-projects.md "Outras respostas do Filipe" (30/09/2026). Target roles confirmed by Filipe.
+    // areas and startDate are optional and not given in the source, so they're omitted.
+    roles: ["Backend Engineer", "AI Engineer"],
+    workModes: ["remote", "hybrid"], // remote first: Filipe prefers remote
+    locations: ["Remote (EU)", "Lisbon (hybrid)"],
+    note: "I prefer remote: from any EU country where I'm legally able to work, or hybrid in Lisbon.",
   },
 
   // 2–4 paragraphs × ≤ 350 chars. Facts from the CV.
@@ -38,11 +36,12 @@ export const profile = {
     "I have a Bachelor's Degree in Computer Engineering from ISTEC Lisbon and hands-on experience building web applications, REST APIs, internal tools and client-facing digital products.",
     "I've worked across the stack with C#, .NET, Angular, TypeScript, SQL and Azure, and I also use Python, PHP and modern web technologies.",
     "Before the degree, I completed a Higher Technical Degree (CTeSP) in Mobile App Development (Java, React Native) and an IT Systems Management & Programming course at ESGC, where I received a Merit Award and full marks on my final project.",
-    "{{TODO: optional personal note, one or two sentences, ≤ 350 chars. Delete this line if not wanted}}",
+    // AI evidence (source: "Outras respostas do Filipe"). The HF certificate is NOT the full certification: keep the wording exact.
+    "On the AI side, I took a theoretical Artificial Intelligence course in my degree and earned a certificate in Hugging Face's AI Agents Course; I'm working towards its full certification. I also built this portfolio with an AI-agent workflow that I designed and directed.",
   ],
 
   education: [
-    { degree: "Bachelor's Degree in Computer Engineering", institution: "ISTEC Lisbon", start: "2024-10", end: "2026-08" },
+    { degree: "Bachelor's Degree in Computer Engineering", institution: "ISTEC Lisbon", start: "2024-10", end: "2026-08", note: "Included a theoretical Artificial Intelligence course." },
     {
       degree: "Higher Technical Degree (CTeSP) in Mobile App Development",
       institution: "ISTEC Lisbon",

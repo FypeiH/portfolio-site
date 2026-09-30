@@ -99,7 +99,7 @@ export const ExperienceListSchema = z.array(ExperienceSchema).min(1);
 export const SkillGroupSchema = z.object({
   id: z.enum(["backend", "frontend", "mobile", "ai-ml", "data-automation", "infra-devops", "other"]),
   label: text(40),
-  items: z.array(z.object({ name: text(30), note: text(80).optional(), projects: z.array(slug).optional() })).min(2).max(10),
+  items: z.array(z.object({ name: text(30), note: text(160).optional(), projects: z.array(slug).optional() })).min(2).max(10),
 });
 
 export const SkillGroupListSchema = z
@@ -111,7 +111,6 @@ export const SectionIdSchema = z.enum(["projects", "experience", "skills", "demo
 
 export const SiteConfigSchema = z
   .object({
-    url,
     locale: z.literal("en"),
     nav: z.array(z.object({ id: SectionIdSchema, label: text(20) })).min(1).max(6),
     features: z.object({
