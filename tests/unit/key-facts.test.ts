@@ -4,6 +4,8 @@ import type { MDXComponents } from "mdx/types";
 import { describe, expect, it, vi } from "vitest";
 import { CaseStudyLayout } from "@/components/project/CaseStudyLayout";
 import { KeyFacts } from "@/components/project/KeyFacts";
+import { site } from "@/content/site";
+import { SiteConfigSchema } from "@/lib/content/schema";
 import { countDiagramSlots, keyFactsPlacement } from "@/lib/content/diagram-slots";
 import { getDiagramImage, getDiagramSlots, getProjectBySlug } from "@/lib/content/load";
 import type { Project } from "@/lib/content/types";
@@ -31,6 +33,7 @@ describe("KeyFacts placement (spec §3.4)", () => {
     expect(countDiagramSlots("## Architecture\n\n<Diagram />\n\ntext")).toBe(1);
     expect(countDiagramSlots("<Diagram />\n\n```mdx\n<Diagram />\n```\n\n`<Diagram />` {/* <Diagram /> */}")).toBe(1);
     expect(countDiagramSlots("no diagram")).toBe(0);
+    expect(countDiagramSlots("<Diagram></Diagram>\n\n<Diagram />")).toBe(2);
     expect(getDiagramSlots("email-scraper")).toBe(1);
   });
 
@@ -65,7 +68,7 @@ describe("KeyFacts placement (spec §3.4)", () => {
   });
 });
 
-describe("KeyFacts labels (optional ui.problemLabel / ui.solutionLabel)", () => {
+describe("KeyFacts labels (ui.problemLabel / ui.solutionLabel / ui.impactLabel)", () => {
   const labelled = (labels: Parameters<typeof KeyFacts>[0]["labels"]) =>
     renderToStaticMarkup(createElement(KeyFacts, { project: privateProject, impact: "Impact text.", labels }));
 
@@ -76,9 +79,11 @@ describe("KeyFacts labels (optional ui.problemLabel / ui.solutionLabel)", () => 
     expect(html.indexOf("Problem")).toBeLessThan(html.indexOf("Solution"));
   });
 
-  it("renders plain paragraphs without them", () => {
-    const html = labelled({ impactLabel: "Impact" });
-    expect(count(html, "text-accent")).toBe(1);
-    expect(html).toContain(`<p>${privateProject.solution}</p>`);
+  it("problemLabel and solutionLabel are required, non-empty ui strings", () => {
+    const ui: Record<string, string> = { ...site.ui };
+    delete ui.problemLabel;
+    expect(SiteConfigSchema.safeParse({ ...site, ui }).success).toBe(false);
+    expect(SiteConfigSchema.safeParse({ ...site, ui: { ...site.ui, solutionLabel: " " } }).success).toBe(false);
+    expect(SiteConfigSchema.safeParse(site).success).toBe(true);
   });
 });

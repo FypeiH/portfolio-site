@@ -1,12 +1,12 @@
 import type { ProjectVisibility } from "./types";
 
-/** `<Diagram />` uses in an MDX body, ignoring code (fenced and inline) and comments. */
+/** `<Diagram />` (or `<Diagram></Diagram>`) uses in an MDX body, ignoring code (fenced and inline) and comments. */
 export function countDiagramSlots(mdx: string): number {
   const prose = mdx
     .replace(/^[ \t]*(```|~~~)[\s\S]*?^[ \t]*\1[ \t]*$/gm, "")
     .replace(/`[^`\n]*`/g, "")
     .replace(/\{\/\*[\s\S]*?\*\/\}|<!--[\s\S]*?-->/g, "");
-  return prose.match(/<Diagram\b[^>]*\/>/g)?.length ?? 0;
+  return prose.match(/<Diagram\b[^>]*\/>|<Diagram\b[^>]*>[\s\S]*?<\/Diagram>/g)?.length ?? 0;
 }
 
 /**

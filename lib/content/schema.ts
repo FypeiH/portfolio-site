@@ -118,8 +118,8 @@ export const SiteConfigSchema = z
       suggestedQuestions: z.array(text(120)),
       examples: z.array(z.object({ question: text(300), answer: text(1200) })),
     }),
-    // Every other key is a required string (checked against content/site.ts in load.ts); these two are optional.
-    ui: z.object({ problemLabel: uiLabel.optional(), solutionLabel: uiLabel.optional() }).catchall(z.string()),
+    // Every key is a required string (checked against content/site.ts in load.ts); labels shown next to content are also non-empty.
+    ui: z.object({ problemLabel: uiLabel, solutionLabel: uiLabel, impactLabel: uiLabel }).catchall(z.string()),
   })
   .refine((s) => !s.nav.some((item) => item.id === "demo"), { path: ["nav"], message: "Nav cannot link #demo in v1" });
 

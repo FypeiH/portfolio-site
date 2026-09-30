@@ -80,10 +80,10 @@ function report(issues: ContentIssue[], strict: boolean): void {
 }
 
 /** Narrows the validated record to UiStrings after checking that every declared key survived parsing. */
-function withUiKeys(parsed: Record<string, string | undefined>): UiStrings {
+function withUiKeys(parsed: Record<string, string>): UiStrings {
   const missing = Object.keys(site.ui).filter((key) => typeof parsed[key] !== "string");
   if (missing.length > 0) throw new ContentError(`content/site.ts: ui is missing ${missing.join(", ")}.`);
-  return parsed as unknown as UiStrings;
+  return parsed as UiStrings;
 }
 
 const loadContent = cache(() => {

@@ -1,6 +1,16 @@
 import matter from "gray-matter";
 import { PROJECTS_DIR } from "./conventions";
-import { findMarkerMatches, isPlaceholderStyle, mapped, mapReplace, type MappedText, type PlaceholderHit } from "./placeholders";
+import {
+  dedupeOverlaps,
+  findMarkerMatches,
+  isPlaceholderMarker,
+  lineIndex,
+  mapped,
+  mapReplace,
+  type MappedText,
+  type MarkerMatch,
+  type PlaceholderHit,
+} from "./placeholders";
 
 /**
  * The placeholder guard's file set and per-file extraction, shared by the build (rules.ts) and
@@ -126,93 +136,217 @@ export function renderableText(file: string, source: string): string {
 /** The opt-out marker, written inside any comment the file type supports (see README "Content"). */
 export const OPT_OUT = "placeholder-ok";
 
-const lineOf = (source: string, offset: number) => source.slice(0, offset).split("\n").length;
+const indentOf = (line: string) => line.length - line.trimStart().length;
+const isMdx = (file: string) => file.endsWith(".mdx") || file.endsWith(".md");
 
 /**
- * Lines exempted by a `placeholder-ok` comment: the comment's own line when it shares the line with
- * content; otherwise the block that follows it, up to the next blank line (a fenced code block is
- * taken whole, blank lines included).
+ * Lines a standalone `placeholder-ok` comment covers when it sits in YAML frontmatter, TS or Mermaid:
+ * the next key only (its first non-blank line plus the lines indented deeper, i.e. its continuation).
  */
-export function optOutLines(file: string, source: string): Set<number> {
+function nextKeyLines(lines: readonly string[], after: number, isComment: (line: number) => boolean): number[] {
+  let first = after + 1;
+  while (first <= lines.length && ((lines[first - 1] ?? "").trim() === "" || isComment(first))) first++;
+  if (first > lines.length) return [];
+  const indent = indentOf(lines[first - 1] ?? "");
+  const covered = [first];
+  for (let next = first + 1; next <= lines.length; next++) {
+    const line = lines[next - 1] ?? "";
+    if (line.trim() !== "" && indentOf(line) <= indent) break;
+    covered.push(next);
+  }
+  return covered;
+}
+
+/** MDX body scope: the paragraph below, up to the next blank line, or a whole fenced code block. */
+function nextBlockLines(lines: readonly string[], after: number): number[] {
+  let next = after + 1;
+  const covered: number[] = [];
+  const fence = /^\s*(```|~~~)/.exec(lines[next - 1] ?? "")?.[1];
+  if (fence) {
+    do covered.push(next++);
+    while (next <= lines.length && !(lines[next - 1] ?? "").trim().startsWith(fence));
+    covered.push(next);
+    return covered;
+  }
+  while (next <= lines.length && (lines[next - 1] ?? "").trim() !== "") covered.push(next++);
+  return covered;
+}
+
+/**
+ * Lines exempted by `placeholder-ok`, with the line of the comment that exempts them. A comment that
+ * shares its line with content covers that line. A standalone one covers the next key in YAML
+ * frontmatter, TS and Mermaid, and the next paragraph or fenced block in an MDX body.
+ */
+export function optOutLines(file: string, source: string): Map<number, number> {
   const lines = source.split("\n");
-  const exempt = new Set<number>();
-  for (const [start, end] of commentRanges(file, source)) {
-    if (!source.slice(start, end).includes(OPT_OUT)) continue;
-    const line = lineOf(source, start);
-    const rest = (lines[line - 1] ?? "").replace(source.slice(start, end).split("\n")[0] ?? "", "").trim();
-    if (rest.length > 0) {
-      exempt.add(line);
-      continue;
-    }
-    let next = lineOf(source, end) + 1;
-    const fence = /^\s*(```|~~~)/.exec(lines[next - 1] ?? "")?.[1];
-    if (fence) {
-      do exempt.add(next++);
-      while (next <= lines.length && !(lines[next - 1] ?? "").trim().startsWith(fence));
-      exempt.add(next);
-      continue;
-    }
-    while (next <= lines.length && (lines[next - 1] ?? "").trim() !== "") exempt.add(next++);
+  const lineAt = lineIndex(source);
+  const comments = commentRanges(file, source);
+  const commentLines = new Set(comments.flatMap(([a, b]) => {
+    const [first, last] = [lineAt(a), lineAt(Math.max(a, b - 1))];
+    return Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  }));
+  const isCommentOnly = (line: number) => commentLines.has(line) && /^\s*(#|\/\/|\/\*|\{\/\*|<!--|%%)/.test(lines[line - 1] ?? "");
+  const bodyStart = isMdx(file) ? frontmatterEnd(source) : 0;
+  const exempt = new Map<number, number>();
+  for (const [start, end] of comments) {
+    const comment = source.slice(start, end);
+    if (!comment.includes(OPT_OUT)) continue;
+    const line = lineAt(start);
+    const rest = (lines[line - 1] ?? "").replace(comment.split("\n")[0] ?? "", "").trim();
+    const covered = rest.length > 0 ? [line] : isMdx(file) && start >= bodyStart ? nextBlockLines(lines, lineAt(end - 1)) : nextKeyLines(lines, lineAt(end - 1), isCommentOnly);
+    for (const covers of covered) if (!exempt.has(covers)) exempt.set(covers, line);
   }
   return exempt;
 }
 
-/** Fenced code blocks and inline code spans of an MDX/MD body (a span never crosses a blank line). */
+/**
+ * Inline code spans and fenced code blocks of an MDX/MD body, found by a left-to-right scan so that
+ * a backtick escaped with `\` or sitting inside a `{…}` JSX expression never opens a code span.
+ */
 export function codeRanges(file: string, source: string): [number, number][] {
-  if (!file.endsWith(".mdx") && !file.endsWith(".md")) return [];
-  const fmEnd = frontmatterEnd(source);
-  const body = source.slice(fmEnd);
+  if (!isMdx(file)) return [];
+  const bodyStart = frontmatterEnd(source);
   const ranges: [number, number][] = [];
-  const fences = Array.from(body.matchAll(/^[ \t]*(```|~~~)[^\n]*\n[\s\S]*?^[ \t]*\1[ \t]*$/gm), (m): [number, number] => [m.index, m.index + m[0].length]);
-  ranges.push(...fences);
-  const outside = blank(body, fences);
-  for (const m of outside.matchAll(/(`+)((?:(?!\n[ \t]*\n)[\s\S])+?)\1/g)) ranges.push([m.index, m.index + m[0].length]);
-  return ranges.map(([a, b]): [number, number] => [fmEnd + a, fmEnd + b]);
+  const fence = /^[ \t]*(```|~~~)[^\n]*\n[\s\S]*?^[ \t]*\1[ \t]*$/gm;
+  let i = bodyStart;
+  while (i < source.length) {
+    const ch = source[i];
+    const atLineStart = i === bodyStart || source[i - 1] === "\n";
+    if (atLineStart) {
+      fence.lastIndex = i;
+      const block = fence.exec(source);
+      if (block && block.index === i) {
+        ranges.push([i, i + block[0].length]);
+        i += block[0].length;
+        continue;
+      }
+    }
+    if (ch === "\\") {
+      i += 2;
+      continue;
+    }
+    if (ch === "{") {
+      i = skipExpression(source, i);
+      continue;
+    }
+    if (ch === "`") {
+      const run = /^`+/.exec(source.slice(i))?.[0] ?? "`";
+      const close = findClosingRun(source, i + run.length, run);
+      if (close !== -1) {
+        ranges.push([i, close + run.length]);
+        i = close + run.length;
+        continue;
+      }
+      i += run.length;
+      continue;
+    }
+    i++;
+  }
+  return ranges;
+}
+
+/** Start of the backtick run closing a code span opened by `run`, or -1 (a span never crosses a blank line). */
+function findClosingRun(source: string, from: number, run: string): number {
+  for (let i = from; i < source.length; i++) {
+    if (source[i] === "\n" && /^\n[ \t]*\n/.test(source.slice(i, i + 64))) return -1;
+    if (source.startsWith(run, i) && source[i + run.length] !== "`" && source[i - 1] !== "`") return i;
+  }
+  return -1;
+}
+
+/** Index just past the `}` closing the JSX expression opened at `open` (strings and templates skipped). */
+function skipExpression(source: string, open: number): number {
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '"' || ch === "'" || ch === "`") {
+      for (i++; i < source.length && source[i] !== ch; i++) if (source[i] === "\\") i++;
+      continue;
+    }
+    if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) return i + 1;
+  }
+  return source.length;
 }
 
 /**
  * MDX string expressions render as their text: `{"{"}{"{"}x{"}"}{"}"}` reads `{{x}}`. Unwrapping
- * them (offsets kept) lets the source scan see what the page will show.
+ * them (offsets kept) lets the source scan see what the page will show. Code spans are literal.
  */
-function unwrapJsxStrings(file: string, text: string): MappedText {
+function unwrapJsxStrings(file: string, text: string, code: readonly [number, number][]): MappedText {
   const input = mapped(text);
   if (!file.endsWith(".mdx")) return input;
-  return mapReplace(input, /\{\s*(?:"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)')\s*\}/g, (m) => m[1] ?? m[2] ?? "");
+  const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
+  return mapReplace(input, /\{\s*(?:"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)')\s*\}/g, (m) => (inCode(m.index) ? m[0] : (m[1] ?? m[2] ?? "")));
+}
+
+/** Which routes can render a file's text: a case-study body only its own page; anything else, every page. */
+export type Scope = "site" | `projects/${string}`;
+
+export function scopeOf(file: string, offset: number, source: string): Scope {
+  const slug = new RegExp(`^${PROJECTS_DIR}/([^/]+)\\.mdx$`).exec(file)?.[1];
+  return slug && offset >= frontmatterEnd(source) ? `projects/${slug}` : "site";
+}
+
+/** An exempted marker: the rendered-output check allows this exact text, in this scope, only where stated. */
+export interface AllowedMarker {
+  text: string;
+  scope: Scope;
+  /** "code": only inside rendered <code>; "anywhere": opted out with placeholder-ok. */
+  where: "code" | "anywhere";
+}
+
+export interface Exemption extends PlaceholderHit {
+  reason: string;
 }
 
 export interface FileScan {
-  /** Markers that block a strict build. */
+  /** Markers that block a strict build (one per group of overlapping matches). */
   hits: PlaceholderHit[];
-  /** Marker texts exempted by the code rule or an opt-out; the rendered-output check allows exactly these. */
-  allowed: string[];
+  /** What the rendered-output check may allow. */
+  allowed: AllowedMarker[];
+  /** Every exemption with its reason, listed by `pnpm content:check`. */
+  exemptions: Exemption[];
 }
 
 /**
- * Scans one content file. A marker is exempt when (a) its line is opted out with `placeholder-ok`, or
- * (b) it is a `{{ … }}` inside inline/fenced code that is not placeholder-style (e.g. an Angular
- * `{{ user.name }}`; `{{TODO: …}}` and `{{PROJECT_NAME}}` still count).
+ * Scans one content file. Placeholder markers (`[TODO…]`, `TODO:`, placeholder-style `{{…}}`) always
+ * count. Any other marker is exempt when (a) it is a `{{ … }}` inside inline/fenced code (e.g. an
+ * Angular `{{ user.name }}`), or (b) its line is covered by a `placeholder-ok` comment.
  */
 export function scanContentFileDetailed(file: string, source: string): FileScan {
   const exemptLines = optOutLines(file, source);
   const code = codeRanges(file, source);
   const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
-  const hits: PlaceholderHit[] = [];
-  const allowed: string[] = [];
-  for (const match of findMarkerMatches(unwrapJsxStrings(file, renderableText(file, source)), source, file)) {
-    const exempt = exemptLines.has(match.line) || (match.label === "{{…}}" && inCode(match.offset) && !isPlaceholderStyle(match.text));
-    if (exempt) allowed.push(match.text);
-    else hits.push({ file: match.file, line: match.line, text: match.text });
+  const blocking: MarkerMatch[] = [];
+  const allowed: AllowedMarker[] = [];
+  const exemptions: Exemption[] = [];
+  for (const match of findMarkerMatches(unwrapJsxStrings(file, renderableText(file, source), code), source, file)) {
+    const optOut = exemptLines.get(match.line);
+    const reason = isPlaceholderMarker(match)
+      ? undefined
+      : match.label === "{{…}}" && inCode(match.offset)
+        ? "{{ … }} inside code"
+        : optOut !== undefined
+          ? `placeholder-ok on line ${optOut}`
+          : undefined;
+    if (!reason) {
+      blocking.push(match);
+      continue;
+    }
+    allowed.push({ text: match.text, scope: scopeOf(file, match.offset, source), where: reason.startsWith("{{") ? "code" : "anywhere" });
+    exemptions.push({ file, line: match.line, text: match.text, reason });
   }
-  return { hits, allowed };
+  return { hits: dedupeOverlaps(blocking).map(({ line, text }) => ({ file, line, text })), allowed, exemptions };
 }
 
 export function scanContentFile(file: string, source: string): PlaceholderHit[] {
   return scanContentFileDetailed(file, source).hits;
 }
 
-/** Exempted marker texts across shipped content, for the rendered-output check. */
-export function allowedShippedMarkers(tree: ContentTree, known?: readonly ProjectEntry[]): Set<string> {
-  return new Set(shippedContentFiles(tree, known).flatMap((file) => scanContentFileDetailed(file, tree.read(file) ?? "").allowed));
+/** Exempted markers across shipped content, for the rendered-output check. */
+export function allowedShippedMarkers(tree: ContentTree, known?: readonly ProjectEntry[]): AllowedMarker[] {
+  return shippedContentFiles(tree, known).flatMap((file) => scanContentFileDetailed(file, tree.read(file) ?? "").allowed);
 }
 
 export function findShippedPlaceholders(tree: ContentTree, known?: readonly ProjectEntry[]): PlaceholderHit[] {

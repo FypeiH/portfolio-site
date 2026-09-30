@@ -32,11 +32,35 @@ export interface PlaceholderHit {
   text: string;
 }
 
-/** A marker match with its offset in the original source and the rule that found it. */
+/** A marker match with its [offset, end) range in the original source and the rule that found it. */
 export interface MarkerMatch extends PlaceholderHit {
   offset: number;
+  end: number;
   label: string;
 }
+
+/** Line numbers by offset in O(log n): a sorted index of line starts, searched by bisection. */
+export function lineIndex(source: string): (offset: number) => number {
+  const starts = [0];
+  for (let i = source.indexOf("\n"); i !== -1; i = source.indexOf("\n", i + 1)) starts.push(i + 1);
+  return (offset) => {
+    let low = 0;
+    let high = starts.length - 1;
+    while (low < high) {
+      const mid = (low + high + 1) >> 1;
+      if ((starts[mid] ?? 0) <= offset) low = mid;
+      else high = mid - 1;
+    }
+    return low + 1;
+  };
+}
+
+/**
+ * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:` and placeholder-style
+ * `{{…}}`. Neither the code rule nor `placeholder-ok` can exempt them (scan.ts).
+ */
+export const isPlaceholderMarker = (match: Pick<MarkerMatch, "label" | "text">) =>
+  match.label === "[TODO…]" || match.label === "TODO:" || (match.label === "{{…}}" && isPlaceholderStyle(match.text));
 
 /**
  * `{{ … }}` whose inner text is TODO-style (any other marker, or an all-caps slot like `{{PROJECT_NAME}}`).
@@ -44,7 +68,7 @@ export interface MarkerMatch extends PlaceholderHit {
  */
 export function isPlaceholderStyle(braces: string): boolean {
   const inner = braces.replace(/^\{\s?\{|\}\s?\}$/g, "");
-  if (/^\s*[A-Z][A-Z0-9_]*\s*$/.test(inner)) return true;
+  if (/^\s*[A-Z][A-Z0-9_]*\s*$/.test(inner) || /\btodo\b/i.test(inner)) return true;
   return MARKERS.some(({ label, pattern }) => label !== "{{…}}" && new RegExp(pattern.source, pattern.flags).test(inner));
 }
 
@@ -54,24 +78,32 @@ export interface MappedText {
   offsets: number[];
 }
 
-export const mapped = (text: string): MappedText => ({ text, offsets: Array.from(text, (_, i) => i) });
+export const mapped = (text: string): MappedText => {
+  const offsets = new Array<number>(text.length);
+  for (let i = 0; i < text.length; i++) offsets[i] = i;
+  return { text, offsets };
+};
 
 /** Replaces every match with `replace(match)`, keeping the offset of the match start for new characters. */
 export function mapReplace(input: MappedText, pattern: RegExp, replace: (match: RegExpExecArray) => string): MappedText {
+  // Plain loops, never push(...array): spreading a large array into a call overflows the stack (~125 KB input).
   let text = "";
   const offsets: number[] = [];
+  const copy = (from: number, to: number) => {
+    for (let i = from; i < to; i++) offsets.push(input.offsets[i] ?? 0);
+  };
   let last = 0;
   for (const match of input.text.matchAll(pattern)) {
     const start = match.index;
     text += input.text.slice(last, start);
-    offsets.push(...input.offsets.slice(last, start));
+    copy(last, start);
     const replacement = replace(match as RegExpExecArray);
     text += replacement;
-    offsets.push(...Array.from(replacement, () => input.offsets[start] ?? 0));
+    for (let i = 0; i < replacement.length; i++) offsets.push(input.offsets[start] ?? 0);
     last = start + match[0].length;
   }
   text += input.text.slice(last);
-  offsets.push(...input.offsets.slice(last));
+  copy(last, input.text.length);
   return { text, offsets };
 }
 
@@ -113,23 +145,39 @@ export const collapseWhitespace = (input: MappedText): MappedText => mapReplace(
 
 export const normalize = (input: MappedText): MappedText => collapseWhitespace(decode(input));
 
-/** Every marker in already-extracted text, with source offsets; `source` is the original file text. */
+/**
+ * Every marker match in already-extracted text, with source ranges; `source` is the original file
+ * text. Overlapping matches (`TODO:` inside `{{TODO: x}}`) are all kept, so each can be judged on its
+ * own; report with `dedupeOverlaps`.
+ */
 export function findMarkerMatches(input: MappedText, source: string, file: string): MarkerMatch[] {
   const { text, offsets } = normalize(input);
-  const hits = new Map<number, MarkerMatch>();
+  const lineAt = lineIndex(source);
+  const matches: MarkerMatch[] = [];
   for (const { label, pattern } of MARKERS) {
     for (const match of text.matchAll(pattern)) {
       const offset = offsets[match.index] ?? 0;
-      if ([...hits.keys()].some((start) => Math.abs(start - offset) < 3)) continue;
-      hits.set(offset, { file, line: source.slice(0, offset).split("\n").length, text: match[0].trim(), offset, label });
+      const end = (offsets[match.index + match[0].length - 1] ?? offset) + 1;
+      matches.push({ file, line: lineAt(offset), text: match[0].trim(), offset, end, label });
     }
   }
-  return [...hits.values()].sort((a, b) => a.offset - b.offset);
+  return matches.sort((a, b) => a.offset - b.offset || b.end - a.end);
+}
+
+/** One entry per group of overlapping matches (the outermost one), for reports. */
+export function dedupeOverlaps<T extends { offset: number; end: number }>(matches: readonly T[]): T[] {
+  const kept: T[] = [];
+  for (const match of [...matches].sort((a, b) => a.offset - b.offset || b.end - a.end)) {
+    const previous = kept.at(-1);
+    if (previous && match.offset < previous.end) continue;
+    kept.push(match);
+  }
+  return kept;
 }
 
 /** Finds markers in already-extracted text; `source` is the original file text, for line numbers. */
 export function findMarkers(input: MappedText, source: string, file: string): PlaceholderHit[] {
-  return findMarkerMatches(input, source, file).map(({ file: f, line, text }) => ({ file: f, line, text }));
+  return dedupeOverlaps(findMarkerMatches(input, source, file)).map(({ file: f, line, text }) => ({ file: f, line, text }));
 }
 
 /** Plain-text scan of a whole file (no comment stripping). */
