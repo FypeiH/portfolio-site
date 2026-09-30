@@ -19,25 +19,43 @@ export const experience = [
     ],
     stack: ["WordPress", "Elementor"],
   },
+  // Altyra Solutions: two entries (spec Experience has one employmentType per entry).
+  // Source: CV + portfolio-input/altyra-projects.md ("Autorização e dados do relatório de estágio").
+  // Real client names authorized by Filipe. Confidentiality agreement: no screenshots or internal code.
   {
     id: "altyra",
     company: "Altyra Solutions",
     role: "Fullstack Developer",
     // @ts-expect-error TODO placeholder: spec §3.3 tolerates an exact placeholder in enum fields at runtime. Delete this comment when the value is filled.
-    employmentType: "{{TODO: full-time | part-time | freelance (Q-CONTRATO)}}",
+    employmentType: "{{TODO: contract type after the internship: full-time | part-time | freelance (not confirmed in the source)}}",
+    location: "Lisbon",
+    start: "2024-09", // internship ended Aug 2024; the source says he then stayed on until Feb 2025
+    end: "2025-02",
+    summary: "Stayed on after my internship, on flexible hours alongside the start of my degree, building web and mobile features for client projects.",
+    // {{TODO: confirm the Email Scraper was built after the internship (Sep 2024 – Feb 2025). If it was during the internship, move this bullet, the project link and the Gmail API tag to "altyra-internship" and set experienceId in email-scraper.mdx}}
+    highlights: [
+      "Built an email scraper for TakeFreeTours (C#, Gmail API) that turns booking confirmations from several platforms into validated visitor records, drastically reducing manual entry.",
+    ],
+    stack: ["C#", ".NET", "Gmail API"],
+    projects: ["email-scraper"],
+  },
+  {
+    id: "altyra-internship",
+    company: "Altyra Solutions",
+    role: "Fullstack Developer Intern",
+    employmentType: "internship",
     location: "Lisbon",
     start: "2024-03",
-    end: "2025-02",
-    summary: "Built and maintained web and mobile application features across client projects.",
-    // Source: CV + portfolio-input/altyra-projects.md (4 projects). 1–3 bullets (spec §1.1). No numbers: the source has none.
-    // Client names (TakeFreeTours, Benched, Ramos Correia & Associados) pending the NDA check: {{TODO: confirm client names can be published (NDA check)}}
+    end: "2024-08",
+    summary: "Six-month curricular internship (800 hours) for my CTeSP at an IT consultancy of about 8 people, working across frontend and backend.",
+    // 1–3 bullets (spec §1.1). No numbers where the source has none.
     highlights: [
-      "Built an email scraper (C#, Gmail API) that turns booking confirmations from several platforms into validated visitor records, drastically reducing manual entry.",
-      "Developed the frontend and API for a tour and guide-availability web app (Angular, .NET) and for Benched, a football mobile app (.NET MAUI, Blazor).",
-      "Integrated PayPal payments into a law firm's services website, now live in production.",
+      "Built the frontend and REST API for TakeFreeTours' tour management system (Angular, .NET), my first Angular project.",
+      "Developed the frontend and API for Benched, a multi-platform football app built with .NET MAUI and a Blazor UI in C#.",
+      "Integrated PayPal payments into the Ramos Correia & Associados law firm website (Angular, .NET), now live in production.",
     ],
-    stack: ["C#", ".NET", ".NET MAUI", "Blazor", "Angular", "TypeScript", "PayPal API", "Gmail API"],
-    projects: ["email-scraper", "takefreetours", "benched"],
+    stack: ["C#", ".NET", "Angular", "TypeScript", ".NET MAUI", "Blazor", "SQL", "Tailwind CSS", "Angular Material", "Syncfusion", "PayPal API", "Azure DevOps"],
+    projects: ["takefreetours", "benched"],
   },
   {
     id: "ocr",

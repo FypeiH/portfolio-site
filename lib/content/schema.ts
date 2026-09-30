@@ -89,7 +89,7 @@ export const ExperienceSchema = z
     end: yearMonthOrPresent,
     summary: text(200),
     highlights: z.array(text(200)).min(1).max(3),
-    stack: z.array(text(20)).min(2).max(8),
+    stack: z.array(text(20)).min(1).max(12),
     projects: z.array(slug).optional(),
   })
   .refine((e) => isChronological(e.start, e.end), { path: ["end"], message: "end must not be before start" });
@@ -145,7 +145,7 @@ export const DiagramSchema = z.discriminatedUnion("kind", [
 ]);
 
 export const ProjectFrontmatterSchema = z
-  .object({
+  .strictObject({
     title: text(60),
     summary: text(140),
     problem: text(200),
@@ -161,7 +161,8 @@ export const ProjectFrontmatterSchema = z
     period: z.object({ start: yearMonth, end: yearMonthOrPresent.optional() }),
     stack: z.array(text(20)).min(2).max(8),
     metrics: z.array(MetricSchema).max(3),
-    links: z.object({
+    // Strict: an unknown link kind must fail loudly instead of being stripped (it happened with links.store).
+    links: z.strictObject({
       repo: url.optional(),
       demo: url.optional(),
       store: url.optional(),

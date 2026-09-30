@@ -1,7 +1,13 @@
-graph LR
+graph TD
   P["Booking platforms (several)"] -->|"Confirmation emails"| G["Gmail inbox"]
-  G -->|"Gmail API"| R["Email reader (C# / .NET)"]
-  R --> T{"Identify platform template"}
-  T --> X["Extract visitor data (template rules)"]
-  X --> V["Validate and map fields"]
-  V --> DB[("Database: visitors per tour")]
+  S["Scheduled run"] --> R["Email reader (C# / .NET)"]
+  G -->|"Gmail API"| R
+  R --> T{"Known platform template?"}
+  T -->|"Yes"| X["Extract visitor data (template rules)"]
+  T -->|"No"| AL["Alert with Gmail message ID"]
+  X --> V{"Valid data?"}
+  V -->|"No"| AL
+  V -->|"Yes"| D{"Already in database? (validation queries)"}
+  D -->|"No"| DB[("SQL Server: visitors per tour")]
+  D -->|"Yes"| N["Not inserted"]
+  AL --> M["Management app: manual handling"]

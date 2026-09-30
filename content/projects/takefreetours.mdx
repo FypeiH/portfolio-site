@@ -3,27 +3,27 @@
 title: "TakeFreeTours: tour and team management"
 summary: "Angular and .NET web app to manage tours across the country and the team for each tour, checking every guide's availability."
 problem: "Tours run across the country, each with its own team of guides, and assigning teams meant checking every guide's availability."
-solution: "A web app with an Angular (TypeScript) frontend and a .NET (C#) API to manage tours and their teams, with guide availability checks."
+solution: "A web app with an Angular (TypeScript) frontend and a REST API built entirely in .NET (C#) to manage tours and their teams, with guide availability checks."
 impact: "It was in testing and rollout when I left Altyra, with good results before my departure."
-visibility: "private" # {{TODO: confirm the client name can be published, or switch to "nda" and generalize (NDA check)}}
+visibility: "private" # kept private (coordinator). Real names authorized by Filipe; no code or screenshots (confidentiality agreement)
 organization: "Altyra Solutions"
-experienceId: "altyra"
-confidentialityNote: "Proprietary code from my work at Altyra Solutions; no source code is shared."
+experienceId: "altyra-internship" # started during the internship (first Angular project); still in testing when Filipe left in Feb 2025
+confidentialityNote: "Proprietary code under a confidentiality agreement with Altyra Solutions; no source code or screenshots are shared."
 role: "{{TODO: individual | team (source: Filipe did frontend and backend/API). If team, keep roleNote}}"
 roleNote: "Frontend and backend (API)."
 period: { start: "2024-03", end: "2025-02" } # Altyra employment dates; exact project dates not in the source
-stack: ["Angular", "TypeScript", ".NET", "C#"]
+stack: ["Angular", "TypeScript", "HTML / CSS", ".NET", "C#"]
 metrics: []
 links: {}
-# cover: TODO (optional): screenshots from Filipe's internship report (pending). Check they show no personal or client data.
+# No cover image: the internship report's screenshots are covered by the confidentiality agreement.
 diagram:
   kind: "mermaid"
   source: "content/diagrams/takefreetours.mmd"
-  alt: "TakeFreeTours flow: an Angular web app calls a .NET API that manages tours, teams and guide availability"
-  caption: "An Angular (TypeScript) web app calls a .NET (C#) API, which manages the tours across the country, the team assigned to each tour and each guide's availability."
+  alt: "TakeFreeTours flow: an Angular web app calls a .NET REST API that manages tours, teams and guide availability"
+  caption: "An Angular (TypeScript) web app calls a REST API built in .NET (C#), which manages the tours across the country, the team assigned to each tour and each guide's availability."
 featured: false
 order: 5
-status: "draft" # publish after the NDA check and the TODOs below
+status: "draft" # publish after the TODOs below
 updatedAt: "2026-09"
 seo:
   description: "Case study: an Angular and .NET web app to manage tours, the team for each tour and guide availability, built at Altyra Solutions."
@@ -35,7 +35,7 @@ TakeFreeTours runs tours across the country, and every tour needs a team of guid
 
 ## What I built
 
-I worked on both sides of a web app for this: the Angular (TypeScript) frontend and the .NET (C#) API behind it. The app manages the tours, the team assigned to each one and every guide's availability.
+I worked on both sides of the tour management system: the Angular frontend (TypeScript, HTML and CSS) and a REST API built entirely in .NET (C#). The app manages the tours, the team assigned to each one and every guide's availability. It was my first Angular project.
 
 <Diagram />
 

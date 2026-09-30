@@ -54,7 +54,7 @@ export const site = {
     readCaseStudy: "Read case study",
     source: "Source", // spec §3.4 (exact)
     liveDemo: "Live demo",
-    appStore: "App Store", // label for links.store (PM decision: store link kind, used by Benched)
+    appStore: "App Store", // label for links.store (e.g. Benched)
     docs: "Docs",
     privateProject: "Private project", // spec §3.4 (exact)
     ndaProject: "Under NDA", // spec §3.4 (exact)

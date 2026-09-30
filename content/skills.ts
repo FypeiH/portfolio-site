@@ -28,13 +28,15 @@ export const skills = [
       { name: "React" },
       { name: "HTML5 / CSS3" },
       { name: "Tailwind CSS", projects: ["dynamic-cv"] },
-      { name: "WordPress / Elementor" },
+      { name: "Angular Material", projects: ["dynamic-cv"] },
+      { name: "Syncfusion" }, // Altyra internship
+      // "WordPress / Elementor" removed to stay within 25 items (spec); still shown in the Gigantic experience stack.
     ],
   },
   {
     id: "infra-devops",
     label: "Cloud & tools",
-    items: [{ name: "Azure" }, { name: "Git" }],
+    items: [{ name: "Azure / Azure DevOps" }, { name: "Git" }], // Azure DevOps (project management, CI/CD) from the Altyra internship, merged to stay within 25
   },
   {
     id: "mobile",

@@ -1,29 +1,29 @@
 ---
 # PRIVATE project. Source: portfolio-input/altyra-projects.md §1 (Filipe, 30/09/2026). Short case study by design.
 title: "Benched: football mobile app"
-summary: "Mobile app to find players, teams and coaches for football games, with competitions and perks. Built with .NET MAUI and Blazor."
+summary: "Multi-platform app to find players, teams and coaches for football games, with competitions and perks. Built with .NET MAUI and Blazor."
 problem: "Players, teams and coaches need a way to find each other for football games and competitions."
-solution: "A mobile app built with .NET MAUI and Blazor, backed by an API, to find players, teams and coaches, with competitions and player and coach perks."
+solution: "A multi-platform .NET MAUI app with a Blazor UI (C# instead of JavaScript), backed by an API, with search, competitions and player and coach perks."
 impact: "I built the app's frontend and backend API; it launched on the App Store after I left the company."
-visibility: "private" # {{TODO: confirm Benched can be named as Altyra work, or switch to "nda" (NDA check)}}
+visibility: "private" # kept private (coordinator). Real names authorized by Filipe; no code or screenshots (confidentiality agreement)
 organization: "Altyra Solutions"
-experienceId: "altyra"
-confidentialityNote: "Proprietary code from my work at Altyra Solutions; no source code is shared."
+experienceId: "altyra-internship" # Benched is described in the 2024 internship report
+confidentialityNote: "Proprietary code under a confidentiality agreement with Altyra Solutions; no source code or screenshots are shared."
 role: "{{TODO: individual | team (source: Filipe did frontend and backend/API). If team, keep roleNote}}"
 roleNote: "Frontend and backend (API)."
 period: { start: "2024-03", end: "2025-02" } # Altyra employment dates; the app launched after Filipe left
-stack: [".NET MAUI", "Blazor"]
+stack: [".NET MAUI", "Blazor", "C#"]
 metrics: []
 links:
-  store: "https://apps.apple.com/pt/app/benched/id6744754854" # App Store listing (links.store, PM decision)
+  store: "https://apps.apple.com/pt/app/benched/id6744754854" # App Store. links.store approved by the coordinator; Ritchie is adding it to the spec schema
 diagram:
   kind: "mermaid"
   source: "content/diagrams/benched.mmd"
-  alt: "Benched flow: players and coaches use a .NET MAUI and Blazor mobile app that talks to a backend API"
-  caption: "Players, teams and coaches use a mobile app built with .NET MAUI and Blazor to find each other for football games, join competitions and use perks. The app talks to a backend API; Filipe worked on both."
+  alt: "Benched flow: players and coaches use a multi-platform .NET MAUI app with a Blazor UI that talks to a backend API"
+  caption: "Players, teams and coaches use a multi-platform .NET MAUI app, with its UI written in Blazor (C#), to find each other for football games, join competitions and use perks. The app talks to a backend API; Filipe worked on both."
 featured: false
 order: 6
-status: "draft" # publish after the NDA check and the TODOs below
+status: "draft" # publish after the TODOs below
 updatedAt: "2026-09"
 seo:
   description: "Case study: Benched, a football mobile app to find players, teams and coaches, built with .NET MAUI and Blazor at Altyra Solutions."
@@ -35,11 +35,11 @@ Setting up a football game means finding enough players, a team to play against 
 
 ## What I built
 
-I worked on the frontend and the backend API. The app is built with .NET MAUI and Blazor.
+I worked on the frontend and the backend API. Benched is a multi-platform .NET MAUI app whose interface is built with Blazor, so the UI is written in C# instead of JavaScript.
 
 <Diagram />
 
-`{{TODO: 2–3 sentences: how MAUI and Blazor fit together (e.g. Blazor Hybrid UI inside MAUI, or a separate Blazor web part), what technology the API uses, and one decision or trade-off}}`
+`{{TODO: 1–2 sentences: what technology the backend API uses, and one decision or trade-off Filipe made}}`
 
 ## Results
 
