@@ -72,7 +72,7 @@ export const profile = {
     { kind: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/filipe-bravo" },
   ],
 
-  // Public PDF must NOT contain the phone number (spec Q-CV). File still to be supplied.
+  // Public PDF must NOT contain the phone number (spec Q-CV). Supplied 30/09/2026, phone removed.
   cv: { href: "/cv/filipe-bravo-cv.pdf", label: "Resume (PDF)", updatedAt: "2026-09" },
 
   avatar: { src: "/images/profile/filipe-bravo.webp", alt: "Portrait of Filipe Bravo", width: 640, height: 640 },

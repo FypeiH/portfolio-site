@@ -39,8 +39,11 @@ test.describe("mobile menu (spec §2.5)", () => {
 
   test("resizing to desktop closes it", async ({ page }) => {
     await page.getByRole("button", { name: "Menu" }).click();
+    await expect(page.getByRole("button", { name: "Close" })).toHaveAttribute("aria-expanded", "true");
     await page.setViewportSize({ width: 1024, height: 800 });
     await expect(page.getByRole("button", { name: /Menu|Close/ })).toBeHidden();
+    // The toggle is display:none on desktop, so read its state directly before resizing back.
+    await expect(page.locator('nav[aria-label] button[aria-controls="mobile-nav"]')).toHaveAttribute("aria-expanded", "false");
     await page.setViewportSize({ width: 390, height: 800 });
     await expect(page.getByRole("button", { name: "Menu" })).toHaveAttribute("aria-expanded", "false");
   });

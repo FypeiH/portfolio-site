@@ -3,8 +3,8 @@ node_modules/
 out/
 next-env.d.ts
 *.tsbuildinfo
-.env*.local
-.env
+.env*
+!.env.example
 test-results/
 playwright-report/
 .lighthouse/

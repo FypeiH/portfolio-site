@@ -4,6 +4,8 @@ import { CASE_STUDY } from "./helpers";
 
 for (const path of ["/", CASE_STUDY, "/projects/benched", "/does-not-exist"]) {
   test(`axe: no serious or critical violations on ${path}`, async ({ page }) => {
+    // Reveal transitions animate opacity; axe would measure contrast mid-fade (seen in Firefox).
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(path);
     const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     const blocking = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
