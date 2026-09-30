@@ -19,10 +19,7 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
   const active = useScrollSpy(items, pathname === "/");
   const { open, toggle, close, closeOnFocusLeave, containerRef, buttonRef, panelRef } = useDisclosure(pathname);
 
-  const linkClass =
-    "relative inline-flex min-h-11 items-center px-3 text-sm text-muted transition-colors hover:text-fg aria-[current=true]:text-accent " +
-    "after:absolute after:inset-x-3 after:bottom-2 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform " +
-    "aria-[current=true]:after:scale-x-100 motion-reduce:after:transition-none";
+  const linkClass = "ui-nav-link";
 
   const links = items.map((item) => (
     <li key={item.id}>
@@ -37,7 +34,7 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
       href={cv.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
+      className="ui-btn-outline"
     >
       {labels.resume}
       <span className="sr-only">

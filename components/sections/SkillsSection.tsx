@@ -11,7 +11,7 @@ interface SkillsSectionProps {
   projectTitles: ReadonlyMap<string, string>;
 }
 
-const chipClass = "inline-flex min-h-11 items-center rounded-md border border-border bg-surface px-3 py-1 text-sm";
+const chipClass = "ui-chip";
 
 export function SkillsSection({ groups, projectTitles }: SkillsSectionProps) {
   const ui = getUi();
@@ -20,7 +20,7 @@ export function SkillsSection({ groups, projectTitles }: SkillsSectionProps) {
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {groups.map((group, index) => (
           <Reveal key={group.id} variant="fade" index={index}>
-            <h3 id={`skills-${group.id}`} className="text-sm font-semibold uppercase tracking-wider text-muted">
+            <h3 id={`skills-${group.id}`} className="ui-eyebrow">
               {group.label}
             </h3>
             <ul className="mt-3 flex flex-wrap gap-2">

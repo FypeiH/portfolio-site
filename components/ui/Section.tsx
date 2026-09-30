@@ -13,7 +13,7 @@ export function Section({ id, title, intro, children }: SectionProps) {
   return (
     <section id={id} aria-labelledby={headingId} className="scroll-mt-16 py-20 md:py-28">
       <div className="mx-auto max-w-5xl px-5 md:px-8">
-        <h2 id={headingId} className="text-2xl font-semibold tracking-tight md:text-3xl">
+        <h2 id={headingId} className="ui-h2">
           {title}
         </h2>
         {intro && <p className="mt-3 max-w-2xl text-muted">{intro}</p>}

@@ -13,7 +13,7 @@ interface ContactSectionProps {
   cv: Profile["cv"];
 }
 
-const linkClass = "inline-flex min-h-11 items-center gap-2 text-muted underline-offset-4 hover:text-fg hover:underline";
+const linkClass = "ui-muted-link";
 
 export function ContactSection({ email, links, cv }: ContactSectionProps) {
   const ui = getUi();

@@ -29,7 +29,7 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
 
   return (
     <article className="relative pl-8">
-      <span aria-hidden="true" className="absolute left-0 top-2 size-3 -translate-x-1/2 rounded-full border-2 border-accent bg-bg" />
+      <span aria-hidden="true" className="ui-dot" />
       <p className="text-sm text-muted">
         <time dateTime={toDateTime(item.start)}>{formatYearMonth(item.start)}</time>
         {" – "}

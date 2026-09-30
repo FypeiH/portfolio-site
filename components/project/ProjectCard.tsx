@@ -16,7 +16,7 @@ export function ProjectCard({ project }: { project: Project }) {
     .join(" · ");
 
   return (
-    <article className="group relative flex h-full flex-col gap-4 rounded-xl border border-border bg-surface p-6 transition-colors hover:border-accent/60">
+    <article className="ui-card group relative flex h-full flex-col gap-4 p-6 transition-colors hover:border-accent/60">
       {project.status === "draft" && (
         <div>
           <DraftBadge />
@@ -30,7 +30,11 @@ export function ProjectCard({ project }: { project: Project }) {
         </h3>
         <p className="mt-1 text-sm text-muted">{context}</p>
       </div>
-      <p className="text-sm">{project.summary}</p>
+      {/* Spec §1.1: the card shows problem and solution (not the summary). */}
+      <div className="space-y-2 text-sm">
+        <p className="text-muted">{project.problem}</p>
+        <p>{project.solution}</p>
+      </div>
       {metric && <MetricBadge metric={metric} />}
       <TagList items={project.stack} label={ui.metaStack} />
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2">

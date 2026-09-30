@@ -37,7 +37,8 @@ export function CaseStudyLayout({ project, prev, next, children }: CaseStudyLayo
           <Callout title={ui.whyNoCode}>{project.confidentialityNote ?? ui.privateNote}</Callout>
         )}
         {project.disclaimer && <Callout title={ui.disclaimerLabel}>{project.disclaimer}</Callout>}
-        {impact && (
+        {/* Private/nda projects show impact under the diagram instead (KeyFacts, spec §3.4). */}
+        {impact && project.visibility === "public" && (
           <div className="rounded-xl border border-accent/40 bg-surface p-5">
             <p className="text-sm font-medium text-accent">{ui.impactLabel}</p>
             <p className="mt-1 text-lg">{impact}</p>
@@ -50,7 +51,7 @@ export function CaseStudyLayout({ project, prev, next, children }: CaseStudyLayo
           <time dateTime={toDateTime(updatedAt)}>{fill(ui.updatedOn, { date: formatYearMonth(updatedAt) })}</time>
         </p>
       )}
-      <section aria-labelledby="case-study-cta" className="mt-12 rounded-xl border border-border bg-surface p-6">
+      <section aria-labelledby="case-study-cta" className="mt-12 ui-card p-6">
         <h2 id="case-study-cta" className="text-lg font-semibold">
           {ui.caseStudyCtaTitle}
         </h2>

@@ -9,6 +9,7 @@ import { RevealObserver } from "@/components/motion/RevealObserver";
 import { RouteTracker } from "@/components/motion/RouteTracker";
 import { getProfile, getUi } from "@/lib/content/load";
 import { isProductionDeployment } from "@/lib/env";
+import { baseOpenGraph } from "@/lib/metadata";
 import { siteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
@@ -25,8 +26,7 @@ export function generateMetadata(): Metadata {
     metadataBase: siteUrl(),
     title: { default: seo.title, template: `%s · ${name}` },
     description: seo.description,
-    alternates: { canonical: "/" },
-    openGraph: { type: "website", siteName: name, locale: "en_US", title: seo.title, description: seo.description, url: "/" },
+    openGraph: baseOpenGraph(),
     twitter: { card: "summary_large_image" },
     robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
   };

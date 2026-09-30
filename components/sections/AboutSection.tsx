@@ -38,7 +38,7 @@ export function AboutSection({ profile }: { profile: Profile }) {
   return (
     <Section id="about" title={ui.aboutTitle}>
       <div className="grid gap-12 md:grid-cols-5">
-        <Reveal className="rounded-xl border border-border bg-surface p-6 md:col-span-2">
+        <Reveal className="ui-card p-6 md:col-span-2">
           <h3 className="text-lg font-semibold tracking-tight">
             {ui.lookingForTitle}
           </h3>

@@ -16,7 +16,7 @@ export function ProjectMeta({ project }: { project: Project }) {
   ].filter((row) => row.value);
 
   return (
-    <dl className="grid gap-x-8 gap-y-4 rounded-xl border border-border bg-surface p-5 text-sm sm:grid-cols-2">
+    <dl className="grid gap-x-8 gap-y-4 ui-card p-5 text-sm sm:grid-cols-2">
       {rows.map((row) => (
         <div key={row.label}>
           <dt className="text-muted">{row.label}</dt>

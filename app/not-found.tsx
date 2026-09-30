@@ -20,7 +20,7 @@ export default function NotFound() {
       <ul className="mt-8 flex flex-wrap gap-3">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="inline-flex min-h-11 items-center rounded-md border border-border px-5 text-sm font-medium hover:border-accent hover:text-accent">
+            <Link href={link.href} className="ui-btn-outline px-5">
               {link.label}
             </Link>
           </li>

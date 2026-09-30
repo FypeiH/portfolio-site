@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { ContactSection } from "@/components/sections/ContactSection";
@@ -8,8 +9,13 @@ import { SkillsSection } from "@/components/sections/SkillsSection";
 import { JsonLdScript } from "@/components/ui/JsonLdScript";
 import { getExperience, getFeaturedProjects, getProfile, getProjectTitles, getSkills } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
+import { baseOpenGraph } from "@/lib/metadata";
 import { siteUrl } from "@/lib/site-url";
 import { personJsonLd } from "@/lib/seo";
+
+export function generateMetadata(): Metadata {
+  return { alternates: { canonical: "/" }, openGraph: { ...baseOpenGraph(), url: "/" } };
+}
 
 export default function HomePage() {
   const profile = getProfile();
