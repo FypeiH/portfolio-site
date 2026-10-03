@@ -292,43 +292,59 @@ function withoutInlineMarkup(file: string, input: MappedText, code: readonly [nu
   return mapReplace(input, /<\/?[A-Za-z][\w.-]*(?:\s[^<>]*)?\/?>|[*_~]+/g, (m) => (inCode(input.offsets[m.index] ?? 0) ? m[0] : ""));
 }
 
-/** Nesting depth unwrapped by `withoutInlineElements` (innermost element first, one level per pass). */
-const ELEMENT_PASSES = 5;
+/**
+ * Hard cap on `withoutInlineElements` passes (one nesting level each). Real content nests a few levels;
+ * reaching the cap means hostile or broken input, so the scan fails instead of letting it through.
+ */
+export const ELEMENT_PASS_LIMIT = 200;
+
+/** Names of the second and third views in reports (their text isn't in the file as such). */
+export const MARKUP_VIEW = "read without inline markup";
+export const ELEMENTS_VIEW = "read without inline elements";
 
 /**
  * Third view of an MDX body: inline JSX/HTML elements removed together with their content, outside
- * code. An element can be hidden from readers by CSS (`<span hidden>x</span>`, `style={…}`, a class),
- * so `{<span hidden>x</span>{ fill me }}` renders as `{{ fill me }}` while the other views read
- * `{x{ fill me }}` (Sonar f49var G3).
+ * code, innermost first until nothing changes. An element can be hidden from readers by CSS
+ * (`<span hidden>x</span>`, `style={…}`, a class), so `{<span hidden>x</span>{ fill me }}` renders as
+ * `{{ fill me }}` while the other views read `{x{ fill me }}` (Sonar f49var G3). Each element becomes
+ * one space, so surrounding words aren't glued together (`TO<span>x</span>DO` reads `TO DO`, not
+ * `TODO`), and only the `{{…}}` rule runs on this view (the `{ {` spacing still matches).
  */
 function withoutInlineElements(file: string, input: MappedText, code: readonly [number, number][]): MappedText | undefined {
   if (!file.endsWith(".mdx")) return undefined;
   const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
   const element = /<([A-Za-z][\w.-]*)(?:\s[^<>]*)?(?:\/>|>[^<]*<\/\1\s*>)/g;
   let current = input;
-  for (let pass = 0; pass < ELEMENT_PASSES; pass++) {
-    const next = mapReplace(current, element, (m) => (inCode(current.offsets[m.index] ?? 0) ? m[0] : ""));
-    if (next.text === current.text) break;
+  for (let pass = 0; ; pass++) {
+    if (pass >= ELEMENT_PASS_LIMIT) {
+      throw new Error(`${file}: inline elements nested more than ${ELEMENT_PASS_LIMIT} levels deep; the placeholder scan can't check this file.`);
+    }
+    const next = mapReplace(current, element, (m) => (inCode(current.offsets[m.index] ?? 0) ? m[0] : " "));
+    if (next.text === current.text) return current;
     current = next;
   }
-  return current;
 }
+
+const BRACES_ONLY: ReadonlySet<string> = new Set(["{{…}}"]);
 
 /** Matches of every view, one per (offset, rule). */
 function scanViews(file: string, source: string, code: readonly [number, number][]): MarkerMatch[] {
   const plain = unwrapJsxStrings(file, renderableText(file, source), code);
   const matches = findMarkerMatches(plain, source, file);
   const seen = new Set(matches.map((m) => `${m.offset}:${m.label}`));
-  for (const view of [withoutInlineMarkup(file, plain, code), withoutInlineElements(file, plain, code)]) {
-    if (!view) continue;
-    for (const match of findMarkerMatches(view, source, file)) {
+  const add = (found: MarkerMatch[], view?: string) => {
+    for (const match of found) {
       const key = `${match.offset}:${match.label}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        matches.push(match);
-      }
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // The text of this view isn't in the file as such: say how it was read.
+      matches.push(view ? { ...match, text: `${match.text} (${view})` } : match);
     }
-  }
+  };
+  const markupFree = withoutInlineMarkup(file, plain, code);
+  if (markupFree) add(findMarkerMatches(markupFree, source, file), MARKUP_VIEW);
+  const elementFree = withoutInlineElements(file, plain, code);
+  if (elementFree) add(findMarkerMatches(elementFree, source, file, BRACES_ONLY), ELEMENTS_VIEW);
   return matches.sort((x, y) => x.offset - y.offset || y.end - x.end);
 }
 

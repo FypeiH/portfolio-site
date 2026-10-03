@@ -12,7 +12,9 @@
  * width (measured in Chrome over every title: within +2.3% / -5.3% per title, under 1% in total); the
  * overrides put Anton's ascent (1.176 em) and descent (0.329 em) back after that scaling, so the
  * baseline doesn't move either. Narrow first (closest shape): Arial Narrow and its metric clones; then
- * Arial and its clones (Liberation Sans, Arimo). Impact is left out: its widths can't be matched here.
+ * Arial and its clones (Liberation Sans, Arimo); then Roboto for Android (measured on Roboto Regular,
+ * the variable font at wght 400: within +3.4% / -3.4% per title). Impact is left out: its widths can't
+ * be matched here.
  */
 @font-face {
   font-family: "Anton Fallback Narrow";
@@ -32,6 +34,15 @@
   descent-override: 48.8%;
   line-gap-override: 0%;
 }
+/* Android has neither Arial nor its clones: its sans-serif is Roboto, ~35% wider than Anton. */
+@font-face {
+  font-family: "Anton Fallback Roboto";
+  src: local("Roboto"), local("Roboto Regular"), local("Roboto-Regular");
+  size-adjust: 73.8%;
+  ascent-override: 159.4%;
+  descent-override: 44.6%;
+  line-gap-override: 0%;
+}
 
 /* Design tokens: portfolio-design/visual-direction.md §10 ("Dark + Brutal"). */
 @theme {
@@ -42,8 +53,8 @@
      Safari, Menlo covers Chrome/Firefox on macOS, and monospace is Consolas on Windows. */
   --font-sans: system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
-  --font-display: var(--font-anton), "Anton", "Anton Fallback Narrow", "Anton Fallback", sans-serif;
-  --font-display-fallback: "Anton Fallback Narrow", "Anton Fallback", sans-serif;
+  --font-display: var(--font-anton), "Anton", "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
+  --font-display-fallback: "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
 
   /* Colour (contrast ratios in visual-direction §2) */
   --color-bg: #0a0a0a;

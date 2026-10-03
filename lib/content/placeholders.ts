@@ -59,11 +59,18 @@ export function findBraces(text: string): { index: number; text: string }[] {
 }
 
 /**
- * Bidirectional embedding/override/isolate controls (U+202A–202E, U+2066–2069, plus the LRM/RLM/ALM
- * marks): an RLO can make reversed text display as "TODO". Never needed in this site's content, so any
- * of them fails outright (Sonar m4).
+ * Bidirectional embedding/override/isolate controls (U+202A–202E, U+2066–2069): an RLO can make
+ * reversed text display as "TODO". Never needed in this site's content, so any of them fails outright
+ * (Sonar m4).
  */
-const BIDI_CONTROLS = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/g;
+
+/**
+ * Directional marks (LRM U+200E, RLM U+200F, ALM U+061C): invisible, common in text pasted from Word
+ * or chat apps, and harmless on their own, but they can still reorder neighbouring text, so they fail
+ * too, with a friendlier message.
+ */
+const DIRECTIONAL_MARKS = /[\u061C\u200E\u200F]/g;
 
 /** Characters of text shown after a bidi control in reports. */
 const BIDI_CONTEXT = 20;
@@ -76,6 +83,7 @@ const BIDI_CONTEXT = 20;
 export const MARKERS: readonly Marker[] = [
   { label: "{{…}}", find: findBraces },
   regexMarker("bidi control", BIDI_CONTROLS),
+  regexMarker("invisible character", DIRECTIONAL_MARKS),
   regexMarker("[TODO…]", /\[\s?todo\b[^\]]{0,300}\]/gi),
   regexMarker("TODO:", /\btodo\s?:/gi),
   regexMarker("TODO", /\bTODO\b/g),
@@ -116,10 +124,10 @@ export function lineIndex(source: string): (offset: number) => number {
 /**
  * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:`, every literal
  * `{{…}}` (spec §8.1: inside code too, e.g. an Angular `{{ user.name }}` must be written another way)
- * and bidi controls. `placeholder-ok` can't exempt them (scan.ts).
+ * bidi controls and directional marks. `placeholder-ok` can't exempt them (scan.ts).
  */
 export const isPlaceholderMarker = (match: Pick<MarkerMatch, "label" | "text">) =>
-  match.label === "[TODO…]" || match.label === "TODO:" || match.label === "{{…}}" || match.label === "bidi control";
+  match.label === "[TODO…]" || match.label === "TODO:" || match.label === "{{…}}" || match.label === "bidi control" || match.label === "invisible character";
 
 /** A string plus, for every character, its offset in the original source (to report lines). */
 export interface MappedText {
@@ -232,26 +240,30 @@ export const foldCompatibility = (input: MappedText): MappedText =>
 export const normalize = (input: MappedText): MappedText => collapseWhitespace(foldCompatibility(decode(input)));
 
 /** "U+202E (bidi control) before "ODOT fill me"": the code point plus the text it reorders. */
+const codePoint = (text: string, index: number) => `U+${text.codePointAt(index)?.toString(16).toUpperCase().padStart(4, "0")}`;
+
 function describeBidi(text: string, index: number): string {
-  const code = `U+${text.codePointAt(index)?.toString(16).toUpperCase().padStart(4, "0")}`;
-  const after = text.slice(index + 1, index + 1 + BIDI_CONTEXT).replace(BIDI_CONTROLS, "").trim();
+  const code = codePoint(text, index);
+  const after = text.slice(index + 1, index + 1 + BIDI_CONTEXT).replace(BIDI_CONTROLS, "").replace(DIRECTIONAL_MARKS, "").trim();
   return after ? `${code} (bidi control) before "${after}"` : `${code} (bidi control)`;
 }
 
 /**
  * Every marker match in already-extracted text, with source ranges; `source` is the original file
  * text. Overlapping matches (`TODO:` inside `{{TODO: x}}`) are all kept, so each can be judged on its
- * own; report with `dedupeOverlaps`.
+ * own; report with `dedupeOverlaps`. `labels` limits the scan to those rules.
  */
-export function findMarkerMatches(input: MappedText, source: string, file: string): MarkerMatch[] {
+export function findMarkerMatches(input: MappedText, source: string, file: string, labels?: ReadonlySet<string>): MarkerMatch[] {
   const { text, offsets } = normalize(input);
   const lineAt = lineIndex(source);
   const matches: MarkerMatch[] = [];
   for (const { label, find } of MARKERS) {
+    if (labels && !labels.has(label)) continue;
     for (const match of find(text)) {
       const offset = offsets[match.index] ?? 0;
       const end = (offsets[match.index + match.text.length - 1] ?? offset) + 1;
-      const shown = label === "bidi control" ? describeBidi(text, match.index) : match.text.trim();
+      const shown =
+        label === "bidi control" ? describeBidi(text, match.index) : label === "invisible character" ? `invisible character ${codePoint(text, match.index)}, delete it` : match.text.trim();
       matches.push({ file, line: lineAt(offset), text: shown, offset, end, label });
     }
   }

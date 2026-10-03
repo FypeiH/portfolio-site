@@ -237,3 +237,25 @@ describe("case-study OG image alt (QA r2 N3)", () => {
     expect(fill(site.ui.ogProjectAlt, { title: "A" })).not.toBe(fill(site.ui.ogProjectAlt, { title: "B" }));
   });
 });
+
+describe("case-study OG image URL cache-buster", () => {
+  const card = { slug: "email-scraper", title: "Email Scraper", summary: "Pulls bookings.", stack: ["Python", "Gmail API", "Sheets", "Cron", "Extra"] };
+
+  it("is the prerendered path plus a 16-hex hash, stable for the same card", async () => {
+    const { projectOgImagePath, projectOgImages } = await import("@/lib/metadata");
+    const url = projectOgImagePath(card);
+    expect(url).toMatch(/^\/projects\/email-scraper\/opengraph-image\?[0-9a-f]{16}$/);
+    expect(projectOgImagePath({ ...card })).toBe(url);
+    expect(projectOgImages(card)[0]).toMatchObject({ url, width: 1200, height: 630 });
+  });
+
+  it("changes when anything the card draws changes, not otherwise", async () => {
+    const { projectOgImagePath } = await import("@/lib/metadata");
+    const url = projectOgImagePath(card);
+    expect(projectOgImagePath({ ...card, title: "Email Scraper 2" })).not.toBe(url);
+    expect(projectOgImagePath({ ...card, summary: "Other." })).not.toBe(url);
+    expect(projectOgImagePath({ ...card, stack: ["Go", ...card.stack.slice(1)] })).not.toBe(url);
+    // Only the first OG_MAX_TAGS tags are drawn.
+    expect(projectOgImagePath({ ...card, stack: [...card.stack.slice(0, 4), "Other"] })).toBe(url);
+  });
+});

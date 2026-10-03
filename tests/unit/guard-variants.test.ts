@@ -270,7 +270,8 @@ describe("Sonar f49 follow-ups: markers split by markup or invisible characters"
     ["TODO split by an inline tag", "TO<span></span>DO fill me. ", "TODO"],
     ["TBD split by strong", "T**B**D. ", "TBD"],
   ])("source scan: %s", (_name, prefix, marker) => {
-    expect(scanContentFile(BOT, inBody(prefix)).map((h) => h.text)).toContain(marker);
+    // Read in the markup-free view, so the report names it after the text.
+    expect(scanContentFile(BOT, inBody(prefix)).map((h) => h.text)).toContain(`${marker} (read without inline markup)`);
   });
 
   it("the markup-free view keeps code literal and adds no false positives", () => {
@@ -353,12 +354,21 @@ describe("Sonar m4: combining marks and bidi controls", () => {
     ["LRO", "x\u202Dy "],
     ["LRI/PDI isolate", "\u2066x\u2069 "],
     ["FSI", "\u2068x\u2069 "],
-    ["RLM", "x\u200Fy "],
   ])("rejects bidi controls outright: %s", (_name, prefix) => {
     const hits = texts(BOT, inBody(prefix));
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.some((text) => text.includes("bidi control"))).toBe(true);
     expect(scanRenderedOutput("x.html", `<p>${prefix}</p>`).length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ["LRM", "\u200E", "U+200E"],
+    ["RLM", "\u200F", "U+200F"],
+    ["ALM", "\u061C", "U+061C"],
+  ])("directional mark %s fails with a friendly message", (_name, mark, code) => {
+    expect(texts(BOT, inBody(`Pasted from a chat${mark} app. `))).toEqual([`invisible character ${code}, delete it`]);
+    expect(scanRenderedOutput("x.html", `<p>x${mark}y</p>`).length).toBeGreaterThan(0);
+    expect(scanContentFileDetailed(BOT, inBody(`{/* placeholder-ok */}\nx${mark}y. `)).hits.length).toBeGreaterThan(0);
   });
 
   it("reports the code point and the text it reorders", () => {
@@ -418,6 +428,30 @@ describe("Sonar f49var G3: braces around an element hidden by CSS", () => {
     ["self-closing between", '{"{"}<Spacer />{"{"} fill me {"}"}{"}"} '],
   ])("%s", (_name, prefix) => {
     expect(texts(BOT, inBody(prefix)).some((text) => text.includes("fill me"))).toBe(true);
+  });
+
+  it("reports the view it was read in", () => {
+    expect(texts(BOT, inBody('{"{"}<span hidden>x</span>{"{"} fill me {"}"}{"}"} '))).toContainEqual(expect.stringMatching(/fill me.*\(read without inline elements\)$/));
+  });
+
+  it.each([
+    ["TO<span>x</span>DO", "TO<span>x</span>DO is a word I made up. "],
+    ["Lorem <em>dolor</em> ipsum", "Lorem <em>dolor</em> ipsum is not filler here. "],
+    ["TB<sup>2</sup>D", "TB<sup>2</sup>D is a unit. "],
+  ])("no false positive from glued text: %s", (_name, prefix) => {
+    expect(texts(BOT, inBody(prefix))).toEqual([]);
+  });
+
+  it("unwraps any depth: braces hidden 10 levels deep still fail", () => {
+    const open = "<span hidden>".repeat(10);
+    const close = "</span>".repeat(10);
+    expect(texts(BOT, inBody(`{"{"}${open}x${close}{"{"} fill me {"}"}{"}"} `)).some((text) => text.includes("fill me"))).toBe(true);
+  });
+
+  it("fails loudly instead of letting absurd nesting through", async () => {
+    const { ELEMENT_PASS_LIMIT } = await import("@/lib/content/scan");
+    const depth = ELEMENT_PASS_LIMIT + 5;
+    expect(() => scanContentFile(BOT, inBody(`${"<span>".repeat(depth)}x${"</span>".repeat(depth)} `))).toThrow(/nested more than/);
   });
 
   it("elements in ordinary prose and code stay clean", () => {

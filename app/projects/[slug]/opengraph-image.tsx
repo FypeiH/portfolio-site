@@ -2,8 +2,7 @@ import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
 import { getProfile, getProjectBySlug, getUi } from "@/lib/content/load";
 import { loadOgFonts, OG_SIZE, OgFrame, ogColors } from "@/lib/og";
-
-const MAX_TAGS = 4;
+import { OG_MAX_TAGS } from "@/lib/og-size";
 
 // Static exports, no generateImageMetadata: the build prerenders one image per published slug and
 // dynamicParams = false makes every other slug a 404 without rendering or caching anything (Sonar M1).
@@ -26,7 +25,7 @@ export default async function ProjectOpenGraphImage({ params }: { params: Promis
         <div style={{ marginTop: 20, fontSize: 68, fontWeight: 700, maxWidth: 1000 }}>{project.title}</div>
         <div style={{ marginTop: 24, fontSize: 30, color: ogColors.muted, maxWidth: 950 }}>{project.summary}</div>
         <div style={{ marginTop: 40, display: "flex", gap: 12 }}>
-          {project.stack.slice(0, MAX_TAGS).map((tech) => (
+          {project.stack.slice(0, OG_MAX_TAGS).map((tech) => (
             <div key={tech} style={{ fontSize: 24, padding: "8px 18px", border: `1px solid ${ogColors.border}`, borderRadius: 9999, color: ogColors.fg }}>
               {tech}
             </div>

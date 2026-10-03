@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const project = getProjectBySlug((await params).slug);
   if (!project) return {};
   const url = `/projects/${project.slug}`;
-  const images = projectOgImages(project.slug, project.title);
+  const images = projectOgImages(project);
   return {
     title: project.title,
     description: project.seo?.description ?? project.summary,

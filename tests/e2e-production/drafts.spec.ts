@@ -116,7 +116,8 @@ test("case studies have their own og:image:alt and twitter:image:alt, and the im
     expect(await page.locator('meta[property="og:image:height"]').getAttribute("content"), slug).toBe("630");
     const image = new URL(ogImage);
     expect(image.pathname, slug).toBe(`/projects/${slug}/opengraph-image`);
-    const response = await request.get(image.pathname);
+    expect(image.search, slug).toMatch(/^\?[0-9a-f]{16}$/);
+    const response = await request.get(`${image.pathname}${image.search}`);
     expect(response.status(), slug).toBe(200);
     expect(response.headers()["content-type"], slug).toContain("image/png");
   }
