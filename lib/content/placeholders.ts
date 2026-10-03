@@ -11,21 +11,77 @@ import type { Placeholder } from "./types";
 
 const EXACT_PLACEHOLDER = /^\{\{[^}]+\}\}$/;
 
-/** Every rule is word-bounded so real words ("tbdx", "todos", "lorems") don't match. */
+/** One rule: finds its matches (index in the normalised text, and the matched text). */
+export interface Marker {
+  label: string;
+  find(text: string): Iterable<{ index: number; text: string }>;
+}
+
+const regexMarker = (label: string, pattern: RegExp): Marker => ({
+  label,
+  find: (text) => Array.from(text.matchAll(pattern), (m) => ({ index: m.index, text: m[0] })),
+});
+
+/** Characters of context reported after a `{{` that is never closed. */
+const UNCLOSED_CONTEXT = 40;
+
 /**
+ * Any literal `{{…}}` (spec §8.1): any case, any spacing (`{ {`), any length, inner braces allowed
+ * (`{{PROBLEM {x} HERE}}`), ending at the first `}}` like a lazy regex. A `{{` that is never closed is
+ * reported too. Linear on any input (Sonar nit: the lazy regex was quadratic on a run of unclosed `{{`):
+ * each search for `}}` starts where the previous match ended, and once it fails no later `{{` can be
+ * closed either, so it is never repeated.
+ */
+export function findBraces(text: string): { index: number; text: string }[] {
+  const open = /\{\s?\{/g;
+  const close = /\}\s?\}/g;
+  const found: { index: number; text: string }[] = [];
+  let closable = true;
+  for (let o = open.exec(text); o; o = open.exec(text)) {
+    const start = o.index;
+    const afterOpen = start + o[0].length;
+    let c: RegExpExecArray | null = null;
+    if (closable) {
+      close.lastIndex = afterOpen;
+      c = close.exec(text);
+      closable = c !== null;
+    }
+    if (c) {
+      const end = c.index + c[0].length;
+      found.push({ index: start, text: text.slice(start, end) });
+      open.lastIndex = end;
+    } else {
+      found.push({ index: start, text: text.slice(start, afterOpen + UNCLOSED_CONTEXT) });
+      open.lastIndex = afterOpen;
+    }
+  }
+  return found;
+}
+
+/**
+ * Bidirectional embedding/override/isolate controls (U+202A–202E, U+2066–2069, plus the LRM/RLM/ALM
+ * marks): an RLO can make reversed text display as "TODO". Never needed in this site's content, so any
+ * of them fails outright (Sonar m4).
+ */
+const BIDI_CONTROLS = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+
+/** Characters of text shown after a bidi control in reports. */
+const BIDI_CONTEXT = 20;
+
+/**
+ * Every rule is word-bounded so real words ("tbdx", "todos", "lorems") don't match.
  * Case rules (shared with the rendered-output check, output-scan.ts): bare `TODO` is uppercase only,
  * so "a Todo app" passes; `todo:` and `[todo…]` match in any case; TBD, FIXME and lorem ipsum in any case.
  */
-export const MARKERS: readonly { label: string; pattern: RegExp }[] = [
-  // Any literal {{…}} (spec §8.1): any case, any spacing, any length (newlines are already collapsed),
-  // inner braces allowed (`{{PROBLEM {x} HERE}}`). Lazy, so it ends at the first `}}`.
-  { label: "{{…}}", pattern: /\{\s?\{[\s\S]*?\}\s?\}/g },
-  { label: "[TODO…]", pattern: /\[\s?todo\b[^\]]{0,300}\]/gi },
-  { label: "TODO:", pattern: /\btodo\s?:/gi },
-  { label: "TODO", pattern: /\bTODO\b/g },
-  { label: "TBD", pattern: /\btbd\b/gi },
-  { label: "FIXME", pattern: /\bfixme\b/gi },
-  { label: "Lorem ipsum", pattern: /\blorem\s?ipsum\b/gi },
+export const MARKERS: readonly Marker[] = [
+  { label: "{{…}}", find: findBraces },
+  regexMarker("bidi control", BIDI_CONTROLS),
+  regexMarker("[TODO…]", /\[\s?todo\b[^\]]{0,300}\]/gi),
+  regexMarker("TODO:", /\btodo\s?:/gi),
+  regexMarker("TODO", /\bTODO\b/g),
+  regexMarker("TBD", /\btbd\b/gi),
+  regexMarker("FIXME", /\bfixme\b/gi),
+  regexMarker("Lorem ipsum", /\blorem\s?ipsum\b/gi),
 ];
 
 export interface PlaceholderHit {
@@ -58,22 +114,12 @@ export function lineIndex(source: string): (offset: number) => number {
 }
 
 /**
- * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:` and every literal
- * `{{…}}` (spec §8.1: inside code too, e.g. an Angular `{{ user.name }}` must be written another way).
- * `placeholder-ok` can't exempt them (scan.ts).
+ * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:`, every literal
+ * `{{…}}` (spec §8.1: inside code too, e.g. an Angular `{{ user.name }}` must be written another way)
+ * and bidi controls. `placeholder-ok` can't exempt them (scan.ts).
  */
 export const isPlaceholderMarker = (match: Pick<MarkerMatch, "label" | "text">) =>
-  match.label === "[TODO…]" || match.label === "TODO:" || match.label === "{{…}}";
-
-/**
- * `{{ … }}` whose inner text is TODO-style (any other marker, or an all-caps slot like `{{PROJECT_NAME}}`).
- * Only a `{{ … }}` that is NOT placeholder-style may be allowed inside code (see scan.ts).
- */
-export function isPlaceholderStyle(braces: string): boolean {
-  const inner = braces.replace(/^\{\s?\{|\}\s?\}$/g, "");
-  if (/^\s*[A-Z][A-Z0-9_]*\s*$/.test(inner) || /\btodo\b/i.test(inner)) return true;
-  return MARKERS.some(({ label, pattern }) => label !== "{{…}}" && new RegExp(pattern.source, pattern.flags).test(inner));
-}
+  match.label === "[TODO…]" || match.label === "TODO:" || match.label === "{{…}}" || match.label === "bidi control";
 
 /** A string plus, for every character, its offset in the original source (to report lines). */
 export interface MappedText {
@@ -102,7 +148,9 @@ export function mapReplace(input: MappedText, pattern: RegExp, replace: (match: 
     copy(last, start);
     const replacement = replace(match as RegExpExecArray);
     text += replacement;
-    for (let i = 0; i < replacement.length; i++) offsets.push(input.offsets[start] ?? 0);
+    // A match kept as is keeps its own offsets (e.g. markup left alone inside code).
+    if (replacement === match[0]) copy(start, start + replacement.length);
+    else for (let i = 0; i < replacement.length; i++) offsets.push(input.offsets[start] ?? 0);
     last = start + match[0].length;
   }
   text += input.text.slice(last);
@@ -164,17 +212,31 @@ const CONFUSABLES: Record<string, string> = {
   "ο": "o", "ι": "i", "κ": "k", "ν": "v", "ρ": "p", "τ": "t", "υ": "u", "χ": "x",
 };
 
+const COMBINING_MARK = /^\p{M}$/u;
+
 /**
- * NFKC per character (fullwidth ｛｝ → {}, ﬁ → fi, no-break space → space), then the look-alike
- * fold above. Per character so every output character keeps its source offset.
+ * NFKC per character (fullwidth ｛｝ → {}, ﬁ → fi, no-break space → space), then combining marks are
+ * dropped (T\u0336ODO draws as a struck-through TODO, Sonar m4) and look-alikes folded as above. Per
+ * character so every output character keeps its source offset. Matching view only: nothing rendered
+ * is rewritten.
  */
 export const foldCompatibility = (input: MappedText): MappedText =>
   mapReplace(input, /[^\x00-\x7F]/gu, (m) => {
     const folded = m[0].normalize("NFKC");
-    return [...folded].map((c) => CONFUSABLES[c] ?? c).join("");
+    return [...folded]
+      .filter((c) => !COMBINING_MARK.test(c))
+      .map((c) => CONFUSABLES[c] ?? c)
+      .join("");
   });
 
 export const normalize = (input: MappedText): MappedText => collapseWhitespace(foldCompatibility(decode(input)));
+
+/** "U+202E (bidi control) before "ODOT fill me"": the code point plus the text it reorders. */
+function describeBidi(text: string, index: number): string {
+  const code = `U+${text.codePointAt(index)?.toString(16).toUpperCase().padStart(4, "0")}`;
+  const after = text.slice(index + 1, index + 1 + BIDI_CONTEXT).replace(BIDI_CONTROLS, "").trim();
+  return after ? `${code} (bidi control) before "${after}"` : `${code} (bidi control)`;
+}
 
 /**
  * Every marker match in already-extracted text, with source ranges; `source` is the original file
@@ -185,11 +247,12 @@ export function findMarkerMatches(input: MappedText, source: string, file: strin
   const { text, offsets } = normalize(input);
   const lineAt = lineIndex(source);
   const matches: MarkerMatch[] = [];
-  for (const { label, pattern } of MARKERS) {
-    for (const match of text.matchAll(pattern)) {
+  for (const { label, find } of MARKERS) {
+    for (const match of find(text)) {
       const offset = offsets[match.index] ?? 0;
-      const end = (offsets[match.index + match[0].length - 1] ?? offset) + 1;
-      matches.push({ file, line: lineAt(offset), text: match[0].trim(), offset, end, label });
+      const end = (offsets[match.index + match.text.length - 1] ?? offset) + 1;
+      const shown = label === "bidi control" ? describeBidi(text, match.index) : match.text.trim();
+      matches.push({ file, line: lineAt(offset), text: shown, offset, end, label });
     }
   }
   return matches.sort((a, b) => a.offset - b.offset || b.end - a.end);

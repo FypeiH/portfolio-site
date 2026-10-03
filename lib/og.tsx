@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ReactNode } from "react";
 
-export const OG_SIZE = { width: 1200, height: 630 };
+export { OG_SIZE } from "@/lib/og-size";
 
 const ASSETS = path.join(process.cwd(), "assets/og");
 export const ogColors = { bg: "#0b0d10", fg: "#e7e9ec", muted: "#a3acb7", accent: "#7cc4fa", border: "#262c35" };

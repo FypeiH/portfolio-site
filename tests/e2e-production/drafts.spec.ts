@@ -28,20 +28,18 @@ test.describe("drafts", () => {
     test(`draft "${slug}" is a 404, page and OG image`, async ({ request }) => {
       expect((await request.get(`/projects/${slug}`)).status()).toBe(404);
       expect((await request.get(`/projects/${slug}/opengraph-image`)).status()).toBe(404);
-      expect((await request.get(`/projects/${slug}/opengraph-image/card`)).status()).toBe(404);
     });
   }
 });
 
 test("an unknown slug's OG image is a 404", async ({ request }) => {
   expect((await request.get("/projects/does-not-exist/opengraph-image")).status()).toBe(404);
-  expect((await request.get("/projects/does-not-exist/opengraph-image/card")).status()).toBe(404);
-  expect((await request.get(`/projects/${published[0]}/opengraph-image/other`)).status()).toBe(404);
+  expect((await request.get(`/projects/${published[0]}/opengraph-image/card`)).status()).toBe(404);
 });
 
 test("published OG images render", async ({ request }) => {
   for (const slug of published) {
-    const response = await request.get(`/projects/${slug}/opengraph-image/card`);
+    const response = await request.get(`/projects/${slug}/opengraph-image`);
     expect(response.status(), slug).toBe(200);
     expect(response.headers()["content-type"]).toContain("image/png");
   }
@@ -110,10 +108,42 @@ test("case studies have their own og:image:alt and twitter:image:alt, and the im
     expect(ogAlt, slug).toContain(title);
     expect(twAlt, slug).toBe(ogAlt);
     alts.add(ogAlt ?? "");
-    const image = new URL((await page.locator('meta[property="og:image"]').getAttribute("content")) ?? "");
-    expect(image.pathname, slug).toBe(`/projects/${slug}/opengraph-image/card`);
+    await expect(page.locator('meta[property="og:image"]'), slug).toHaveCount(1);
+    await expect(page.locator('meta[name="twitter:image"]'), slug).toHaveCount(1);
+    const ogImage = (await page.locator('meta[property="og:image"]').getAttribute("content")) ?? "";
+    expect(await page.locator('meta[name="twitter:image"]').getAttribute("content"), slug).toBe(ogImage);
+    expect(await page.locator('meta[property="og:image:width"]').getAttribute("content"), slug).toBe("1200");
+    expect(await page.locator('meta[property="og:image:height"]').getAttribute("content"), slug).toBe("630");
+    const image = new URL(ogImage);
+    expect(image.pathname, slug).toBe(`/projects/${slug}/opengraph-image`);
     const response = await request.get(image.pathname);
     expect(response.status(), slug).toBe(200);
+    expect(response.headers()["content-type"], slug).toContain("image/png");
   }
   expect(alts.size).toBe(published.length);
+});
+
+/** Every file under .next (the build output `next start` serves and caches into). */
+function countFiles(dir: string): number {
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    total += entry.isDirectory() ? countFiles(path.join(dir, entry.name)) : 1;
+  }
+  return total;
+}
+
+test("unknown slugs never write to the build cache (Sonar M1)", async ({ request }) => {
+  const nextDir = path.join(process.cwd(), ".next");
+  const before = countFiles(nextDir);
+  const slugs = Array.from({ length: 8 }, (_, i) => `no-such-project-${i}-${Date.now()}`);
+  for (const slug of slugs) {
+    for (const suffix of ["", "/opengraph-image", "/opengraph-image/card", "/opengraph-image/x"]) {
+      expect((await request.get(`/projects/${slug}${suffix}`)).status(), `${slug}${suffix}`).toBe(404);
+    }
+    for (const draft of drafts) expect((await request.get(`/projects/${draft}/opengraph-image`)).status()).toBe(404);
+  }
+  // Give a background cache write time to land before counting again.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  expect(countFiles(nextDir)).toBe(before);
+  for (const slug of slugs) expect(fs.existsSync(path.join(nextDir, "server/app/projects", slug)), slug).toBe(false);
 });

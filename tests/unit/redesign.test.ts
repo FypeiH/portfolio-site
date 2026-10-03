@@ -9,7 +9,7 @@ import { formatYearRange } from "@/lib/format";
 import { COVER_HEIGHT, COVER_SOURCES, COVER_WIDTH, coverFile, coverFor, coverInputs, type CoverSlug } from "@/lib/project-covers";
 import { nestSvg, sanitizeSvg, UnsafeSvgError } from "@/lib/project-covers-compose";
 import { COVERS_MANIFEST, sha256, staleCoverReasons, type CoversManifest } from "@/lib/project-covers-manifest";
-import { publishAssets, publishedAssetPaths, readProjectAssets } from "@/lib/publish-assets";
+import { MissingAssetError, publishAssets, publishedAssetPaths, readProjectAssets } from "@/lib/publish-assets";
 import { RENDERED_DIR, renderedFile } from "@/lib/rendered-assets";
 
 const COVER_SLUGS = Object.keys(COVER_SOURCES) as CoverSlug[];
@@ -173,6 +173,29 @@ describe("published assets (drafts never ship)", () => {
     publishAssets(root, false);
     expect(fs.existsSync(path.join(root, "public/covers/benched.webp"))).toBe(false);
     expect(fs.existsSync(path.join(root, "public/covers/email-scraper.svg"))).toBe(true);
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("publishAssets throws, naming the project and file, when a shown project's image is missing (Sonar m3)", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "publish-"));
+    fs.cpSync("content/projects", path.join(root, "content/projects"), { recursive: true });
+    fs.cpSync(RENDERED_DIR, path.join(root, RENDERED_DIR), { recursive: true });
+    fs.rmSync(path.join(root, RENDERED_DIR, "diagrams/fidu-bot.svg"));
+    let error: unknown;
+    try {
+      publishAssets(root, false);
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(MissingAssetError);
+    expect((error as MissingAssetError).slug).toBe("fidu-bot");
+    expect((error as Error).message).toContain("fidu-bot");
+    expect((error as Error).message).toContain("assets/rendered/diagrams/fidu-bot.svg");
+    // A missing draft image fails preview builds too, but not production builds, which don't ship it.
+    fs.cpSync(path.join(RENDERED_DIR, "diagrams/fidu-bot.svg"), path.join(root, RENDERED_DIR, "diagrams/fidu-bot.svg"));
+    fs.rmSync(path.join(root, RENDERED_DIR, "covers/benched.webp"));
+    expect(() => publishAssets(root, true)).toThrow(/"benched".*assets\/rendered\/covers\/benched\.webp/);
+    expect(() => publishAssets(root, false)).not.toThrow();
     fs.rmSync(root, { recursive: true, force: true });
   });
 });

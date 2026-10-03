@@ -333,3 +333,94 @@ describe("Kaner N2 (spec §8.1): any literal {{…}} fails, normalized first", (
     expect(texts(BOT, inBody("Привет, мир. Καλημέρα. I built a Todo app with {teamSize} people. "))).toEqual([]);
   });
 });
+
+describe("Sonar m4: combining marks and bidi controls", () => {
+  const texts = (file: string, source: string) => scanContentFile(file, source).map((h) => h.text);
+
+  it.each([
+    ["combining long stroke T\u0336ODO", "T\u0336ODO fill me. "],
+    ["combining marks on every letter", "T\u0336O\u0301D\u0308O\u0323 fill me. "],
+    ["combining grave in TBD", "TB\u0300D. "],
+    ["enclosing mark around FIXME's I", "FI\u20DDXME. "],
+  ])("strips combining marks before matching: %s", (_name, prefix) => {
+    expect(texts(BOT, inBody(prefix))).toHaveLength(1);
+    expect(scanRenderedOutput("x.html", `<p>${prefix}</p>`)).toHaveLength(1);
+  });
+
+  it.each([
+    ["RLO + reversed text (displays TODO)", "\u202EODOT\u202C fill me. "],
+    ["RLE", "x\u202By "],
+    ["LRO", "x\u202Dy "],
+    ["LRI/PDI isolate", "\u2066x\u2069 "],
+    ["FSI", "\u2068x\u2069 "],
+    ["RLM", "x\u200Fy "],
+  ])("rejects bidi controls outright: %s", (_name, prefix) => {
+    const hits = texts(BOT, inBody(prefix));
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.some((text) => text.includes("bidi control"))).toBe(true);
+    expect(scanRenderedOutput("x.html", `<p>${prefix}</p>`).length).toBeGreaterThan(0);
+  });
+
+  it("reports the code point and the text it reorders", () => {
+    expect(texts(BOT, inBody("\u202EODOT\u202C fill me. "))[0]).toMatch(/^U\+202E \(bidi control\) before "ODOT fill me\./);
+  });
+
+  it("placeholder-ok can't exempt a bidi control", () => {
+    const optedOut = inBody("{/* placeholder-ok */}\n\u202EODOT\u202C fill me. ");
+    expect(scanContentFileDetailed(BOT, optedOut).hits.length).toBeGreaterThan(0);
+  });
+
+  it("no false positives: accented and non-Latin text stays clean", () => {
+    expect(texts(BOT, inBody("Café, São Paulo, naïve, Καλημέρα, Привет, e\u0301 (decomposed é). "))).toEqual([]);
+    expect(scanRenderedOutput("x.html", "<p>Café, São Paulo, Ação, e\u0301</p>")).toEqual([]);
+  });
+});
+
+describe("Sonar nit: {{ detection is linear", () => {
+  const texts = (file: string, source: string) => scanContentFile(file, source).map((h) => h.text);
+
+  it("an unclosed {{ is reported too", () => {
+    expect(texts(BOT, inBody("`{{ never closed` "))).toHaveLength(1);
+    expect(scanRenderedOutput("x.html", "<p>{{ x</p>")).toHaveLength(1);
+  });
+
+  it("100k unclosed {{ in well under a second", async () => {
+    const { findPlaceholders, findBraces } = await import("@/lib/content/placeholders");
+    const hostile = "{{".repeat(100_000);
+    let start = performance.now();
+    expect(findBraces(hostile).length).toBe(100_000);
+    expect(performance.now() - start).toBeLessThan(200);
+    start = performance.now();
+    expect(findPlaceholders(hostile, "x.md").length).toBeGreaterThan(0);
+    expect(performance.now() - start).toBeLessThan(1000);
+    const closedLate = `${"{{".repeat(50_000)}x}}`;
+    start = performance.now();
+    expect(findBraces(closedLate)).toHaveLength(1);
+    expect(performance.now() - start).toBeLessThan(200);
+  });
+
+  it("keeps lazy-regex semantics: ends at the first }}, { { and } } spacing allowed", async () => {
+    const { findBraces } = await import("@/lib/content/placeholders");
+    expect(findBraces("a {{x}} b {{y}} c").map((m) => m.text)).toEqual(["{{x}}", "{{y}}"]);
+    expect(findBraces("{ {a {b} c} } d}}").map((m) => m.text)).toEqual(["{ {a {b} c} }"]);
+    expect(findBraces("{{{x}}}").map((m) => m.text)).toEqual(["{{{x}}"]);
+    expect(findBraces("{x} {y} }}")).toEqual([]);
+  });
+});
+
+describe("Sonar f49var G3: braces around an element hidden by CSS", () => {
+  const texts = (file: string, source: string) => scanContentFile(file, source).map((h) => h.text);
+
+  it.each([
+    ["hidden attribute", '{"{"}<span hidden>x</span>{"{"} fill me {"}"}{"}"} '],
+    ["class", '{"{"}<span className="sr-only">x</span>{"{"} fill me {"}"}{"}"} '],
+    ["nested", '{"{"}<span hidden><b>x</b> y</span>{"{"} fill me {"}"}{"}"} '],
+    ["self-closing between", '{"{"}<Spacer />{"{"} fill me {"}"}{"}"} '],
+  ])("%s", (_name, prefix) => {
+    expect(texts(BOT, inBody(prefix)).some((text) => text.includes("fill me"))).toBe(true);
+  });
+
+  it("elements in ordinary prose and code stay clean", () => {
+    expect(texts(BOT, inBody("Press <kbd>Ctrl</kbd> + <kbd>K</kbd>, then `<span>{x}</span>`. "))).toEqual([]);
+  });
+});

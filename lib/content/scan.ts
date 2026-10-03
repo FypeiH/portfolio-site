@@ -292,15 +292,42 @@ function withoutInlineMarkup(file: string, input: MappedText, code: readonly [nu
   return mapReplace(input, /<\/?[A-Za-z][\w.-]*(?:\s[^<>]*)?\/?>|[*_~]+/g, (m) => (inCode(input.offsets[m.index] ?? 0) ? m[0] : ""));
 }
 
-/** Matches of both views, one per (offset, rule). */
+/** Nesting depth unwrapped by `withoutInlineElements` (innermost element first, one level per pass). */
+const ELEMENT_PASSES = 5;
+
+/**
+ * Third view of an MDX body: inline JSX/HTML elements removed together with their content, outside
+ * code. An element can be hidden from readers by CSS (`<span hidden>x</span>`, `style={…}`, a class),
+ * so `{<span hidden>x</span>{ fill me }}` renders as `{{ fill me }}` while the other views read
+ * `{x{ fill me }}` (Sonar f49var G3).
+ */
+function withoutInlineElements(file: string, input: MappedText, code: readonly [number, number][]): MappedText | undefined {
+  if (!file.endsWith(".mdx")) return undefined;
+  const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
+  const element = /<([A-Za-z][\w.-]*)(?:\s[^<>]*)?(?:\/>|>[^<]*<\/\1\s*>)/g;
+  let current = input;
+  for (let pass = 0; pass < ELEMENT_PASSES; pass++) {
+    const next = mapReplace(current, element, (m) => (inCode(current.offsets[m.index] ?? 0) ? m[0] : ""));
+    if (next.text === current.text) break;
+    current = next;
+  }
+  return current;
+}
+
+/** Matches of every view, one per (offset, rule). */
 function scanViews(file: string, source: string, code: readonly [number, number][]): MarkerMatch[] {
   const plain = unwrapJsxStrings(file, renderableText(file, source), code);
-  const stripped = withoutInlineMarkup(file, plain, code);
   const matches = findMarkerMatches(plain, source, file);
-  if (!stripped) return matches;
   const seen = new Set(matches.map((m) => `${m.offset}:${m.label}`));
-  for (const match of findMarkerMatches(stripped, source, file)) {
-    if (!seen.has(`${match.offset}:${match.label}`)) matches.push(match);
+  for (const view of [withoutInlineMarkup(file, plain, code), withoutInlineElements(file, plain, code)]) {
+    if (!view) continue;
+    for (const match of findMarkerMatches(view, source, file)) {
+      const key = `${match.offset}:${match.label}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        matches.push(match);
+      }
+    }
   }
   return matches.sort((x, y) => x.offset - y.offset || y.end - x.end);
 }

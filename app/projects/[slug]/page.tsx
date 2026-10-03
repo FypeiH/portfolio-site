@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CaseStudyLayout } from "@/components/project/CaseStudyLayout";
 import { JsonLdScript } from "@/components/ui/JsonLdScript";
 import { getAdjacentProjects, getDiagramImage, getDiagramSlots, getProfile, getProjectBySlug } from "@/lib/content/load";
-import { baseOpenGraph } from "@/lib/metadata";
+import { baseOpenGraph, projectOgImages } from "@/lib/metadata";
 import { siteUrl } from "@/lib/site-url";
 import { projectJsonLd } from "@/lib/seo";
 
@@ -17,11 +17,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const project = getProjectBySlug((await params).slug);
   if (!project) return {};
   const url = `/projects/${project.slug}`;
+  const images = projectOgImages(project.slug, project.title);
   return {
     title: project.title,
     description: project.seo?.description ?? project.summary,
     alternates: { canonical: url },
-    openGraph: { ...baseOpenGraph(), type: "article", title: project.title, description: project.summary, url },
+    openGraph: { ...baseOpenGraph(), type: "article", title: project.title, description: project.summary, url, images },
+    // Replaces the layout's twitter object, so the card type is repeated here.
+    twitter: { card: "summary_large_image", title: project.title, description: project.summary, images },
   };
 }
 

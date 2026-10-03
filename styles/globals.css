@@ -4,6 +4,35 @@
 @custom-variant js (&:where(.js, .js *));
 @custom-variant no-js (&:where(html:not(.js), html:not(.js) *));
 
+/*
+ * Metric-matched stand-ins for Anton (Sonar m2). The marquee h2s use them until the page has loaded
+ * (Anton is requested only then, see app/layout.tsx) and during Anton's swap period. Unadjusted, a
+ * sans-serif fallback is ~48% wider than Anton, so the copies after the title moved when Anton arrived
+ * (CLS 0.05 on /#projects). size-adjust scales each face so the uppercase section titles match Anton's
+ * width (measured in Chrome over every title: within +2.3% / -5.3% per title, under 1% in total); the
+ * overrides put Anton's ascent (1.176 em) and descent (0.329 em) back after that scaling, so the
+ * baseline doesn't move either. Narrow first (closest shape): Arial Narrow and its metric clones; then
+ * Arial and its clones (Liberation Sans, Arimo). Impact is left out: its widths can't be matched here.
+ */
+@font-face {
+  font-family: "Anton Fallback Narrow";
+  src: local("Arial Narrow"), local("ArialNarrow"), local("Liberation Sans Narrow"), local("LiberationSansNarrow"),
+    local("Nimbus Sans Narrow"), local("NimbusSansNarrow-Regular");
+  size-adjust: 83.2%;
+  ascent-override: 141.4%;
+  descent-override: 39.6%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Anton Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Arimo Regular"),
+    local("Arimo-Regular");
+  size-adjust: 67.5%;
+  ascent-override: 174.3%;
+  descent-override: 48.8%;
+  line-gap-override: 0%;
+}
+
 /* Design tokens: portfolio-design/visual-direction.md §10 ("Dark + Brutal"). */
 @theme {
   /* Fonts: no web font in body/UI; Anton only via --font-anton (next/font/local), marquee h2s only.
@@ -13,7 +42,8 @@
      Safari, Menlo covers Chrome/Firefox on macOS, and monospace is Consolas on Windows. */
   --font-sans: system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
-  --font-display: var(--font-anton), "Anton", Impact, "Arial Narrow", sans-serif;
+  --font-display: var(--font-anton), "Anton", "Anton Fallback Narrow", "Anton Fallback", sans-serif;
+  --font-display-fallback: "Anton Fallback Narrow", "Anton Fallback", sans-serif;
 
   /* Colour (contrast ratios in visual-direction §2) */
   --color-bg: #0a0a0a;
@@ -116,6 +146,15 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Base outline colour on every element: Tailwind's transition-colors includes outline-color, so a
+     control whose ring only got its colour on :focus-visible faded in from currentColor (grey) over
+     150 ms. With the accent already set, only the outline itself appears. */
+  *,
+  ::before,
+  ::after {
+    outline-color: var(--color-accent);
+  }
+
   :focus-visible {
     outline: 3px solid var(--color-accent);
     outline-offset: 3px;
@@ -210,8 +249,8 @@
   gap: 0.35em;
   width: max-content;
   padding-inline: var(--gutter);
-  /* Fallback face until the page has loaded; then Anton (see .fonts-ready below and app/layout.tsx). */
-  font: 400 var(--text-marquee) / 1 Impact, "Arial Narrow", sans-serif;
+  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, app/layout.tsx). */
+  font: 400 var(--text-marquee) / 1 var(--font-display-fallback);
   :where(html.fonts-ready) & {
     font-family: var(--font-display);
   }
@@ -312,7 +351,9 @@
   text-transform: uppercase;
   @apply after:absolute after:inset-x-3 after:bottom-2 after:h-0.5 after:origin-left after:scale-x-0 after:bg-accent after:transition-transform;
   @apply aria-[current=true]:text-fg aria-[current=true]:after:scale-x-100 aria-[current=true]:after:bg-accent motion-reduce:after:transition-none;
-  /* Explicit accent ring (never currentColor, which is muted/fg here); offset keeps it on the bg. */
+  /* Explicit accent ring (never currentColor, which is muted/fg here); offset keeps it on the bg. The
+     base colour is the accent too, so transition-colors has nothing to fade (Sonar nit). */
+  outline-color: var(--color-accent);
   &:focus-visible {
     outline: 3px solid var(--color-accent);
     outline-offset: 3px;

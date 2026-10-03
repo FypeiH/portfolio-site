@@ -22,7 +22,10 @@ const anton = localFont({
   display: "swap",
   preload: false,
   variable: "--font-anton",
-  fallback: ["Impact", "Arial Narrow", "sans-serif"],
+  // Our own metric-matched fallback faces (styles/globals.css), not Next's Arial-based one, which is
+  // sized for mixed-case text and would add a second shift while Anton loads.
+  adjustFontFallback: false,
+  fallback: ["Anton Fallback Narrow", "Anton Fallback", "sans-serif"],
 });
 
 /**

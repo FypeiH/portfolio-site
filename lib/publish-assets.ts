@@ -24,27 +24,46 @@ export function readProjectAssets(root: string): ProjectAssets[] {
     });
 }
 
-/** Public paths this build serves from assets/rendered/: published projects only, all of them with drafts shown. */
-export function publishedAssetPaths(projects: readonly ProjectAssets[], showDrafts: boolean): string[] {
+/** Assets this build serves from assets/rendered/, with their project: published only, all of them with drafts shown. */
+export function publishedAssets(projects: readonly ProjectAssets[], showDrafts: boolean): { slug: string; src: string }[] {
   return projects
     .filter((p) => showDrafts || p.status === "published")
     .flatMap((p) => {
       const diagram = p.diagram?.kind === "mermaid" && p.diagram.source ? renderedDiagramPath(p.diagram.source) : p.diagram?.src;
-      return [coverFor(p.slug)?.src, diagram].filter((src): src is string => typeof src === "string");
+      return [coverFor(p.slug)?.src, diagram].filter((src): src is string => typeof src === "string").map((src) => ({ slug: p.slug, src }));
     })
-    .sort();
+    .sort((a, b) => (a.src < b.src ? -1 : a.src > b.src ? 1 : 0));
 }
 
-/** Empties public/{diagrams,covers} and copies in this build's assets. Returns the public paths written. */
+/** Public paths this build serves from assets/rendered/. */
+export function publishedAssetPaths(projects: readonly ProjectAssets[], showDrafts: boolean): string[] {
+  return publishedAssets(projects, showDrafts).map((asset) => asset.src);
+}
+
+export class MissingAssetError extends Error {
+  constructor(
+    readonly slug: string,
+    readonly file: string,
+  ) {
+    super(`publish-assets: "${slug}" needs ${file}, which does not exist. Run pnpm diagrams / pnpm covers, or fix its frontmatter.`);
+    this.name = "MissingAssetError";
+  }
+}
+
+/**
+ * Empties public/{diagrams,covers} and copies in this build's assets. Returns the public paths written.
+ * A missing file fails the build (Sonar m3): it would otherwise be a broken image on a shown project.
+ */
 export function publishAssets(root: string, showDrafts: boolean): string[] {
+  const assets = publishedAssets(readProjectAssets(root), showDrafts);
+  for (const { slug, src } of assets) {
+    const file = renderedFile(src);
+    if (!fs.existsSync(path.join(root, file))) throw new MissingAssetError(slug, file);
+  }
   for (const dir of PUBLISHED_ASSET_DIRS) {
     fs.rmSync(path.join(root, "public", dir), { recursive: true, force: true });
     fs.mkdirSync(path.join(root, "public", dir), { recursive: true });
   }
-  const paths = publishedAssetPaths(readProjectAssets(root), showDrafts);
-  for (const src of paths) {
-    const from = path.join(root, renderedFile(src));
-    if (fs.existsSync(from)) fs.copyFileSync(from, path.join(root, "public", src));
-  }
-  return paths;
+  for (const { src } of assets) fs.copyFileSync(path.join(root, renderedFile(src)), path.join(root, "public", src));
+  return assets.map((asset) => asset.src);
 }
