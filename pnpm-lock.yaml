@@ -76,6 +76,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
+      '@xmldom/xmldom':
+        specifier: 0.9.12
+        version: 0.9.12
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
@@ -1619,6 +1622,10 @@ packages:
 
   '@vitest/spy@5.0.2':
     resolution: {integrity: sha512-Ijc7T1nT9efNb5LxvjaBrEqw3f/QwUv5EE0nKqZxgqsaV/FxAAZ8baGylA8X/Z2oS4Lp+K74Jr6dTJsDKxJDeg==}
+
+  '@xmldom/xmldom@0.9.12':
+    resolution: {integrity: sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==}
+    engines: {node: '>=14.6'}
 
   '@zenuml/core@3.50.1':
     resolution: {integrity: sha512-Q18BXvIfhRuGw0JfO4e+pltG04Phhv2E7n35EWTNSZKKH/HEkyE4Sh7KERb9dqaOfjOdRdKvLG0YekjK3fcDXw==}
@@ -5533,6 +5540,8 @@ snapshots:
       vite: 8.3.1(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
 
   '@vitest/spy@5.0.2': {}
+
+  '@xmldom/xmldom@0.9.12': {}
 
   '@zenuml/core@3.50.1(@babel/core@7.29.7)(@babel/template@7.29.7)(@types/react@19.3.0)(playwright-core@1.63.0)(tailwindcss@4.3.3)':
     dependencies:

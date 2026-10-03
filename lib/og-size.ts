@@ -8,4 +8,4 @@ export const OG_MAX_TAGS = 4;
  * Part of the case-study OG cache-buster (lib/metadata.ts). The rest of the hash follows the content
  * the card draws; bump this when the card's design changes (lib/og.tsx, opengraph-image.tsx).
  */
-export const OG_TEMPLATE_VERSION = 1;
+export const OG_TEMPLATE_VERSION = 2;

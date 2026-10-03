@@ -9,7 +9,7 @@
     "dev:preview": "cross-env SHOW_DRAFTS=true pnpm assets && cross-env SHOW_DRAFTS=true next dev",
     "build": "pnpm assets && next build",
     "build:preview": "cross-env SHOW_DRAFTS=true pnpm assets && cross-env SHOW_DRAFTS=true next build",
-    "build:production": "pnpm assets && cross-env CONTENT_STRICT=true next build && tsx scripts/check-output.ts",
+    "build:production": "pnpm assets && cross-env CONTENT_STRICT=true next build && tsx scripts/check-output.ts && pnpm covers --check && pnpm avatar --check && pnpm diagrams --check",
     "build:vercel": "node scripts/build-vercel.mjs",
     "start": "next start",
     "lint": "eslint .",
@@ -23,6 +23,7 @@
     "avatar": "tsx scripts/avatar-thumb.ts",
     "covers": "tsx scripts/project-covers.ts",
     "lighthouse": "node scripts/lighthouse.mjs",
+    "audit:prod": "node scripts/audit-prod.mjs",
     "assets": "tsx scripts/publish-assets.ts"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@xmldom/xmldom": "0.9.12",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.7",

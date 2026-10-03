@@ -458,3 +458,80 @@ describe("Sonar f49var G3: braces around an element hidden by CSS", () => {
     expect(texts(BOT, inBody("Press <kbd>Ctrl</kbd> + <kbd>K</kbd>, then `<span>{x}</span>`. "))).toEqual([]);
   });
 });
+
+describe("QA r3 Z2–Z5: invisible characters stripped by category", () => {
+  const texts = (file: string, source: string) => scanContentFile(file, source).map((h) => h.text);
+
+  it.each([
+    ["tag space U+E0020", "\u{E0020}"],
+    ["language tag U+E0001", "\u{E0001}"],
+    ["cancel tag U+E007F", "\u{E007F}"],
+    ["interlinear annotation anchor U+FFF9", "\uFFF9"],
+    ["interlinear annotation separator U+FFFA", "\uFFFA"],
+    ["interlinear annotation terminator U+FFFB", "\uFFFB"],
+    ["unassigned U+FFF0", "\uFFF0"],
+    ["Hangul filler U+3164", "\u3164"],
+    ["Hangul choseong filler U+115F", "\u115F"],
+    ["Hangul jungseong filler U+1160", "\u1160"],
+    ["halfwidth Hangul filler U+FFA0", "\uFFA0"],
+    ["variation selector U+FE0F", "\uFE0F"],
+    ["variation selector supplement U+E0100", "\u{E0100}"],
+    ["Mongolian free variation selector U+180B", "\u180B"],
+    ["shorthand format control U+1BCA0", "\u{1BCA0}"],
+    ["invisible separator U+2063", "\u2063"],
+    ["Arabic number sign U+0600 (Cf)", "\u0600"],
+  ])("TO + %s + DO is TODO", (_name, invisible) => {
+    expect(texts(BOT, inBody(`TO${invisible}DO fill me. `))).toHaveLength(1);
+    expect(scanRenderedOutput("x.html", `<p>TO${invisible}DO fill me.</p>`)).toHaveLength(1);
+    // Also between braces.
+    expect(texts(BOT, inBody(`\`{${invisible}{x}}\` `))).toHaveLength(1);
+  });
+
+  it("bidi controls and directional marks keep their own, friendlier messages", () => {
+    expect(texts(BOT, inBody("x\u200Ey. "))).toEqual(["invisible character U+200E, delete it"]);
+    expect(texts(BOT, inBody("\u202EODOT\u202C fill me. "))[0]).toMatch(/^U\+202E \(bidi control\)/);
+  });
+
+  it("no false positives: Portuguese in NFC and NFD, emoji with ZWJ, flags, keycaps", () => {
+    const pt = "Ação, Começo, São Tomé, informação, avô e avó.";
+    const prose = `${pt} ${pt.normalize("NFD")} Dev 👩‍💻, team 👨‍👩‍👧, 🇵🇹, 1️⃣, ❤️. `;
+    expect(texts(BOT, inBody(prose))).toEqual([]);
+    expect(scanRenderedOutput("x.html", `<p>${prose}</p>`)).toEqual([]);
+  });
+});
+
+describe("QA r3 FP3/FP4: syntax braces in sources", () => {
+  const MMD = "content/diagrams/fidu-bot.mmd";
+  const mmd = fs.readFileSync(MMD, "utf8");
+  const texts = (file: string, source: string) => scanContentFile(file, source).map((h) => h.text);
+
+  it("FP3: a Mermaid hexagon node passes; its label is still scanned", () => {
+    expect(texts(MMD, `${mmd}\n  G --> H{{"Log trade"}}\n  I{{Decision}} --> J\n`)).toEqual([]);
+    expect(texts(MMD, `${mmd}\n  G --> H{{"TODO later"}}\n`)).toEqual(["TODO"]);
+    expect(texts(MMD, `${mmd}\n  G --> H{{"TBD"}}\n`)).toEqual(["TBD"]);
+  });
+
+  it("braces in a .mmd that aren't a hexagon shape still fail", () => {
+    expect(texts(MMD, `${mmd}\n  G -->|"{{x}}"| H\n`)).toHaveLength(1);
+    expect(texts(MMD, `${mmd}\n  G --> {{fill me}}\n`)).toHaveLength(1);
+  });
+
+  it("FP4: a JSX expression prop in MDX passes; its contents are still scanned", () => {
+    expect(texts(BOT, inBody("<span style={{ fontWeight: 700 }}>Note:</span> "))).toEqual([]);
+    expect(texts(BOT, inBody('<Callout data={{ a: { b: 1 } }} label="x" /> '))).toEqual([]);
+    expect(texts(BOT, inBody('<span title={{ text: "TODO" }}>x</span> '))).toEqual(["TODO"]);
+  });
+
+  it("braces outside a tag, in code or in prose, still fail", () => {
+    expect(texts(BOT, inBody('Set style={"{"}{"{"} x {"}"}{"}"} in prose. ')).length).toBeGreaterThan(0);
+    expect(texts(BOT, inBody("`<span style={{ a: 1 }}>` "))).toHaveLength(1);
+  });
+
+  it("G3 still fails: braces around a CSS-hidden element", () => {
+    expect(texts(BOT, inBody('{"{"}<span style={{display:"none"}}>x</span>{"{"} fill me {"}"}{"}"} ')).some((t) => t.includes("fill me"))).toBe(true);
+  });
+
+  it("the rendered output still fails on any {{", () => {
+    expect(scanRenderedOutput("x.html", '<p style="x">{{ fontWeight: 700 }}</p>')).toHaveLength(1);
+  });
+});

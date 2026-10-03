@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { composeSvgCover, readFrom } from "./project-covers-compose";
+import { composeSvgCover, readFrom, sanitizeSvg } from "./project-covers-compose";
 import { COVER_SOURCES, coverFile, coverInputs, type CoverSlug } from "./project-covers";
 
 /**
@@ -22,6 +22,22 @@ export type CoversManifest = Record<string, CoverManifestEntry>;
 export const sha256 = (data: string | Buffer) => crypto.createHash("sha256").update(data).digest("hex");
 export const sha256File = (file: string) => sha256(fs.readFileSync(file));
 
+/**
+ * Hash of a cover source as the cover sees it. An SVG source is hashed after sanitizing (prologue and
+ * comments dropped, tree re-serialised), so a change that can't alter the cover, such as the
+ * `src-sha256` comment of a re-rendered diagram, doesn't make it stale, while any drawn change does.
+ * An SVG that fails the sanitizer falls back to its raw bytes (the cover check then reports why).
+ */
+export function sourceHash(file: string): string {
+  if (!file.endsWith(".svg")) return sha256File(file);
+  const text = fs.readFileSync(file, "utf8");
+  try {
+    return sha256(sanitizeSvg(text, file));
+  } catch {
+    return sha256(text);
+  }
+}
+
 /** Why the covers no longer match their sources or the manifest (one line per problem); empty when current. */
 export function staleCoverReasons(root = process.cwd()): string[] {
   const manifestFile = path.join(root, COVERS_MANIFEST);
@@ -38,7 +54,7 @@ export function staleCoverReasons(root = process.cwd()): string[] {
       return [`${slug}: cover was not made from ${inputs.join(" + ")}`];
     for (const file of inputs) {
       if (!fs.existsSync(path.join(root, file))) return [`${slug}: missing source ${file}`];
-      if (entry.sources[file] !== sha256File(path.join(root, file))) return [`${slug}: ${file} changed after the cover was made`];
+      if (entry.sources[file] !== sourceHash(path.join(root, file))) return [`${slug}: ${file} changed after the cover was made`];
     }
     const bytes = fs.readFileSync(path.join(root, output));
     if (sha256(bytes) !== entry.sha256) return [`${slug}: ${output} was modified after it was generated`];

@@ -69,7 +69,12 @@ describe("project covers", () => {
   it("are stale once a source changes or the manifest is missing", () => {
     const root = coversCheckout();
     expect(staleCoverReasons(root)).toEqual([]);
-    fs.appendFileSync(path.join(root, COVER_SOURCES["fidu-bot"].file), "\n");
+    const source = path.join(root, COVER_SOURCES["fidu-bot"].file);
+    // Bytes outside the drawing (trailing newline, comments) don't count: SVG sources are hashed sanitized.
+    fs.appendFileSync(source, "\n<!-- re-rendered -->\n");
+    expect(staleCoverReasons(root)).toEqual([]);
+    const svg = fs.readFileSync(source, "utf8");
+    fs.writeFileSync(source, svg.replace(/<\/svg>(?![\s\S]*<\/svg>)/, '<rect width="1" height="1"/></svg>'));
     expect(staleCoverReasons(root)).toEqual(["fidu-bot: assets/rendered/diagrams/fidu-bot.svg changed after the cover was made"]);
     fs.rmSync(path.join(root, COVERS_MANIFEST));
     expect(staleCoverReasons(root)).toEqual([`missing ${COVERS_MANIFEST}`]);
@@ -114,29 +119,49 @@ describe("project covers", () => {
 });
 
 describe("cover SVG sanitizer", () => {
-  const ok = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><clipPath id="c"/></defs><rect clip-path="url(#c)"/><use href="#c"/><image href="data:image/png;base64,AA"/></svg>';
+  const SVG = 'xmlns="http://www.w3.org/2000/svg"';
+  const ok = `<svg ${SVG} viewBox="0 0 10 10"><defs><clipPath id="c"><rect width="1" height="1"/></clipPath></defs><style>.a{fill:url(#c)} @keyframes k{from{opacity:0}}</style><rect clip-path="url(#c)" style="fill:#fff" data-id="x"/><text x="1">Hi &amp; bye</text></svg>`;
 
-  it("strips the XML prologue, DOCTYPE and comments, then nests", () => {
-    const withProlog = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<!-- Generator -->\n${ok}`;
+  it("strips the XML prologue, DOCTYPE and comments, re-serialises the checked tree, then nests", () => {
+    const withProlog = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<!-- Generator -->\n${ok.replace("<defs>", "<!-- inner --><defs>")}`;
     expect(sanitizeSvg(withProlog, "x.svg")).toBe(ok);
     expect(nestSvg(withProlog, "x.svg", { x: 1, y: 2, width: 3, height: 4 })).toMatch(/^<svg xmlns="http:\/\/www.w3.org\/2000\/svg" viewBox="0 0 10 10" x="1" y="2" width="3" height="4"/);
   });
 
   it.each([
-    ["script", '<svg><script>alert(1)</script></svg>'],
-    ["foreignObject", "<svg><foreignObject><div/></foreignObject></svg>"],
-    ["on* handler", '<svg onload="x()"><rect/></svg>'],
-    ["on* handler on a child", "<svg><rect onclick='x()'/></svg>"],
-    ["external href", '<svg><image href="https://evil.example/x.png"/></svg>'],
-    ["external xlink:href", '<svg><use xlink:href="other.svg#a"/></svg>'],
-    ["javascript: href", '<svg><a href="javascript:alert(1)"><text>x</text></a></svg>'],
-    ["external url()", '<svg><rect style="fill:url(https://evil.example/p)"/></svg>'],
-    ["@import", "<svg><style>@import 'x.css';</style></svg>"],
-    ["href animation", '<svg><a><set attributeName="href" to="javascript:x"/></a></svg>'],
-    ["entity declaration", '<svg><!ENTITY x "y"></svg>'],
+    ["script", `<svg ${SVG}><script>alert(1)</script></svg>`],
+    ["foreignObject", `<svg ${SVG}><foreignObject><div/></foreignObject></svg>`],
+    ["on* handler on the root", `<svg ${SVG} onload="x()"><rect/></svg>`],
+    ["on* handler on a child", `<svg ${SVG}><rect onclick='x()'/></svg>`],
+    ["external href", `<svg ${SVG}><image href="https://evil.example/x.png"/></svg>`],
+    ["external xlink:href", `<svg ${SVG} xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="other.svg#a"/></svg>`],
+    ["javascript: href", `<svg ${SVG}><a href="javascript:alert(1)"><text>x</text></a></svg>`],
+    ["external url()", `<svg ${SVG}><rect style="fill:url(https://evil.example/p)"/></svg>`],
+    ["external url() in a presentation attribute", `<svg ${SVG}><rect fill="url(https://evil.example/p)"/></svg>`],
+    ["@import", `<svg ${SVG}><style>@import 'x.css';</style></svg>`],
+    ["href animation", `<svg ${SVG}><a><set attributeName="href" to="javascript:x"/></a></svg>`],
+    ["entity declaration", `<!DOCTYPE svg [<!ENTITY x "y">]><svg ${SVG}><text>&x;</text></svg>`],
     ["not an svg document", "<html><svg/></html>"],
+    ["malformed XML", `<svg ${SVG}><rect></svg>`],
+    // QA r3 bypasses of the regex sanitizer:
+    ["SVG-namespace prefix <s:script>", '<svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg"><s:script>alert(1)</s:script></svg>'],
+    ["XHTML <h:script>", `<svg ${SVG} xmlns:h="http://www.w3.org/1999/xhtml"><h:script>alert(1)</h:script></svg>`],
+    ["SVG-namespace prefix <s:foreignObject>", `<svg ${SVG} xmlns:s="http://www.w3.org/2000/svg"><s:foreignObject><div xmlns="http://www.w3.org/1999/xhtml">x</div></s:foreignObject></svg>`],
+    ["CSS escape @\\69mport", `<svg ${SVG}><style>@\\69mport 'https://evil.example/x.css';</style></svg>`],
+    ["CSS escape \\75rl()", `<svg ${SVG}><rect style="fill:\\75rl(https://evil.example/p)"/></svg>`],
+    ["CSS comment hiding a token", `<svg ${SVG}><style>.a{fill:u/**/rl(https://evil.example/p)}</style></svg>`],
+    ["data:text/html href", `<svg ${SVG}><a href="data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;"><text>x</text></a></svg>`],
+    ["data: url()", `<svg ${SVG}><rect style="fill:url(data:image/svg+xml,x)"/></svg>`],
+    ["unknown attribute", `<svg ${SVG}><rect formaction="x"/></svg>`],
+    ["foreign-namespace attribute", `<svg ${SVG} xmlns:ev="http://www.w3.org/2001/xml-events"><rect ev:event="click"/></svg>`],
+    ["foreign xmlns declaration", `<svg ${SVG} xmlns:h="http://www.w3.org/1999/xhtml"><rect/></svg>`],
+    ["processing instruction", `<svg ${SVG}><?xml-stylesheet href="x.css"?><rect/></svg>`],
   ])("rejects %s", (_name, svg) => {
     expect(() => sanitizeSvg(svg, "x.svg")).toThrow(UnsafeSvgError);
+  });
+
+  it("allows only same-document fragment references", () => {
+    expect(() => sanitizeSvg(`<svg ${SVG}><rect clip-path="url(#c)" fill="url('#g')"/></svg>`, "x.svg")).not.toThrow();
   });
 
   it("accepts the committed logo and diagrams", () => {

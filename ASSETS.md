@@ -7,7 +7,8 @@ Third-party files committed to this repo, where they came from, and how the site
 | File | Source | Licence | Use |
 | --- | --- | --- | --- |
 | `assets/fonts/anton-latin-400.woff2` | `@fontsource/anton` 5.3.0, `files/anton-latin-400-normal.woff2`, subset with `pyftsubset --unicodes="U+0020-007E,U+00A7,U+00B7,U+00C0-00DC,U+2014,U+2192,U+2197" --layout-features=kern --flavor=woff2` (the upstream latin file has no arrows, so the result covers ASCII, À–Ü, `§ · —`). 10,676 bytes. | SIL OFL 1.1 (`assets/fonts/Anton-OFL.txt`) | Marquee section headings only |
-| `assets/og/*` | Unchanged | See that folder | Server-side OG images only |
+| `assets/og/anton-latin-400.ttf` | Google Fonts Anton Regular (`Anton-Regular.ttf`, the system copy at `/usr/share/fonts/truetype/sand-box/google/Anton/`), subset with `pyftsubset --unicodes="U+0020-007E,U+00A0-00FF,U+0152-0153,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2192,U+2197" --layout-features=kern,liga --no-hinting --desubroutinize` (TTF: Satori/`next/og` can't read woff2). 17,044 bytes. | SIL OFL 1.1 (`assets/fonts/Anton-OFL.txt`) | OG image headings only, read at prerender (never sent to browsers) |
+| `assets/og/*` (other files) | Unchanged | See that folder | Server-side OG images only |
 
 ## Project logos
 

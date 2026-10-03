@@ -1,12 +1,14 @@
 /**
  * Renders content/diagrams/*.mmd to assets/rendered/diagrams/<slug>.svg (published by scripts/publish-assets.ts) with a source hash (spec §3.1).
  * Local/CI only, never on Vercel. Uses the Chrome found by Puppeteer (set PUPPETEER_EXECUTABLE_PATH to reuse a system Chrome).
+ * `pnpm diagrams --check` (run by `pnpm build:production`) renders nothing: it fails when a rendered SVG
+ * is missing or its `src-sha256` comment doesn't match its .mmd source. It can't tell whether the SVG
+ * body was edited by hand; the output scan (scripts/check-output.ts) reads that body for markers.
  */
+import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { renderMermaid } from "@mermaid-js/mermaid-cli";
-import puppeteer from "puppeteer";
-import { hashComment } from "../lib/content/diagrams";
+import { hashComment, isDiagramCurrent } from "../lib/content/diagrams";
 
 const SOURCE_DIR = "content/diagrams";
 const OUTPUT_DIR = "assets/rendered/diagrams";
@@ -34,8 +36,26 @@ const MERMAID_CONFIG = {
   },
 } as const;
 
+async function check(sources: string[]): Promise<void> {
+  const stale: string[] = [];
+  for (const name of sources) {
+    const output = path.join(OUTPUT_DIR, name.replace(/\.mmd$/, ".svg"));
+    if (!existsSync(output)) stale.push(`missing ${output}`);
+    else if (!isDiagramCurrent(await readFile(path.join(SOURCE_DIR, name), "utf8"), await readFile(output, "utf8")))
+      stale.push(`${output} is older than ${SOURCE_DIR}/${name}`);
+  }
+  if (stale.length > 0) {
+    console.error(`Diagrams are out of date (run pnpm diagrams):\n  ${stale.join("\n  ")}`);
+    process.exit(1);
+  }
+  console.log(`Diagrams are current (${sources.length}).`);
+}
+
 async function main(): Promise<void> {
   const sources = (await readdir(SOURCE_DIR)).filter((name) => name.endsWith(".mmd"));
+  if (process.argv.includes("--check")) return check(sources);
+  // Loaded only to render: --check runs in the strict build, which has no Chrome.
+  const [{ renderMermaid }, { default: puppeteer }] = await Promise.all([import("@mermaid-js/mermaid-cli"), import("puppeteer")]);
   await mkdir(OUTPUT_DIR, { recursive: true });
   const browser = await puppeteer.launch({ headless: true });
   try {

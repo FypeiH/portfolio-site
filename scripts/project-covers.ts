@@ -10,7 +10,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { centeredFrame, COVER_TOKENS, composeSvgCover, coverDocument, frame, FRAME, rasterBackground, readFrom } from "../lib/project-covers-compose";
 import { COVER_SOURCES, coverFile, coverInputs, type CoverSlug, type CoverSource } from "../lib/project-covers";
-import { COVERS_MANIFEST, sha256, sha256File, staleCoverReasons, type CoversManifest } from "../lib/project-covers-manifest";
+import { COVERS_MANIFEST, sha256, sourceHash, staleCoverReasons, type CoversManifest } from "../lib/project-covers-manifest";
 
 const rootArg = process.argv.indexOf("--root");
 const ROOT = path.resolve(rootArg === -1 ? "." : (process.argv[rootArg + 1] ?? "."));
@@ -39,7 +39,7 @@ async function main(): Promise<void> {
     fs.mkdirSync(path.dirname(at(output)), { recursive: true });
     const data = source.kind === "logo-raster" ? await composeRaster(source) : Buffer.from(composeSvgCover(source, readFrom(ROOT)));
     fs.writeFileSync(at(output), data);
-    manifest[slug] = { sources: Object.fromEntries(coverInputs(source).map((file) => [file, sha256File(at(file))])), output, sha256: sha256(data) };
+    manifest[slug] = { sources: Object.fromEntries(coverInputs(source).map((file) => [file, sourceHash(at(file))])), output, sha256: sha256(data) };
     console.log(`${output}: ${data.byteLength} bytes`);
   }
   fs.writeFileSync(at(COVERS_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);

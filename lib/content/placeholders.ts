@@ -175,18 +175,27 @@ const NAMED_ENTITIES: Record<string, string> = {
 const fromCodePoint = (value: number) => (Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "");
 
 /**
- * Invisible characters that would hide a marker (T\u200bODO, TO\u00adDO) without changing what readers
- * see: zero-width space/joiners, word joiner, BOM, soft hyphen, combining grapheme joiner, Mongolian
- * vowel separator and the invisible math operators (U+2061–2064).
+ * Invisible characters that would hide a marker (T\u200bODO, TO\u00adDO, TO\u{E0020}DO, TO\u3164DO)
+ * without changing what readers see, stripped from the matching view by whole categories (QA r3 Z2–Z5):
+ * every Default_Ignorable_Code_Point (zero-width space/joiners, word joiner, soft hyphen, variation
+ * selectors, Hangul fillers U+115F/1160/3164/FFA0, tag characters U+E0000–E0FFF, U+FFF0–FFF8…), every
+ * format character (\p{Cf}: BOM, interlinear annotations U+FFF9–FFFB, invisible math operators…), plus
+ * those ranges spelled out. Bidi controls and directional marks are kept: they have rules of their own
+ * with friendlier messages (see MARKERS).
  */
-const ZERO_WIDTH = /[\u00AD\u034F\u180E\u200B-\u200D\u2060-\u2064\uFEFF]/g;
+const INVISIBLE_CLASS = String.raw`[\p{Default_Ignorable_Code_Point}\p{Cf}\u{E0000}-\u{E007F}\u{FFF0}-\u{FFFB}\u115F\u1160\u3164\uFFA0]`;
+const INVISIBLE = new RegExp(INVISIBLE_CLASS, "gu");
+const ONE_INVISIBLE = new RegExp(`^${INVISIBLE_CLASS}$`, "u");
+const REPORTED_INVISIBLE = /^[\u202A-\u202E\u2066-\u2069\u061C\u200E\u200F]$/;
+const isStripped = (c: string) => ONE_INVISIBLE.test(c) && !REPORTED_INVISIBLE.test(c);
+const stripInvisible = (input: MappedText) => mapReplace(input, INVISIBLE, (m) => (REPORTED_INVISIBLE.test(m[0]) ? m[0] : ""));
 
 /**
  * Decodes HTML entities (&#123; &#x7B; &lbrace;) and JS escapes (\x7b \u007b \u{7b}), repeatedly for
- * double encoding, and drops zero-width characters (raw or produced by decoding).
+ * double encoding, and drops invisible characters (raw or produced by decoding).
  */
 export function decode(input: MappedText): MappedText {
-  let current = mapReplace(input, ZERO_WIDTH, () => "");
+  let current = stripInvisible(input);
   for (let pass = 0; pass < 3; pass++) {
     const next = mapReplace(
       mapReplace(current, /&(?:#(\d{1,7})|#x([0-9a-f]{1,6})|([a-z]{2,8}));?/gi, (m) => {
@@ -197,7 +206,7 @@ export function decode(input: MappedText): MappedText {
       /\\(?:x([0-9a-f]{2})|u\{([0-9a-f]{1,6})\}|u([0-9a-f]{4}))/gi,
       (m) => fromCodePoint(parseInt(m[1] ?? m[2] ?? m[3] ?? "", 16)),
     );
-    const stripped = mapReplace(next, ZERO_WIDTH, () => "");
+    const stripped = stripInvisible(next);
     if (stripped.text === current.text) return stripped;
     current = stripped;
   }
@@ -232,7 +241,8 @@ export const foldCompatibility = (input: MappedText): MappedText =>
   mapReplace(input, /[^\x00-\x7F]/gu, (m) => {
     const folded = m[0].normalize("NFKC");
     return [...folded]
-      .filter((c) => !COMBINING_MARK.test(c))
+      // NFKC can produce an invisible character (U+FFA0 → U+1160): drop those too.
+      .filter((c) => !COMBINING_MARK.test(c) && !isStripped(c))
       .map((c) => CONFUSABLES[c] ?? c)
       .join("");
   });

@@ -1,6 +1,5 @@
-import { ImageResponse } from "next/og";
 import { getProfile, getUi } from "@/lib/content/load";
-import { loadOgAvatar, loadOgFonts, OG_SIZE, OgFrame, ogColors } from "@/lib/og";
+import { loadOgAvatar, OG_SIZE, OgFrame, ogColors, ogImageResponse, OgLabel } from "@/lib/og";
 
 export const size = OG_SIZE;
 export const contentType = "image/png";
@@ -8,16 +7,20 @@ export const alt = getUi().ogImageAlt;
 
 export default async function OpenGraphImage() {
   const profile = getProfile();
-  const [fonts, avatar] = await Promise.all([loadOgFonts(), loadOgAvatar()]);
-  return new ImageResponse(
-    (
-      <OgFrame>
-        <img src={avatar} width={160} height={160} alt="" style={{ borderRadius: 9999, border: `2px solid ${ogColors.border}` }} />
-        <div style={{ marginTop: 40, fontSize: 76, fontWeight: 700 }}>{profile.name}</div>
-        <div style={{ marginTop: 8, fontSize: 36, color: ogColors.accent }}>{profile.role}</div>
-        <div style={{ marginTop: 28, fontSize: 30, color: ogColors.muted, maxWidth: 900 }}>{profile.tagline}</div>
-      </OgFrame>
-    ),
-    { ...OG_SIZE, fonts },
+  const avatar = await loadOgAvatar();
+  return ogImageResponse(
+    "/",
+    <OgFrame footer="Portfolio · Case studies · CV">
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, maxWidth: 760 }}>
+          <OgLabel>{profile.role}</OgLabel>
+          <div style={{ marginTop: 20, fontFamily: "Anton", fontSize: 132, lineHeight: 1, textTransform: "uppercase", letterSpacing: 1 }}>{profile.name}</div>
+          <div style={{ marginTop: 28, fontSize: 30, lineHeight: 1.35, color: ogColors.muted }}>{profile.tagline}</div>
+        </div>
+        <div style={{ display: "flex", marginLeft: 40, marginRight: 8, border: `3px solid ${ogColors.fg}`, boxShadow: `10px 10px 0 0 ${ogColors.accent}` }}>
+          <img src={avatar} width={220} height={220} alt="" />
+        </div>
+      </div>
+    </OgFrame>,
   );
 }

@@ -128,9 +128,45 @@ function commentRanges(file: string, source: string): [number, number][] {
 
 const frontmatterEnd = (source: string) => /^---\n[\s\S]*?\n---/.exec(source)?.[0].length ?? 0;
 
-/** What never renders is blanked (same length, so offsets and lines stay valid). */
+/**
+ * Braces that are syntax, not text (QA r3 FP3/FP4), as [start, end) ranges of single characters:
+ * - Mermaid's hexagon shape `id{{label}}` in a `.mmd` source (the label is still scanned, and the
+ *   rendered SVG has no braces);
+ * - the outer braces of a JSX expression prop inside a tag in MDX (`<span style={{ fontWeight: 700 }}>`
+ *   renders `style="font-weight:700"`; the expression itself is still scanned).
+ * Any `{{` that reaches the rendered output (HTML, RSC, SVG, OG text) still fails the output check.
+ */
+function syntaxBraceRanges(file: string, source: string, comments: readonly [number, number][]): [number, number][] {
+  const inComment = (offset: number) => comments.some(([a, b]) => offset >= a && offset < b);
+  const ranges: [number, number][] = [];
+  if (file.endsWith(".mmd")) {
+    for (const m of source.matchAll(/[A-Za-z0-9_-]\{\{[^\n]*?\}\}/g)) {
+      const open = m.index + 1;
+      const close = m.index + m[0].length - 2;
+      ranges.push([open, open + 2], [close, close + 2]);
+    }
+    return ranges;
+  }
+  if (!file.endsWith(".mdx")) return ranges;
+  const code = codeRanges(file, source);
+  const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
+  const bodyStart = frontmatterEnd(source);
+  for (const m of source.matchAll(/\s[A-Za-z_:][\w:.-]*\s*=\s*\{/g)) {
+    const open = m.index + m[0].length - 1;
+    if (open < bodyStart || inCode(open) || inComment(open)) continue;
+    // Inside a tag: the last `<` before the prop is after the last `>`.
+    if (source.lastIndexOf("<", open) <= source.lastIndexOf(">", open)) continue;
+    const end = skipExpression(source, open);
+    if (source[end - 1] !== "}") continue;
+    ranges.push([open, open + 1], [end - 1, end]);
+  }
+  return ranges;
+}
+
+/** What never renders is blanked (same length, so offsets and lines stay valid), and so are syntax braces. */
 export function renderableText(file: string, source: string): string {
-  return blank(source, commentRanges(file, source));
+  const comments = commentRanges(file, source);
+  return blank(source, [...comments, ...syntaxBraceRanges(file, source, comments)]);
 }
 
 /** The opt-out marker, written inside any comment the file type supports (see README "Content"). */
