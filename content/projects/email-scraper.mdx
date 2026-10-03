@@ -35,7 +35,7 @@ TakeFreeTours runs tours, and its visitors book them through several booking pla
 
 Before this project, the visitors for each tour were entered into the database by hand, one confirmation email at a time. It was slow, repetitive work, and it had to keep pace with every new booking.
 
-I started the project during my internship and continued it after I was hired, until February 2025. It had already been scaffolded when I took it over, and I built almost all of it myself, from the Gmail integration to parsing and data handling, with occasional help from a small team busy with other clients.
+I started the project during my internship and continued it after I was hired, until February 2025. Starting from an existing scaffold, I owned the project end to end, from the Gmail integration to parsing and data handling.
 
 ## Constraints
 
@@ -55,7 +55,7 @@ The scraper is a scheduled C#/.NET job that writes to SQL Server. Each run follo
 2. **Identify.** It works out which platform's template each email follows.
 3. **Extract and validate.** It pulls the visitor data out using that template's rules, then validates it and maps it to the expected parameters.
 4. **Check for duplicates.** Before inserting, it runs validation queries against SQL Server to make sure the booking isn't already there.
-5. **Insert.** New, valid records are written to SQL Server.
+5. **Insert.** Records that are new and valid are written to SQL Server.
 6. **Alert.** If an email matches no known template or its data fails validation, the job sends an alert to the management app with the email's Gmail message ID, so someone can handle it manually.
 
 ## Decisions & trade-offs

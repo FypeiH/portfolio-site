@@ -1,7 +1,7 @@
 ---
 title: "Crypto Trading Bot (FIDU)"
 summary: "Python bot that trades SOL/USDT on Binance Testnet from MACD, RSI and Stochastic RSI signals, with built-in risk limits."
-problem: "A friend who traded on Binance wanted his trading automated so he wouldn't miss opportunities."
+problem: "An independent trader on Binance wanted his trading automated so he wouldn't miss opportunities."
 solution: "A loop aligned to 5-minute candle closes fetches market data via CCXT, computes indicators with TA-Lib and places market orders under buy and partial-sell rules."
 visibility: "public"
 organization: "Personal project"
@@ -27,13 +27,13 @@ seo:
 
 ## Context & problem
 
-A friend who traded on Binance asked me to automate his trading so he wouldn't miss opportunities. I gathered his requirements and built the automation around the calculations he suggested for the crypto he chose, SOL/USDT.
+I built this for an independent trader on Binance who wanted to automate his trading so he wouldn't miss opportunities. I gathered his requirements and built the automation around the calculations he defined for the pair he chose, SOL/USDT.
 
 The bot runs market analysis and executes buy and sell orders on its own, against Binance Testnet, so no real money is involved. Every buy and sell parameter is set manually by the user, not hard-wired into the strategy.
 
 ## Constraints
 
-- **Someone else's strategy.** The trading logic had to follow my friend's calculations, with buy and sell parameters the user sets.
+- **Someone else's strategy.** The trading logic had to follow the client's calculations, with buy and sell parameters the user sets.
 - **Exchange API limits and clock drift.** Exchange APIs reject requests with a skewed timestamp and limit how often a client can call. The bot enables CCXT's built-in rate limiting and re-syncs with Binance server time before each call.
 - **Safety first.** Sandbox (Testnet) mode is switched on in code, so a misconfigured run can't touch a real account.
 - **Secrets out of the code.** API keys live in a `.env` file, including when the bot runs as a packaged Windows executable.
@@ -54,7 +54,7 @@ Configuration and keys are loaded with python-decouple, and PyInstaller packages
 
 ## Decisions & trade-offs
 
-- **Requirements first.** I started by gathering my friend's requirements and turning his calculations into explicit buy and sell rules, instead of designing a strategy of my own.
+- **Requirements first.** I started by gathering the client's requirements and turning his calculations into explicit buy and sell rules, instead of designing a strategy of my own.
 - **Manual, configurable parameters.** All buy and sell parameters are set by the user. He can tune the strategy without touching the code. The trade-off: the bot is only as good as the values it's given.
 - **Candle-aligned scheduling instead of fixed polling.** Every evaluation runs on a closed candle, so the signals don't change halfway through a candle. The cost is latency: the bot reacts at most once per 5-minute candle.
 - **Explicit risk rules, with configurable defaults.** By default, a maximum of 3 buy entries, a minimum order size and a balance check before every trade. On the sell side, a moderate overbought signal triggers a partial sell and an extreme one sells the whole position.
