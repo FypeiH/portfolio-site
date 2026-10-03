@@ -10,7 +10,7 @@ export function SiteFooter() {
   const { builtWith, repoUrl } = getSite();
   const ui = getUi();
   const sourceUrl = known(repoUrl);
-  const { commit, date } = buildInfo();
+  const { commit, date, year } = buildInfo();
   return (
     <footer className="site-meta">
       <div className="ui-container flex flex-wrap items-center gap-x-3 py-(--space-5)">
@@ -36,8 +36,12 @@ export function SiteFooter() {
             </ExternalLink>
           </>
         )}
-        <span aria-hidden="true">·</span>
-        <span>{fill(ui.footerCopyright, { year: new Date().getFullYear() })}</span>
+        {year && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>{fill(ui.footerCopyright, { year })}</span>
+          </>
+        )}
         <span aria-hidden="true">·</span>
         <HomeLink href="/#top">
           <span aria-hidden="true">↑&nbsp;</span>

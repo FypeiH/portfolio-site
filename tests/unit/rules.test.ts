@@ -47,7 +47,7 @@ describe("collectContentIssues", () => {
     const withDiagram = [project({ slug: "a", order: 1, diagram }), ...published.slice(1)];
     const files = cleanFiles(["a", "b", "c"], {
       "content/diagrams/a.mmd": 'A["{{TODO: tech}}"]',
-      "public/diagrams/a.svg": `${hashComment('A["{{TODO: tech}}"]')}<svg/>`,
+      "assets/rendered/diagrams/a.svg": `${hashComment('A["{{TODO: tech}}"]')}<svg/>`,
       "content/profile.ts": 'tagline: "{{TODO: tagline}}"',
     });
     const [issue] = collectContentIssues({ ...base, projects: [...withDiagram, emailScraper] }, files, flags);
@@ -82,8 +82,8 @@ describe("collectContentIssues", () => {
   it("detects out-of-date diagrams (V5)", () => {
     const diagram = { kind: "mermaid" as const, source: "content/diagrams/a.mmd", alt: "x".repeat(20), caption: "y".repeat(40) };
     const withDiagram = [project({ slug: "a", order: 1, diagram }), ...published.slice(1)];
-    const current = cleanFiles(["a", "b", "c"], { "content/diagrams/a.mmd": "graph LR", "public/diagrams/a.svg": `${hashComment("graph LR")}<svg/>` });
-    const stale = cleanFiles(["a", "b", "c"], { "content/diagrams/a.mmd": "graph TD", "public/diagrams/a.svg": `${hashComment("graph LR")}<svg/>` });
+    const current = cleanFiles(["a", "b", "c"], { "content/diagrams/a.mmd": "graph LR", "assets/rendered/diagrams/a.svg": `${hashComment("graph LR")}<svg/>` });
+    const stale = cleanFiles(["a", "b", "c"], { "content/diagrams/a.mmd": "graph TD", "assets/rendered/diagrams/a.svg": `${hashComment("graph LR")}<svg/>` });
     expect(collectContentIssues({ ...base, projects: [...withDiagram, emailScraper] }, current, flags)).toEqual([]);
     expect(collectContentIssues({ ...base, projects: [...withDiagram, emailScraper] }, stale, flags)).toContainEqual({
       severity: "launch",

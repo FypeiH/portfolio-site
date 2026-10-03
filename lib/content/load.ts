@@ -11,6 +11,7 @@ import { site } from "@/content/site";
 import { skills } from "@/content/skills";
 import { PROJECTS_DIR, projectFile, SLUG_PATTERN } from "./conventions";
 import { countDiagramSlots } from "./diagram-slots";
+import { renderedFile } from "../rendered-assets";
 import { renderedDiagramPath, svgSize, type DiagramImage } from "./diagrams";
 import { buildContentFlags } from "./flags";
 import { repoFiles } from "./repo-files";
@@ -120,6 +121,6 @@ export function getDiagramImage({ diagram }: Project): DiagramImage | undefined 
   if (!diagram) return undefined;
   if (diagram.kind === "image") return diagram;
   const src = renderedDiagramPath(diagram.source);
-  const size = svgSize(files.read(`public${src}`) ?? "");
+  const size = svgSize(files.read(renderedFile(src)) ?? "");
   return size && { src, alt: diagram.alt, caption: diagram.caption, ...size };
 }

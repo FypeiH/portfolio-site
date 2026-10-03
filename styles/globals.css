@@ -166,10 +166,6 @@
   color: var(--color-subtle);
 }
 
-@utility ui-eyebrow {
-  @apply ui-label;
-}
-
 @utility ui-micro {
   font: 400 var(--text-micro) / 1.2 var(--font-mono);
   letter-spacing: 0.06em;
@@ -214,11 +210,21 @@
   gap: 0.35em;
   width: max-content;
   padding-inline: var(--gutter);
-  font: 400 var(--text-marquee) / 1 var(--font-display);
+  /* Fallback face until the page has loaded; then Anton (see .fonts-ready below and app/layout.tsx). */
+  font: 400 var(--text-marquee) / 1 Impact, "Arial Narrow", sans-serif;
+  :where(html.fonts-ready) & {
+    font-family: var(--font-display);
+  }
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+/* Decorative copies: the text comes from data-text, so it's not in the DOM text (Section.tsx). */
+@utility marquee-copy {
+  &::after {
+    content: attr(data-text);
+  }
+}
 @utility marquee-ghost {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--color-fg);
@@ -299,17 +305,18 @@
   text-transform: uppercase;
 }
 
-@utility ui-muted-link {
-  @apply ui-link inline-flex min-h-11 items-center gap-2;
-}
-
 @utility ui-nav-link {
   @apply relative inline-flex min-h-11 items-center px-3 text-muted transition-colors hover:text-fg;
   font: 500 var(--text-label) / 1.2 var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  @apply after:absolute after:inset-x-3 after:bottom-2 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform;
+  @apply after:absolute after:inset-x-3 after:bottom-2 after:h-0.5 after:origin-left after:scale-x-0 after:bg-accent after:transition-transform;
   @apply aria-[current=true]:text-fg aria-[current=true]:after:scale-x-100 aria-[current=true]:after:bg-accent motion-reduce:after:transition-none;
+  /* Explicit accent ring (never currentColor, which is muted/fg here); offset keeps it on the bg. */
+  &:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+  }
   &[aria-current="true"]::before {
     content: "▸";
     margin-inline-end: var(--space-1);
@@ -426,8 +433,9 @@
   @media (width >= 64rem) {
     grid-template-columns: 3fr 9fr;
   }
+  /* surface, not surface-strong: the subtle labels need it (4.99:1; 4.47:1 fails AA, visual-direction §2). */
   &:hover > * {
-    background: var(--color-surface-strong);
+    background: var(--color-surface);
   }
 }
 

@@ -1,12 +1,12 @@
 /**
- * Writes the hero avatar thumbnail (224 px WebP) from the profile photo declared in content/profile.ts,
+ * Writes the About portrait at 224 and 640 px (WebP, the srcSet) from the profile photo declared in content/profile.ts,
  * and records the photo's hash in assets/avatar-thumb.json. `pnpm avatar --check` only verifies that
  * the thumbnail is current (also run by `pnpm content:check` and the unit tests).
  */
 import fs from "node:fs";
 import sharp from "sharp";
 import { profile } from "../content/profile";
-import { AVATAR_THUMB_PX } from "../lib/content/conventions";
+import { AVATAR_SRCSET_PX, AVATAR_THUMB_PX } from "../lib/content/conventions";
 import { avatarPaths, sha256, staleAvatarReason, type AvatarManifest } from "../lib/avatar-thumb";
 
 async function main(): Promise<void> {
@@ -21,10 +21,12 @@ async function main(): Promise<void> {
     return;
   }
   const paths = avatarPaths(src);
-  const info = await sharp(paths.source).resize(AVATAR_THUMB_PX, AVATAR_THUMB_PX, { fit: "cover" }).webp({ quality: 80 }).toFile(paths.target);
-  const manifest: AvatarManifest = { source: src, sha256: sha256(paths.source), px: AVATAR_THUMB_PX };
+  for (const { px, file } of paths.variants) {
+    const info = await sharp(paths.source).resize(px, px, { fit: "cover" }).webp({ quality: 80 }).toFile(file);
+    console.log(`${file}: ${info.width}×${info.height}, ${info.size} bytes`);
+  }
+  const manifest: AvatarManifest = { source: src, sha256: sha256(paths.source), px: AVATAR_THUMB_PX, srcset: [...AVATAR_SRCSET_PX] };
   fs.writeFileSync(paths.manifest, `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`${paths.target}: ${info.width}×${info.height}, ${info.size} bytes`);
 }
 
 void main();

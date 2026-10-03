@@ -5,11 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@10.33.4",
   "scripts": {
-    "dev": "next dev",
-    "dev:preview": "cross-env SHOW_DRAFTS=true next dev",
-    "build": "next build",
-    "build:preview": "cross-env SHOW_DRAFTS=true next build",
-    "build:production": "cross-env CONTENT_STRICT=true next build && tsx scripts/check-output.ts",
+    "dev": "pnpm assets && next dev",
+    "dev:preview": "cross-env SHOW_DRAFTS=true pnpm assets && cross-env SHOW_DRAFTS=true next dev",
+    "build": "pnpm assets && next build",
+    "build:preview": "cross-env SHOW_DRAFTS=true pnpm assets && cross-env SHOW_DRAFTS=true next build",
+    "build:production": "pnpm assets && cross-env CONTENT_STRICT=true next build && tsx scripts/check-output.ts",
     "build:vercel": "node scripts/build-vercel.mjs",
     "start": "next start",
     "lint": "eslint .",
@@ -22,7 +22,8 @@
     "diagrams": "tsx scripts/render-diagrams.ts",
     "avatar": "tsx scripts/avatar-thumb.ts",
     "covers": "tsx scripts/project-covers.ts",
-    "lighthouse": "node scripts/lighthouse.mjs"
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "assets": "tsx scripts/publish-assets.ts"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
@@ -71,6 +72,11 @@
     "overrides": {
       "playwright-core": "1.63.0",
       "lodash-es": ">=4.18.0"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-vfj7-8cjw-p6xm"
+      ]
     }
   }
 }

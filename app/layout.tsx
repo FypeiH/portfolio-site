@@ -14,7 +14,8 @@ import { siteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
 // The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s only. Never in
-// section#top, so it can't be the LCP element; no preload, because the headings are below the fold.
+// section#top, so it can't be the LCP element. Not preloaded, and not used until `.fonts-ready` (after
+// the load event, see MARK_JS), so it is requested after the LCP paint.
 const anton = localFont({
   src: "../assets/fonts/anton-latin-400.woff2",
   weight: "400",
@@ -24,8 +25,15 @@ const anton = localFont({
   fallback: ["Impact", "Arial Narrow", "sans-serif"],
 });
 
-/** Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3). */
-const MARK_JS = "document.documentElement.classList.add('js')";
+/**
+ * Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3), and `.fonts-ready` once the
+ * page has loaded: only then do the marquee headings switch to Anton, so the font request starts after
+ * the LCP paint and can never sit in its critical chain (QA FIL-8 r2, N1: Lighthouse counted the font
+ * in the LCP graph whenever it finished before the paint, ~2.5 s instead of ~1.9 s).
+ */
+const MARK_JS =
+  "var d=document.documentElement;d.classList.add('js');" +
+  "addEventListener('load',function(){d.classList.add('fonts-ready')},{once:true})";
 
 export function generateMetadata(): Metadata {
   const { seo, name } = getProfile();

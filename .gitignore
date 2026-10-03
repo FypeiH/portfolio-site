@@ -9,3 +9,7 @@ test-results/
 playwright-report/
 .lighthouse/
 .vercel
+
+# Filled per build from assets/rendered/ by scripts/publish-assets.ts
+/public/diagrams/
+/public/covers/

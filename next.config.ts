@@ -9,6 +9,9 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
 ];
 
+/** Served with the rendered diagrams and covers: no scripts, no fetches; inline styles (Mermaid's <style>) only. */
+const ASSET_CSP = "default-src 'none'; style-src 'unsafe-inline'";
+
 /** Same test as lib/env.ts; evaluated at build time, which is when Vercel sets VERCEL_ENV too. */
 const isProductionBuild = isVercelProduction(process.env.VERCEL_ENV);
 
@@ -21,11 +24,20 @@ const nextConfig: NextConfig = {
   // Keeps the analytics client chunk out of preview and local builds, where it is never rendered.
   turbopack: isProductionBuild ? {} : { resolveAlias: { "@vercel/analytics/next": "./components/analytics/AnalyticsOff.tsx" } },
   images: { formats: ["image/avif", "image/webp"] },
+  // The one stylesheet (~35 KB raw, ~7 KB brotli) is inlined in each page's <head>: no render-blocking
+  // CSS request before the first paint. Measured on / (Lighthouse mobile, RUNS=5): worst LCP 2040 → 1773 ms
+  // (QA FIL-8 r2, N1). Costs: every HTML page carries the CSS (no cross-page CSS cache).
+  experimental: { inlineCss: true },
   async redirects() {
     return [{ source: "/projects", destination: "/#projects", permanent: true }];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Generated SVGs are only ever shown through <img>, where nothing in them can run; this also
+      // neuters them when opened directly (Sonar f49).
+      ...["/covers/:path*", "/diagrams/:path*"].map((source) => ({ source, headers: [{ key: "Content-Security-Policy", value: ASSET_CSP }] })),
+    ];
   },
 };
 

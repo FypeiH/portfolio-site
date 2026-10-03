@@ -13,12 +13,16 @@ Third-party files committed to this repo, where they came from, and how the site
 
 Official logos, taken from each owner's own public site or store listing, unmodified. Real names are authorized by Filipe (see the project frontmatter).
 
-| File | Source URL | Retrieved | Cover |
-| --- | --- | --- | --- |
-| `assets/project-logos/takefreetours.svg` | https://takefreetours.com/wp-content/uploads/2024/07/Take-Free-Tours-logo.svg (the site header logo) | 2026-09-30 | `public/covers/email-scraper.svg`, `public/covers/takefreetours.svg` (vector, embedded) |
-| `assets/project-logos/benched-app-icon-1024.png` | App Store icon of Benched (id 6744754854): `artworkUrl512` from https://itunes.apple.com/lookup?id=6744754854, requested at 1024×1024 PNG | 2026-09-30 | `public/covers/benched.webp` (raster, so the cover is WebP; no PNG ships) |
-| `assets/project-logos/ramos-correia-logo-white.png` | https://ramoscorreia.com/wp-content/uploads/2025/07/logotipo_nrc_white.png (largest logo on the site; no SVG is published) | 2026-09-30 | None: Ramos Correia & Associados is experience-only (no case study), so no cover is generated and nothing ships |
+| File | Source URL | Retrieved | Permission | Cover |
+| --- | --- | --- | --- | --- |
+| `assets/project-logos/takefreetours.svg` | https://takefreetours.com/wp-content/uploads/2024/07/Take-Free-Tours-logo.svg (the site header logo) | 2026-09-30 | Usado com autorização do cliente, confirmada pelo Filipe Bravo a 2026-10-03 | `assets/rendered/covers/email-scraper.svg` (logo beside the email-scraper diagram) and `assets/rendered/covers/takefreetours.svg` (logo alone on the page colour); vector, embedded |
+| `assets/project-logos/benched-app-icon-1024.png` | App Store icon of Benched (id 6744754854): `artworkUrl512` from https://itunes.apple.com/lookup?id=6744754854, requested at 1024×1024 PNG | 2026-09-30 | Usado com autorização do cliente, confirmada pelo Filipe Bravo a 2026-10-03 | `assets/rendered/covers/benched.webp` (raster, so the cover is WebP; no PNG ships) |
+| ~~`assets/project-logos/ramos-correia-logo-white.png`~~ (removed 2026-10-03) | https://ramoscorreia.com/wp-content/uploads/2025/07/logotipo_nrc_white.png (largest logo on the site; no SVG is published) | 2026-09-30 | n/a | **Removed from the repo** (unused: Ramos Correia & Associados is experience-only, so no cover was ever generated or shipped) |
 
 ## Diagram covers
 
-`fidu-bot`, `portfolio-site` and `dynamic-cv` have no logo: their covers embed the project's own architecture diagram (`public/diagrams/<slug>.svg`, rendered from `content/diagrams/*.mmd` with the site palette) on the same background.
+`fidu-bot`, `portfolio-site` and `dynamic-cv` have no logo: their covers embed the project's own architecture diagram (`assets/rendered/diagrams/<slug>.svg`, rendered from `content/diagrams/*.mmd` with the site palette) on the same background.
+
+## Where generated images live
+
+Rendered diagrams and covers are committed under `assets/rendered/` and copied into `public/` per build by `scripts/publish-assets.ts` (published projects only, drafts too when `SHOW_DRAFTS=true`), so a production deployment never serves a draft's images. `public/diagrams/` and `public/covers/` are gitignored. Both are served with `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'` (`next.config.ts`), and every SVG source is sanitized before it is nested in a cover (`lib/project-covers-compose.ts`).

@@ -1,5 +1,9 @@
 {
   "source": "/images/profile/filipe-bravo.webp",
   "sha256": "3ed53dd04fc6ac7879dd58c3f41192eceda79a5423f3106e234f3b8d5af19c90",
-  "px": 224
+  "px": 224,
+  "srcset": [
+    224,
+    640
+  ]
 }

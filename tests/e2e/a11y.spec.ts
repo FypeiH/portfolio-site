@@ -13,6 +13,19 @@ for (const path of ["/", CASE_STUDY, "/projects/benched", "/does-not-exist"]) {
   });
 }
 
+test("hover states keep AA contrast (skills rows, project cards)", async ({ page, isMobile }) => {
+  test.skip(isMobile, "hover only");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const targets = [page.locator("#skills .skills-row").first(), page.locator("#projects article").first()];
+  for (const target of targets) {
+    await target.scrollIntoViewIfNeeded();
+    await target.hover();
+    const { violations } = await new AxeBuilder({ page }).include("#skills").include("#projects").withRules(["color-contrast"]).analyze();
+    expect(violations.flatMap((v) => v.nodes.map((n) => n.target.join(" ")))).toEqual([]);
+  }
+});
+
 test("private projects show a badge, not a Source link; public ones show Source", async ({ page }) => {
   await page.goto("/");
   const privateCard = page.locator("#projects article", { hasText: "Email Scraper" });
@@ -42,8 +55,9 @@ test("the web font never reaches the hero (LCP rule, visual-direction §3.2)", a
   const heroFonts = await page.locator("#top, #top *").evaluateAll((els) => els.map((el) => getComputedStyle(el).fontFamily));
   expect(heroFonts.filter((family) => /anton/i.test(family))).toEqual([]);
   expect(await page.evaluate(() => getComputedStyle(document.querySelector("#top h1")!).fontFamily)).not.toMatch(/anton/i);
-  // Anton is used by the marquee headings only.
-  expect(await page.locator("#projects-heading .marquee-track").evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/anton/i);
+  // Anton is used by the marquee headings only, and only once the page has loaded (requested after the LCP paint).
+  await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+  await expect.poll(() => page.locator("#projects-heading .marquee-track").evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/anton/i);
 });
 
 test("marquee headings keep a single accessible name", async ({ page }) => {
@@ -51,4 +65,12 @@ test("marquee headings keep a single accessible name", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 2, name: "Selected projects", exact: true })).toBeVisible();
   const copies = page.locator('#projects-heading [aria-hidden="true"]');
   expect(await copies.count()).toBeGreaterThanOrEqual(3);
+  // Crawlers see one copy: the copies are CSS-painted, so the heading's DOM text is the title once.
+  expect(await page.locator("#projects-heading").textContent()).toBe("Selected projects");
+  for (const id of ["experience", "skills", "about", "contact"]) {
+    const heading = page.locator(`#${id}-heading`);
+    const text = (await heading.textContent()) ?? "";
+    expect(text.length, id).toBeGreaterThan(0);
+    expect((await heading.locator(".marquee-copy").first().evaluate((el) => getComputedStyle(el, "::after").content)).replaceAll('"', "")).toBe(text);
+  }
 });

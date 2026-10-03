@@ -1,5 +1,5 @@
 /**
- * Renders content/diagrams/*.mmd to public/diagrams/<slug>.svg with a source hash (spec §3.1).
+ * Renders content/diagrams/*.mmd to assets/rendered/diagrams/<slug>.svg (published by scripts/publish-assets.ts) with a source hash (spec §3.1).
  * Local/CI only, never on Vercel. Uses the Chrome found by Puppeteer (set PUPPETEER_EXECUTABLE_PATH to reuse a system Chrome).
  */
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -9,7 +9,7 @@ import puppeteer from "puppeteer";
 import { hashComment } from "../lib/content/diagrams";
 
 const SOURCE_DIR = "content/diagrams";
-const OUTPUT_DIR = "public/diagrams";
+const OUTPUT_DIR = "assets/rendered/diagrams";
 
 const MERMAID_CONFIG = {
   theme: "dark",

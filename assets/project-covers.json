@@ -1,26 +1,45 @@
 {
   "email-scraper": {
-    "source": "assets/project-logos/takefreetours.svg",
-    "sha256": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199"
+    "sources": {
+      "assets/project-logos/takefreetours.svg": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199",
+      "assets/rendered/diagrams/email-scraper.svg": "f9b299a3c8fac46d5a0eb51b221e5bb26e7e3ae5efdef64770529b11f84b7575"
+    },
+    "output": "assets/rendered/covers/email-scraper.svg",
+    "sha256": "42f0ba42facbacd360b31dce5fcbdc76b5c3a43e15448d2be364c8866a286f04"
   },
   "takefreetours": {
-    "source": "assets/project-logos/takefreetours.svg",
-    "sha256": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199"
+    "sources": {
+      "assets/project-logos/takefreetours.svg": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199"
+    },
+    "output": "assets/rendered/covers/takefreetours.svg",
+    "sha256": "3fbc85c981b16fcff5ee958714dba93d690858a098ae7774348095734e4e4780"
   },
   "benched": {
-    "source": "assets/project-logos/benched-app-icon-1024.png",
-    "sha256": "767227bdf491ed2efec5cab0c743ef7337c7d7450c09e2859597de666fa3e4ca"
+    "sources": {
+      "assets/project-logos/benched-app-icon-1024.png": "767227bdf491ed2efec5cab0c743ef7337c7d7450c09e2859597de666fa3e4ca"
+    },
+    "output": "assets/rendered/covers/benched.webp",
+    "sha256": "d53f9ba23f8d8223e1788fc06cb1dcba6e986e1471c8ec4ecc85bb399546feae"
   },
   "fidu-bot": {
-    "source": "public/diagrams/fidu-bot.svg",
-    "sha256": "be97712e10f9dda7e6a1411ddc49486100f9b4430941cff3ba316c0d38544ed4"
+    "sources": {
+      "assets/rendered/diagrams/fidu-bot.svg": "be97712e10f9dda7e6a1411ddc49486100f9b4430941cff3ba316c0d38544ed4"
+    },
+    "output": "assets/rendered/covers/fidu-bot.svg",
+    "sha256": "9c740cb40f6fc7fad3a5ed2d72c9a398085022a3589fcb0e2f09bb1f51da0cfd"
   },
   "portfolio-site": {
-    "source": "public/diagrams/portfolio-site.svg",
-    "sha256": "a3c4b625d0af6f5b4c973a8a2663b198e883dc41543f8efdc1c899501325890f"
+    "sources": {
+      "assets/rendered/diagrams/portfolio-site.svg": "a3c4b625d0af6f5b4c973a8a2663b198e883dc41543f8efdc1c899501325890f"
+    },
+    "output": "assets/rendered/covers/portfolio-site.svg",
+    "sha256": "32e88234849251b5f43b2de586e58a690b2f18e67691c31dbfd9b79c1457cad0"
   },
   "dynamic-cv": {
-    "source": "public/diagrams/dynamic-cv.svg",
-    "sha256": "ef520aa48bfc5a26be70ff26ff23ec196f02073f92c80c07f43ebdbe9913e066"
+    "sources": {
+      "assets/rendered/diagrams/dynamic-cv.svg": "ef520aa48bfc5a26be70ff26ff23ec196f02073f92c80c07f43ebdbe9913e066"
+    },
+    "output": "assets/rendered/covers/dynamic-cv.svg",
+    "sha256": "5ce5e2647551a23910f6158bb0f7fff6d6631b580087c7be071f3b9da0595542"
   }
 }

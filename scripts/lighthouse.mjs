@@ -3,6 +3,7 @@
 //
 //   BASE_URL=http://localhost:3100 CHROME_PATH=/usr/bin/google-chrome RUNS=3 pnpm lighthouse [path...]
 //   EXPECT_INDEXABLE=true also fails on the noindex audit (use it against production).
+//   Every budget (LCP ≤ 2000 ms included) must hold on every run.
 //
 // JS size gate: Brotli (quality 11) computed locally from each script Lighthouse saw loaded, the
 // local proxy for what Vercel serves. Gzip (level 9) is reported for information only.
@@ -14,7 +15,10 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 const base = process.env.BASE_URL ?? "http://localhost:3000";
-/** Budgets are evaluated on the run with the median LCP (Sonar); every run is printed. */
+/**
+ * Every budget, LCP included, is checked on EVERY run: one failing run fails the script (PM decision,
+ * QA FIL-8 r2 N1: all RUNS=5 runs must pass; there is no median rule). Every run is printed.
+ */
 const runs = Number(process.env.RUNS ?? 5);
 /** Set EXPECT_INDEXABLE=true against a production deployment; everywhere else noindex is intended. */
 const expectIndexable = process.env.EXPECT_INDEXABLE === "true";
@@ -87,14 +91,15 @@ function seoIgnoringNoindex(lhr) {
   return Math.round((score / weight) * 100);
 }
 
+/** Every budget, for one run. */
 function overBudget(path, r) {
   const nonRootLimit = BUDGET.nonRootBrotliKb[path];
   return [
-    ...["performance", "accessibility", "best-practices"].filter((k) => r[k] < BUDGET[k]),
+    ...["performance", "accessibility", "best-practices"].filter((k) => r[k] < BUDGET[k]).map((k) => `${k} ${r[k]} < ${BUDGET[k]}`),
     ...((expectIndexable ? r.seo : r.seoWithoutNoindex) < BUDGET.seo ? ["seo"] : []),
     ...(r.lcpMs > BUDGET.lcpMs ? [`lcp ${r.lcpMs} > ${BUDGET.lcpMs} ms`] : []),
-    ...(r.cls >= BUDGET.cls ? ["cls"] : []),
-    ...(r.tbtMs >= BUDGET.tbtMs ? ["tbt"] : []),
+    ...(r.cls >= BUDGET.cls ? [`cls ${r.cls}`] : []),
+    ...(r.tbtMs >= BUDGET.tbtMs ? [`tbt ${r.tbtMs} ms`] : []),
     ...(r.jsBrotliKb > BUDGET.jsBrotliKb(path) ? [`js ${r.jsBrotliKb} > ${BUDGET.jsBrotliKb(path)} KB br`] : []),
     ...(nonRootLimit !== undefined && r.nonRootBrotliKb > nonRootLimit
       ? [`non-root js ${r.nonRootBrotliKb} > ${nonRootLimit} KB br`]
@@ -136,11 +141,11 @@ for (const path of paths) {
     results.push(result);
     console.log(`${path} run ${run}`, JSON.stringify(result));
   }
-  const median = [...results].sort((a, b) => a.lcpMs - b.lcpMs)[Math.floor(results.length / 2)];
-  const misses = overBudget(path, median);
+  const lcps = results.map((r) => r.lcpMs);
+  const misses = results.flatMap((r, i) => overBudget(path, r).map((miss) => `run ${i + 1}: ${miss}`));
   console.log(
-    `${path} median run (LCP ${median.lcpMs} ms; all: ${results.map((r) => r.lcpMs).join("/")})`,
-    misses.length ? `OVER BUDGET: ${misses.join("; ")}` : "within budget",
+    `${path} LCP per run: ${lcps.join(" / ")} ms (worst ${Math.max(...lcps)}; budget ${BUDGET.lcpMs} ms on every run)`,
+    misses.length ? `OVER BUDGET: ${misses.join("; ")}` : "all budgets met on every run",
   );
   if (misses.length) failed = true;
 }

@@ -12,4 +12,7 @@ export const isYearMonth = (value: string) => YEAR_MONTH_PATTERN.test(value);
 
 /** The About portrait is 224 CSS px (visual-direction B1); `pnpm avatar` writes a 224 px WebP next to the source. */
 export const AVATAR_THUMB_PX = 224;
-export const avatarThumbPath = (src: string) => src.replace(/(\.[a-z0-9]+)?$/i, `-${AVATAR_THUMB_PX}.webp`);
+export const avatarVariantPath = (src: string, px: number) => src.replace(/(\.[a-z0-9]+)?$/i, `-${px}.webp`);
+export const avatarThumbPath = (src: string) => avatarVariantPath(src, AVATAR_THUMB_PX);
+/** Sizes `pnpm avatar` writes: 224 px (1x) and 640 px (2x/3x screens; 3x would be 672). Used as the portrait srcSet. */
+export const AVATAR_SRCSET_PX = [AVATAR_THUMB_PX, 640] as const;

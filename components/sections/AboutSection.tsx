@@ -1,7 +1,7 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Section } from "@/components/ui/Section";
-import { AVATAR_THUMB_PX, avatarThumbPath } from "@/lib/content/conventions";
+import { AVATAR_SRCSET_PX, AVATAR_THUMB_PX, avatarThumbPath, avatarVariantPath } from "@/lib/content/conventions";
 import { WORK_MODE_LABEL_KEYS } from "@/lib/content/labels";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
@@ -44,10 +44,12 @@ export function AboutSection({ profile }: { profile: Profile }) {
       <div className="grid gap-(--space-8) lg:grid-cols-12 lg:gap-x-(--gutter)">
         <Reveal className="lg:col-span-3" variant="fade">
           {profile.avatar && (
-            // Plain <img>: a pre-sized 224 px WebP (pnpm avatar); next/image would add client JS.
+            // Plain <img>: pre-sized WebPs (pnpm avatar, 224 px and 640 px for 2x/3x); next/image would add client JS.
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarThumbPath(profile.avatar.src)}
+              srcSet={AVATAR_SRCSET_PX.map((px) => `${avatarVariantPath(profile.avatar!.src, px)} ${px}w`).join(", ")}
+              sizes={`${AVATAR_THUMB_PX}px`}
               alt={profile.avatar.alt}
               width={AVATAR_THUMB_PX}
               height={AVATAR_THUMB_PX}

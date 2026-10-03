@@ -16,7 +16,11 @@ const pad = (n: number) => String(n).padStart(2, "0");
 /** Characters the marquee track should hold, so short titles still fill the width while it moves. */
 const TRACK_CHARS = 40;
 
-/** aria-hidden copies after the title, alternating outline/solid; at least 3 (§7.1). */
+/**
+ * aria-hidden copies after the title, alternating outline/solid; at least 3 (§7.1). They are empty
+ * elements painted by CSS (`content: attr(data-text)`), so the document text holds the title once
+ * (crawlers and copy-paste see "Skills", not "Skills Skills Skills…").
+ */
 const copiesFor = (title: string) => Array.from({ length: Math.max(3, Math.ceil(TRACK_CHARS / title.length)) }, (_, i) => i % 2 === 0);
 
 /**
@@ -41,9 +45,7 @@ export function Section({ id, title, intro, count, children }: SectionProps) {
           <span className="marquee-track">
             <span>{title}</span>
             {copiesFor(title).map((ghost, index) => (
-              <span key={index} aria-hidden="true" className={ghost ? "marquee-ghost" : undefined}>
-                {title}
-              </span>
+              <span key={index} aria-hidden="true" data-text={title} className={ghost ? "marquee-copy marquee-ghost" : "marquee-copy"} />
             ))}
           </span>
         </h2>

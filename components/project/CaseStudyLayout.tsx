@@ -70,7 +70,7 @@ export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diag
           </div>
         )}
         {/* Below the meta, so on phones it stays out of the first viewport and never becomes the LCP element. */}
-        {cover && <ProjectCover cover={cover} className="ui-panel" />}
+        {cover && <ProjectCover cover={cover} eager className="ui-panel" />}
       </div>
       <div className="prose-case-study mt-4">
         {placement === "header" && facts}

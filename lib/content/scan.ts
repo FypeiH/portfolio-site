@@ -280,6 +280,31 @@ function unwrapJsxStrings(file: string, text: string, code: readonly [number, nu
   return mapReplace(input, /\{\s*(?:"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)')\s*\}/g, (m) => (inCode(m.index) ? m[0] : (m[1] ?? m[2] ?? "")));
 }
 
+/**
+ * What an MDX body reads like once inline markup is gone: emphasis delimiters (`*`, `_`, `~`) and
+ * inline JSX/HTML tags are dropped outside code, so `{"{"}*{"{"}*fill me}}`, `Lo*rem* ipsum`,
+ * `TO<span></span>DO` read `{{fill me}}`, `Lorem ipsum`, `TODO` (Sonar f49). Scanned in addition to
+ * the plain view, never instead of it. Offsets are kept.
+ */
+function withoutInlineMarkup(file: string, input: MappedText, code: readonly [number, number][]): MappedText | undefined {
+  if (!file.endsWith(".mdx")) return undefined;
+  const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
+  return mapReplace(input, /<\/?[A-Za-z][\w.-]*(?:\s[^<>]*)?\/?>|[*_~]+/g, (m) => (inCode(input.offsets[m.index] ?? 0) ? m[0] : ""));
+}
+
+/** Matches of both views, one per (offset, rule). */
+function scanViews(file: string, source: string, code: readonly [number, number][]): MarkerMatch[] {
+  const plain = unwrapJsxStrings(file, renderableText(file, source), code);
+  const stripped = withoutInlineMarkup(file, plain, code);
+  const matches = findMarkerMatches(plain, source, file);
+  if (!stripped) return matches;
+  const seen = new Set(matches.map((m) => `${m.offset}:${m.label}`));
+  for (const match of findMarkerMatches(stripped, source, file)) {
+    if (!seen.has(`${match.offset}:${match.label}`)) matches.push(match);
+  }
+  return matches.sort((x, y) => x.offset - y.offset || y.end - x.end);
+}
+
 /** Which routes can render a file's text: a case-study body only its own page; anything else, every page. */
 export type Scope = "site" | `projects/${string}`;
 
@@ -310,31 +335,24 @@ export interface FileScan {
 }
 
 /**
- * Scans one content file. Placeholder markers (`[TODO…]`, `TODO:`, placeholder-style `{{…}}`) always
- * count. Any other marker is exempt when (a) it is a `{{ … }}` inside inline/fenced code (e.g. an
- * Angular `{{ user.name }}`), or (b) its line is covered by a `placeholder-ok` comment.
+ * Scans one content file. Placeholder markers (`[TODO…]`, `TODO:`, any literal `{{…}}`, code
+ * included) always count (spec §8.1). Any other marker is exempt only when its line is covered by a
+ * `placeholder-ok` comment.
  */
 export function scanContentFileDetailed(file: string, source: string): FileScan {
   const exemptLines = optOutLines(file, source);
   const code = codeRanges(file, source);
-  const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);
   const blocking: MarkerMatch[] = [];
   const allowed: AllowedMarker[] = [];
   const exemptions: Exemption[] = [];
-  for (const match of findMarkerMatches(unwrapJsxStrings(file, renderableText(file, source), code), source, file)) {
+  for (const match of scanViews(file, source, code)) {
     const optOut = exemptLines.get(match.line);
-    const reason = isPlaceholderMarker(match)
-      ? undefined
-      : match.label === "{{…}}" && inCode(match.offset)
-        ? "{{ … }} inside code"
-        : optOut !== undefined
-          ? `placeholder-ok on line ${optOut}`
-          : undefined;
+    const reason = !isPlaceholderMarker(match) && optOut !== undefined ? `placeholder-ok on line ${optOut}` : undefined;
     if (!reason) {
       blocking.push(match);
       continue;
     }
-    allowed.push({ text: match.text, scope: scopeOf(file, match.offset, source), where: reason.startsWith("{{") ? "code" : "anywhere" });
+    allowed.push({ text: match.text, scope: scopeOf(file, match.offset, source), where: "anywhere" });
     exemptions.push({ file, line: match.line, text: match.text, reason });
   }
   return { hits: dedupeOverlaps(blocking).map(({ line, text }) => ({ file, line, text })), allowed, exemptions };

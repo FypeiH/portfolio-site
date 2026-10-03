@@ -1,5 +1,6 @@
 import { analyzeBody, bodyProblems } from "./body";
-import { avatarThumbPath, projectFile } from "./conventions";
+import { AVATAR_SRCSET_PX, avatarVariantPath, projectFile } from "./conventions";
+import { renderedFile } from "../rendered-assets";
 import { isDiagramCurrent, renderedDiagramPath } from "./diagrams";
 import type { ContentFlags } from "./flags";
 import { formatHits } from "./placeholders";
@@ -84,12 +85,14 @@ function checkPublicFiles({ profile, projects }: ContentSnapshot, files: Content
   const issues: ContentIssue[] = [];
   if (missing(profile.cv.href)) issues.push({ severity: "launch", message: `Resume file is missing: public${profile.cv.href}` });
   if (profile.avatar && missing(profile.avatar.src)) issues.push({ severity: "error", message: `Avatar is missing: public${profile.avatar.src}` });
-  if (profile.avatar && missing(avatarThumbPath(profile.avatar.src)))
-    issues.push({ severity: "error", message: `Avatar thumbnail is missing: public${avatarThumbPath(profile.avatar.src)} (run pnpm avatar)` });
+  for (const px of profile.avatar ? AVATAR_SRCSET_PX : []) {
+    const variant = avatarVariantPath(profile.avatar!.src, px);
+    if (missing(variant)) issues.push({ severity: "error", message: `Avatar thumbnail is missing: public${variant} (run pnpm avatar)` });
+  }
   for (const p of projects) {
     if (p.cover && missing(p.cover.src)) issues.push({ severity: "error", message: `Cover of "${p.slug}" is missing: public${p.cover.src}` });
-    if (p.diagram?.kind === "image" && missing(p.diagram.src))
-      issues.push({ severity: "error", message: `V6: diagram of "${p.slug}" is missing: public${p.diagram.src}` });
+    if (p.diagram?.kind === "image" && !files.exists(renderedFile(p.diagram.src)))
+      issues.push({ severity: "error", message: `V6: diagram of "${p.slug}" is missing: ${renderedFile(p.diagram.src)}` });
   }
   return issues;
 }
@@ -99,7 +102,7 @@ function checkDiagrams(projects: Project[], files: ContentFiles): ContentIssue[]
     if (p.diagram?.kind !== "mermaid") return [];
     const source = files.read(p.diagram.source);
     if (source === undefined) return [{ severity: "error", message: `V5: diagram source is missing: ${p.diagram.source}` }];
-    const svg = files.read(`public${renderedDiagramPath(p.diagram.source)}`);
+    const svg = files.read(renderedFile(renderedDiagramPath(p.diagram.source)));
     if (svg === undefined || !isDiagramCurrent(source, svg))
       return [{ severity: "launch", message: `V5: diagram out of date for "${p.slug}": run pnpm diagrams` }];
     return [];

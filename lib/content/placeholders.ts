@@ -17,7 +17,9 @@ const EXACT_PLACEHOLDER = /^\{\{[^}]+\}\}$/;
  * so "a Todo app" passes; `todo:` and `[todo…]` match in any case; TBD, FIXME and lorem ipsum in any case.
  */
 export const MARKERS: readonly { label: string; pattern: RegExp }[] = [
-  { label: "{{…}}", pattern: /\{\s?\{[^{}]{0,300}\}\s?\}/g },
+  // Any literal {{…}} (spec §8.1): any case, any spacing, any length (newlines are already collapsed),
+  // inner braces allowed (`{{PROBLEM {x} HERE}}`). Lazy, so it ends at the first `}}`.
+  { label: "{{…}}", pattern: /\{\s?\{[\s\S]*?\}\s?\}/g },
   { label: "[TODO…]", pattern: /\[\s?todo\b[^\]]{0,300}\]/gi },
   { label: "TODO:", pattern: /\btodo\s?:/gi },
   { label: "TODO", pattern: /\bTODO\b/g },
@@ -56,11 +58,12 @@ export function lineIndex(source: string): (offset: number) => number {
 }
 
 /**
- * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:` and placeholder-style
- * `{{…}}`. Neither the code rule nor `placeholder-ok` can exempt them (scan.ts).
+ * Markers that are always placeholders, whatever the context: `[TODO…]`, `TODO:` and every literal
+ * `{{…}}` (spec §8.1: inside code too, e.g. an Angular `{{ user.name }}` must be written another way).
+ * `placeholder-ok` can't exempt them (scan.ts).
  */
 export const isPlaceholderMarker = (match: Pick<MarkerMatch, "label" | "text">) =>
-  match.label === "[TODO…]" || match.label === "TODO:" || (match.label === "{{…}}" && isPlaceholderStyle(match.text));
+  match.label === "[TODO…]" || match.label === "TODO:" || match.label === "{{…}}";
 
 /**
  * `{{ … }}` whose inner text is TODO-style (any other marker, or an all-caps slot like `{{PROJECT_NAME}}`).
@@ -110,12 +113,17 @@ export function mapReplace(input: MappedText, pattern: RegExp, replace: (match: 
 const NAMED_ENTITIES: Record<string, string> = {
   lbrace: "{", lcub: "{", rbrace: "}", rcub: "}", lsqb: "[", lbrack: "[", rsqb: "]", rbrack: "]",
   colon: ":", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", num: "#", sol: "/",
+  shy: "\u00AD", zwnj: "\u200C", zwj: "\u200D", nobreak: "\u2060",
 };
 
 const fromCodePoint = (value: number) => (Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "");
 
-/** Zero-width characters that would hide a marker (T\u200bODO) without changing what readers see. */
-const ZERO_WIDTH = /[\u200B-\u200D\u2060\uFEFF]/g;
+/**
+ * Invisible characters that would hide a marker (T\u200bODO, TO\u00adDO) without changing what readers
+ * see: zero-width space/joiners, word joiner, BOM, soft hyphen, combining grapheme joiner, Mongolian
+ * vowel separator and the invisible math operators (U+2061–2064).
+ */
+const ZERO_WIDTH = /[\u00AD\u034F\u180E\u200B-\u200D\u2060-\u2064\uFEFF]/g;
 
 /**
  * Decodes HTML entities (&#123; &#x7B; &lbrace;) and JS escapes (\x7b \u007b \u{7b}), repeatedly for
@@ -143,7 +151,30 @@ export function decode(input: MappedText): MappedText {
 /** Collapses every run of whitespace (and escaped newlines in strings) into one space. */
 export const collapseWhitespace = (input: MappedText): MappedText => mapReplace(input, /(?:\s|\\[nrt])+/g, () => " ");
 
-export const normalize = (input: MappedText): MappedText => collapseWhitespace(decode(input));
+/**
+ * Look-alike letters that would hide a marker from the ASCII rules (T\u041EDO with a Cyrillic О,
+ * Greek Τ…): Cyrillic and Greek letters drawn like Latin ones, folded for matching only.
+ */
+const CONFUSABLES: Record<string, string> = {
+  // Cyrillic
+  "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X", "І": "I", "Ј": "J", "Ѕ": "S", "Ԁ": "D", "Ԛ": "Q", "Ԝ": "W",
+  "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "ӏ": "l", "һ": "h", "ԛ": "q", "ԝ": "w", "м": "m", "т": "t", "к": "k", "в": "b", "н": "h",
+  // Greek
+  "Α": "A", "Β": "B", "Ε": "E", "Ζ": "Z", "Η": "H", "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N", "Ο": "O", "Ρ": "P", "Τ": "T", "Υ": "Y", "Χ": "X", "Ϝ": "F",
+  "ο": "o", "ι": "i", "κ": "k", "ν": "v", "ρ": "p", "τ": "t", "υ": "u", "χ": "x",
+};
+
+/**
+ * NFKC per character (fullwidth ｛｝ → {}, ﬁ → fi, no-break space → space), then the look-alike
+ * fold above. Per character so every output character keeps its source offset.
+ */
+export const foldCompatibility = (input: MappedText): MappedText =>
+  mapReplace(input, /[^\x00-\x7F]/gu, (m) => {
+    const folded = m[0].normalize("NFKC");
+    return [...folded].map((c) => CONFUSABLES[c] ?? c).join("");
+  });
+
+export const normalize = (input: MappedText): MappedText => collapseWhitespace(foldCompatibility(decode(input)));
 
 /**
  * Every marker match in already-extracted text, with source ranges; `source` is the original file
