@@ -8,16 +8,17 @@ const BOT = "content/projects/fidu-bot.mdx";
 const PROFILE = "content/profile.ts";
 const bot = fs.readFileSync(BOT, "utf8");
 const profile = fs.readFileSync(PROFILE, "utf8");
-const BODY_START = /^A friend who traded on Binance asked me/m;
-const PROBLEM = `problem: "A friend who traded on Binance wanted his trading automated so he wouldn't miss opportunities."`;
+// Anchored on structure, not wording, so copy edits to the case study don't break the guard tests.
+const BODY_START = /^## Context & problem\n\n/m;
+const PROBLEM = bot.match(/^problem: ".*"$/m)?.[0] ?? "";
 
-const inBody = (prefix: string) => bot.replace(BODY_START, (line) => `${prefix}${line}`);
+const inBody = (prefix: string) => bot.replace(BODY_START, (heading) => `${heading}${prefix}`);
 
 /** QA FIL-8 strict-variants.sh, applied to the real published content. */
 const VARIANTS: [string, string, string][] = [
   ["1 body inline-code placeholder", BOT, inBody("`{{TODO: ctx}}` ")],
-  ["2 frontmatter single-line placeholder", BOT, bot.replace('problem: "A friend', 'problem: "{{TODO: problem}} A friend')],
-  ["3 folded-YAML multi-line placeholder", BOT, bot.replace(PROBLEM, "problem: >-\n  {{TODO:\n  real problem}} A friend who traded on Binance wanted his trading automated.")],
+  ["2 frontmatter single-line placeholder", BOT, bot.replace('problem: "', 'problem: "{{TODO: problem}} ')],
+  ["3 folded-YAML multi-line placeholder", BOT, bot.replace(PROBLEM, "problem: >-\n  {{TODO:\n  real problem}} A trader wanted his trading automated.")],
   ["4 multi-line placeholder in MDX body", BOT, inBody("`{{TODO:\nfill me}}` ")],
   ["5 multi-line placeholder in profile.ts", PROFILE, profile.replace(/tagline: .*,/, "tagline: `{{TODO:\n tagline}}`,")],
   ["6 entity-encoded placeholder", BOT, inBody("&#123;&#123;TODO: x&#125;&#125; ")],
@@ -26,6 +27,11 @@ const VARIANTS: [string, string, string][] = [
 ];
 
 describe("placeholder guard, QA FIL-8 variants", () => {
+  it("finds its anchors in the real content", () => {
+    expect(bot).toMatch(BODY_START);
+    expect(PROBLEM).not.toBe("");
+  });
+
   it("the real published content is clean (no false positives)", () => {
     expect(scanContentFile(BOT, bot)).toEqual([]);
     expect(scanContentFile(PROFILE, profile)).toEqual([]);
