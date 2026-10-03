@@ -6,7 +6,6 @@ import { known } from "@/lib/content/placeholders";
 import type { Experience } from "@/lib/content/types";
 import { formatYearMonth, toDateTime } from "@/lib/format";
 
-
 interface TimelineItemProps {
   item: Experience;
   /** Titles of the case studies that may be linked (drafts are absent outside preview). */
@@ -28,36 +27,37 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
   });
 
   return (
-    <article className="relative pl-8">
-      <span aria-hidden="true" className="ui-dot" />
-      <p className="text-sm text-muted">
+    <article className="grid gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
+      <p className="ui-label lg:col-span-3 lg:pt-1.5">
         <time dateTime={toDateTime(item.start)}>{formatYearMonth(item.start)}</time>
-        {" – "}
+        {" — "}
         {item.end === "present" ? ui.present : <time dateTime={toDateTime(item.end)}>{formatYearMonth(item.end)}</time>}
       </p>
-      <h3 className="mt-1 text-lg font-semibold tracking-tight">
-        {item.role} · <span className="text-accent">{item.company}</span>
-      </h3>
-      {details.length > 0 && <p className="text-sm text-muted">{details.join(" · ")}</p>}
-      <p className="mt-3">{item.summary}</p>
-      <ul className="mt-3 list-disc space-y-1 pl-5 text-muted marker:text-border">
-        {item.highlights.map((highlight) => (
-          <li key={highlight}>{highlight}</li>
+      <div className="lg:col-span-9">
+        <h3 className="ui-h3">
+          {item.role} <span className="text-subtle">·</span> <span className="text-accent">{item.company}</span>
+        </h3>
+        {details.length > 0 && <p className="ui-micro mt-2 text-subtle">{details.join(" · ")}</p>}
+        <p className="mt-3">{item.summary}</p>
+        <ul className="mt-3 list-[square] space-y-1 pl-5 text-muted marker:text-accent">
+          {item.highlights.map((highlight) => (
+            <li key={highlight}>{highlight}</li>
+          ))}
+        </ul>
+        {stack.length > 0 && (
+          <div className="mt-4">
+            <TagList items={stack} label={ui.metaStack} />
+          </div>
+        )}
+        {related.map(({ slug, title }) => (
+          <p key={slug} className="mt-3 text-sm">
+            <span className="text-muted">{ui.relatedCaseStudy}:</span>{" "}
+            <Link href={`/projects/${slug}`} className="ui-link">
+              {title}
+            </Link>
+          </p>
         ))}
-      </ul>
-      {stack.length > 0 && (
-        <div className="mt-4">
-          <TagList items={stack} label={ui.metaStack} />
-        </div>
-      )}
-      {related.map(({ slug, title }) => (
-        <p key={slug} className="mt-3 text-sm">
-          {ui.relatedCaseStudy}:{" "}
-          <Link href={`/projects/${slug}`} className="text-accent underline underline-offset-4 hover:text-accent-strong">
-            {title}
-          </Link>
-        </p>
-      ))}
+      </div>
     </article>
   );
 }

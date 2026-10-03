@@ -72,9 +72,9 @@ describe("KeyFacts labels (ui.problemLabel / ui.solutionLabel / ui.impactLabel)"
   const labelled = (labels: Parameters<typeof KeyFacts>[0]["labels"]) =>
     renderToStaticMarkup(createElement(KeyFacts, { project: privateProject, impact: "Impact text.", labels }));
 
-  it("renders labels like the Impact label when present", () => {
+  it("renders problem, solution and impact labels in the same style", () => {
     const html = labelled({ impactLabel: "Impact", problemLabel: "Problem", solutionLabel: "Solution" });
-    const label = (text: string) => `<span class="block text-sm font-medium text-accent">${text}</span>`;
+    const label = (text: string) => `<span class="ui-label block text-accent!">${text}</span>`;
     for (const text of ["Problem", "Solution", "Impact"]) expect(html).toContain(label(text));
     expect(html.indexOf("Problem")).toBeLessThan(html.indexOf("Solution"));
   });

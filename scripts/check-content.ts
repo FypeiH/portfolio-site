@@ -8,6 +8,7 @@ import { staleAvatarReason } from "../lib/avatar-thumb";
 import { formatHits } from "../lib/content/placeholders";
 import { repoFiles } from "../lib/content/repo-files";
 import { CONTENT_ROOT, scanContentFileDetailed, shippedContentFiles } from "../lib/content/scan";
+import { staleCoverReasons } from "../lib/project-covers-manifest";
 
 function checkAvatar(): void {
   const reason = profile.avatar && staleAvatarReason(profile.avatar.src);
@@ -16,8 +17,16 @@ function checkAvatar(): void {
   process.exitCode = 1;
 }
 
+function checkCovers(): void {
+  const reasons = staleCoverReasons();
+  if (reasons.length === 0) return;
+  console.log(`Project covers are stale (run pnpm covers):\n  ${reasons.join("\n  ")}\n`);
+  process.exitCode = 1;
+}
+
 function main(): void {
   checkAvatar();
+  checkCovers();
   const files = repoFiles();
   const shipped = new Set(shippedContentFiles(files));
   const scans = files

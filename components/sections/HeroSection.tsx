@@ -1,71 +1,56 @@
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import { Icon, type IconName } from "@/components/ui/Icon";
-import { AVATAR_THUMB_PX, avatarThumbPath } from "@/lib/content/conventions";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Profile } from "@/lib/content/types";
-import { HeroGraph } from "./HeroGraph";
 
-const ICON_LABEL_KEYS = { github: "heroGithub", linkedin: "heroLinkedin" } as const;
-
+/**
+ * Hero (visual-direction §3, B4): system fonts only and nothing animated, so the h1 and the intro
+ * paint with the HTML. No images here; the portrait lives in #about.
+ */
 export function HeroSection({ profile }: { profile: Profile }) {
   const ui = getUi();
-  const iconLinks = profile.links.flatMap((link) => {
-    const href = known(link.href);
-    return (link.kind === "github" || link.kind === "linkedin") && href
-      ? [{ href, icon: link.kind satisfies IconName, label: ui[ICON_LABEL_KEYS[link.kind]] }]
-      : [];
-  });
+  const links = [
+    ...profile.links.flatMap((link) => {
+      const href = known(link.href);
+      return (link.kind === "github" || link.kind === "linkedin") && href ? [{ href, label: link.kind === "github" ? ui.github : ui.linkedin }] : [];
+    }),
+    { href: profile.cv.href, label: `${ui.resume} ${ui.pdfSuffix}` },
+  ];
 
   return (
-    <section id="top" aria-labelledby="top-heading" className="relative isolate overflow-hidden">
-      <HeroGraph className="pointer-events-none absolute -right-24 top-4 -z-10 w-[36rem] max-w-none md:right-0 md:w-[44rem]" />
-      <div className="mx-auto max-w-5xl px-5 pb-20 pt-14 md:px-8 md:pb-28 md:pt-24">
-        <div className="flex flex-wrap items-center gap-4">
-          {profile.avatar && (
-            // Plain <img>: a 2× thumbnail is all a 112 px avatar needs, and next/image would add client JS.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarThumbPath(profile.avatar.src)}
-              alt={profile.avatar.alt}
-              width={AVATAR_THUMB_PX / 2}
-              height={AVATAR_THUMB_PX / 2}
-              decoding="async"
-              fetchPriority="low"
-              className="size-24 rounded-full border border-border object-cover md:size-28"
-            />
-          )}
-          <AvailabilityBadge availability={profile.availability} />
-        </div>
-        <h1 id="top-heading" className="mt-8 text-4xl font-bold tracking-tight md:text-6xl">
-          {profile.name}
-        </h1>
-        <p className="mt-3 text-lg font-medium text-accent md:text-xl">{profile.role}</p>
-        <p className="mt-6 max-w-2xl text-xl leading-snug text-fg md:text-2xl">{profile.tagline}</p>
-        <p className="mt-4 max-w-2xl text-muted">{profile.intro}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <ButtonLink href="#projects">{ui.heroCtaProjects}</ButtonLink>
-          <ButtonLink href="#contact" variant="secondary">
-            {ui.heroCtaContact}
-          </ButtonLink>
-        </div>
-        <ul className="mt-6 flex items-center gap-1 text-xl text-muted">
-          {iconLinks.map((link) => (
-            <li key={link.href}>
-              <ExternalLink href={link.href} aria-label={link.label} className="inline-flex size-11 items-center justify-center rounded-md hover:text-fg">
-                <Icon name={link.icon} />
-              </ExternalLink>
-            </li>
-          ))}
-          <li>
-            <ExternalLink href={profile.cv.href} aria-label={ui.heroResume} className="inline-flex size-11 items-center justify-center rounded-md hover:text-fg">
-              <Icon name="file" />
+    <section id="top" aria-labelledby="top-heading" className="ui-container pb-(--section-py) pt-(--space-9)">
+      <AvailabilityBadge availability={profile.availability} />
+      <h1 id="top-heading" className="hero-name mt-(--space-5)">
+        {profile.name}
+      </h1>
+      <p className="ui-label mt-(--space-4) text-accent!">{profile.role}</p>
+      <div className="mt-(--space-6) max-w-[42rem]">
+        <p className="text-lead font-medium">{profile.tagline}</p>
+        <p className="mt-(--space-4) text-muted">{profile.intro}</p>
+      </div>
+      <div className="mt-(--space-6) flex flex-wrap gap-4">
+        <ButtonLink href="#projects">{ui.heroCtaProjects}</ButtonLink>
+        <ButtonLink href="#contact" variant="secondary">
+          {ui.heroCtaContact}
+        </ButtonLink>
+      </div>
+      <ul className="mt-(--space-5) flex flex-wrap items-center gap-x-3">
+        {links.map((link, index) => (
+          <li key={link.href} className="flex items-center gap-x-3">
+            {index > 0 && (
+              <span aria-hidden="true" className="text-subtle">
+                ·
+              </span>
+            )}
+            <ExternalLink href={link.href} className="ui-text-link">
+              {link.label}
+              <span aria-hidden="true">&nbsp;↗</span>
             </ExternalLink>
           </li>
-        </ul>
-      </div>
+        ))}
+      </ul>
     </section>
   );
 }

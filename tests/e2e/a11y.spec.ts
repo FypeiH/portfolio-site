@@ -30,6 +30,25 @@ test("Benched shows its App Store link", async ({ page }) => {
 test("the photo has alt text and explicit dimensions", async ({ page }) => {
   await page.goto("/");
   const photo = page.getByRole("img", { name: "Portrait of Filipe Bravo" });
-  await expect(photo).toHaveAttribute("width", "112");
-  await expect(photo).toHaveAttribute("height", "112");
+  await expect(photo).toHaveAttribute("width", "224");
+  await expect(photo).toHaveAttribute("height", "224");
+  // The portrait lives in #about; the hero has no images (visual-direction §8.13).
+  await expect(page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
+  await expect(page.locator("#top img")).toHaveCount(0);
+});
+
+test("the web font never reaches the hero (LCP rule, visual-direction §3.2)", async ({ page }) => {
+  await page.goto("/");
+  const heroFonts = await page.locator("#top, #top *").evaluateAll((els) => els.map((el) => getComputedStyle(el).fontFamily));
+  expect(heroFonts.filter((family) => /anton/i.test(family))).toEqual([]);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector("#top h1")!).fontFamily)).not.toMatch(/anton/i);
+  // Anton is used by the marquee headings only.
+  expect(await page.locator("#projects-heading .marquee-track").evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/anton/i);
+});
+
+test("marquee headings keep a single accessible name", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 2, name: "Selected projects", exact: true })).toBeVisible();
+  const copies = page.locator('#projects-heading [aria-hidden="true"]');
+  expect(await copies.count()).toBeGreaterThanOrEqual(3);
 });

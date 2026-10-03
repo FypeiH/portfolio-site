@@ -1,33 +1,48 @@
-import { HomeLink } from "@/components/ui/HomeLink";
 import { ExternalLink } from "@/components/ui/ExternalLink";
+import { HomeLink } from "@/components/ui/HomeLink";
+import { buildInfo } from "@/lib/build-env";
 import { getSite, getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import { fill } from "@/lib/content/ui";
 
+/** Footer as a build sheet (visual-direction B5): commit, build date, stack, source, back to top. */
 export function SiteFooter() {
   const { builtWith, repoUrl } = getSite();
   const ui = getUi();
   const sourceUrl = known(repoUrl);
+  const { commit, date } = buildInfo();
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-5 py-10 text-sm text-muted md:flex-row md:items-center md:justify-between md:px-8">
-        <p>
-          {fill(ui.footerBuiltWith, { builtWith: builtWith.join(", ") })} · {ui.footerDeployed}
-          {sourceUrl && (
+    <footer className="site-meta">
+      <div className="ui-container flex flex-wrap items-center gap-x-3 py-(--space-5)">
+        <span>
+          <code className="text-fg">{commit}</code>
+          {date && (
             <>
               {" · "}
-              <ExternalLink href={sourceUrl} aria-label={ui.footerSourceAria} className="underline underline-offset-4 hover:text-fg">
-                {ui.footerSource}
-              </ExternalLink>
+              <time dateTime={date}>{date}</time>
             </>
           )}
-        </p>
-        <p className="flex items-center gap-4">
-          <span>{fill(ui.footerCopyright, { year: new Date().getFullYear() })}</span>
-          <HomeLink href="/#top" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-fg">
-            {ui.backToTop}
-          </HomeLink>
-        </p>
+        </span>
+        <span aria-hidden="true">·</span>
+        <span>{fill(ui.footerBuiltWith, { builtWith: builtWith.join(", ") })}</span>
+        <span aria-hidden="true">·</span>
+        <span>{ui.footerDeployed}</span>
+        {sourceUrl && (
+          <>
+            <span aria-hidden="true">·</span>
+            <ExternalLink href={sourceUrl} aria-label={ui.footerSourceAria}>
+              {ui.footerSource}
+              <span aria-hidden="true">&nbsp;↗</span>
+            </ExternalLink>
+          </>
+        )}
+        <span aria-hidden="true">·</span>
+        <span>{fill(ui.footerCopyright, { year: new Date().getFullYear() })}</span>
+        <span aria-hidden="true">·</span>
+        <HomeLink href="/#top">
+          <span aria-hidden="true">↑&nbsp;</span>
+          {ui.backToTop}
+        </HomeLink>
       </div>
     </footer>
   );

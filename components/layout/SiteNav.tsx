@@ -34,7 +34,7 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
       href={cv.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="ui-btn-outline"
+      className="ui-btn ui-btn-outline"
     >
       {labels.resume}
       <span className="sr-only">
@@ -54,7 +54,7 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
         aria-expanded={open}
         aria-controls="mobile-nav"
         onClick={toggle}
-        className="hidden min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 text-sm font-medium js:inline-flex md:hidden!"
+        className="ui-btn ui-btn-outline hidden min-w-11 js:inline-flex md:hidden!"
       >
         {open ? labels.menuClose : labels.menuOpen}
       </button>
@@ -62,7 +62,7 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
         id="mobile-nav"
         ref={panelRef}
         data-open={open}
-        className="invisible fixed inset-x-0 top-16 -translate-y-2 border-b border-border bg-bg/95 px-5 pb-6 pt-2 opacity-0 backdrop-blur transition duration-150 data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100 motion-reduce:transition-none md:hidden"
+        className="invisible fixed inset-x-0 top-16 -translate-y-2 border-b-2 border-fg bg-bg px-5 pb-6 pt-2 opacity-0 transition duration-150 data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100 motion-reduce:transition-none md:hidden"
       >
         <ul className="flex flex-col">{links}</ul>
         <div className="mt-4">{resumeLink}</div>

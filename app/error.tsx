@@ -10,15 +10,15 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   }, [error]);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-24 md:px-8">
+    <div className="ui-container py-(--section-py)">
       <title>{errorCopy.metaTitle}</title>
-      <h1 className="text-3xl font-bold tracking-tight md:text-5xl">{errorCopy.title}</h1>
-      <p className="mt-4 text-muted">{errorCopy.body}</p>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <button type="button" onClick={reset} className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-medium text-bg hover:bg-accent-strong">
+      <h1 className="page-title border-b-2 border-fg pb-(--space-4)">{errorCopy.title}</h1>
+      <p className="mt-(--space-5) max-w-2xl text-muted">{errorCopy.body}</p>
+      <div className="mt-(--space-6) flex flex-wrap gap-4">
+        <button type="button" onClick={reset} className="ui-btn ui-btn-primary">
           {errorCopy.retry}
         </button>
-        <Link href="/" className="inline-flex min-h-11 items-center rounded-md border border-border px-5 text-sm font-medium hover:border-accent hover:text-accent">
+        <Link href="/" className="ui-btn ui-btn-outline">
           {errorCopy.home}
         </Link>
       </div>

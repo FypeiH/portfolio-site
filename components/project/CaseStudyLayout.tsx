@@ -10,9 +10,11 @@ import { known } from "@/lib/content/placeholders";
 import type { Project } from "@/lib/content/types";
 import { fill } from "@/lib/content/ui";
 import { formatYearMonth, toDateTime } from "@/lib/format";
+import { coverFor } from "@/lib/project-covers";
 import { BackLink } from "./BackLink";
 import { DraftBadge } from "./DraftBadge";
 import { KeyFacts } from "./KeyFacts";
+import { ProjectCover } from "./ProjectCover";
 import { ProjectMeta } from "./ProjectMeta";
 import { ProjectPager } from "./ProjectPager";
 
@@ -34,6 +36,7 @@ export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diag
   // Spec §3.4: problem → solution → impact once for private/nda projects: after the diagram when the
   // body has exactly one <Diagram />, otherwise right after the header (keyFactsPlacement).
   const placement = keyFactsPlacement(project.visibility, diagramSlots);
+  const cover = coverFor(project.slug);
   const facts = (
     <KeyFacts project={project} impact={impact} labels={{ impactLabel: ui.impactLabel, problemLabel: ui.problemLabel, solutionLabel: ui.solutionLabel }} />
   );
@@ -45,14 +48,15 @@ export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diag
   );
 
   return (
-    <article className="mx-auto max-w-3xl px-5 pb-20 pt-8 md:px-8">
+    <article className="ui-container max-w-[52rem]! pb-(--section-py) pt-(--space-6)">
       <BackLink label={ui.allProjects} />
-      <header className="mt-6">
+      {/* Sans 800, not Anton: the h1 is part of the first paint (visual-direction §3.2 LCP rule). */}
+      <header className="mt-(--space-5) border-b-2 border-fg pb-(--space-5)">
         {project.status === "draft" && <DraftBadge />}
-        <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">{project.title}</h1>
-        <p className="mt-4 text-lg text-muted">{project.summary}</p>
+        <h1 className="page-title mt-3">{project.title}</h1>
+        <p className="mt-(--space-4) text-lead text-muted">{project.summary}</p>
       </header>
-      <div className="mt-8 space-y-4">
+      <div className="mt-(--space-6) space-y-4">
         <ProjectMeta project={project} />
         {project.visibility !== "public" && (
           <Callout title={ui.whyNoCode}>{project.confidentialityNote ?? ui.privateNote}</Callout>
@@ -60,26 +64,28 @@ export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diag
         {project.disclaimer && <Callout title={ui.disclaimerLabel}>{project.disclaimer}</Callout>}
         {/* Private/nda projects show impact under the diagram instead (KeyFacts, spec §3.4). */}
         {impact && project.visibility === "public" && (
-          <div className="rounded-xl border border-accent/40 bg-surface p-5">
-            <p className="text-sm font-medium text-accent">{ui.impactLabel}</p>
-            <p className="mt-1 text-lg">{impact}</p>
+          <div className="ui-panel border-accent p-5">
+            <p className="ui-label text-accent!">{ui.impactLabel}</p>
+            <p className="mt-2 text-lead">{impact}</p>
           </div>
         )}
+        {/* Below the meta, so on phones it stays out of the first viewport and never becomes the LCP element. */}
+        {cover && <ProjectCover cover={cover} className="ui-panel" />}
       </div>
       <div className="prose-case-study mt-4">
         {placement === "header" && facts}
         <Body components={{ Diagram: DiagramSlot }} />
       </div>
       {updatedAt && (
-        <p className="mt-12 text-sm text-muted">
+        <p className="ui-label mt-12">
           <time dateTime={toDateTime(updatedAt)}>{fill(ui.updatedOn, { date: formatYearMonth(updatedAt) })}</time>
         </p>
       )}
-      <section aria-labelledby="case-study-cta" className="mt-12 ui-card p-6">
-        <h2 id="case-study-cta" className="text-lg font-semibold">
+      <section aria-labelledby="case-study-cta" className="ui-panel mt-12 p-6 shadow-(--shadow-hard)">
+        <h2 id="case-study-cta" className="ui-h3 uppercase">
           {ui.caseStudyCtaTitle}
         </h2>
-        <HomeLink href="/#contact" className="mt-4 inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-medium text-bg hover:bg-accent-strong">
+        <HomeLink href="/#contact" className="ui-btn ui-btn-primary mt-5">
           {ui.caseStudyCta}
         </HomeLink>
       </section>

@@ -8,12 +8,13 @@ const CONTEXT_LABEL_KEYS = {
   benchmark: "metricBenchmark",
 } as const;
 
+/** Metric row in mono: label and context in subtle, the value in accent. Only real metrics exist (schema). */
 export function MetricBadge({ metric }: { metric: Metric }) {
   return (
-    <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-      <span className="text-lg font-semibold text-fg">{metric.value}</span>
-      <span className="text-muted">{metric.label}</span>
-      <span className="text-xs text-muted">({getUi()[CONTEXT_LABEL_KEYS[metric.context]]})</span>
+    <p className="flex flex-wrap items-baseline gap-x-3 font-mono text-sm uppercase">
+      <span className="text-subtle">{metric.label}</span>
+      <span className="font-semibold text-accent">{metric.value}</span>
+      <span className="text-xs text-subtle">({getUi()[CONTEXT_LABEL_KEYS[metric.context]]})</span>
     </p>
   );
 }

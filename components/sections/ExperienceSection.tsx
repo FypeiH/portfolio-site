@@ -9,19 +9,17 @@ interface ExperienceSectionProps {
   projectTitles: ReadonlyMap<string, string>;
 }
 
+/** Ruled table (visual-direction B2): dates in columns 1–3, the role in 4–12. */
 export function ExperienceSection({ items, projectTitles }: ExperienceSectionProps) {
   return (
     <Section id="experience" title={getUi().experienceTitle}>
-      <div className="timeline relative ml-1.5">
-        <span aria-hidden="true" className="timeline-line absolute inset-y-0 left-0 w-px bg-border" />
-        <ol className="space-y-12">
-          {items.map((item, index) => (
-            <Reveal as="li" key={item.id} index={index}>
-              <TimelineItem item={item} projectTitles={projectTitles} />
-            </Reveal>
-          ))}
-        </ol>
-      </div>
+      <ol className="ui-ruled">
+        {items.map((item, index) => (
+          <Reveal as="li" key={item.id} index={index} variant="fade">
+            <TimelineItem item={item} projectTitles={projectTitles} />
+          </Reveal>
+        ))}
+      </ol>
     </Section>
   );
 }

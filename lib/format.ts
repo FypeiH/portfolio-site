@@ -22,3 +22,13 @@ export function formatPeriod(start: string, end: string | undefined, presentLabe
 export function toDateTime(value: string): string | undefined {
   return isYearMonth(value) ? value : undefined;
 }
+
+const yearOf = (value: string) => (isYearMonth(value) ? value.slice(0, 4) : DASH);
+
+/** ("2024-03", "2025-02") → "2024–2025"; same year → "2025"; ("2025-04", "present") → "2025–Present". */
+export function formatYearRange(start: string, end: string | undefined, presentLabel: string): string {
+  const from = yearOf(start);
+  if (end === undefined) return from;
+  const to = end === "present" ? presentLabel : yearOf(end);
+  return to === from ? from : `${from}–${to}`;
+}

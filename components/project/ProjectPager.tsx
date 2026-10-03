@@ -7,17 +7,17 @@ export function ProjectPager({ prev, next }: { prev?: Project; next?: Project })
   return (
     <nav aria-label={`${ui.previousProject} / ${ui.nextProject}`} className="grid gap-4 sm:grid-cols-2">
       {prev ? (
-        <Link href={`/projects/${prev.slug}`} className="rounded-xl border border-border p-4 hover:border-accent">
-          <span className="block text-sm text-muted">← {ui.previousProject}</span>
-          <span className="font-medium">{prev.title}</span>
+        <Link href={`/projects/${prev.slug}`} className="ui-panel group p-4 transition-colors hover:bg-fg hover:text-bg">
+          <span className="ui-label block group-hover:text-bg!">← {ui.previousProject}</span>
+          <span className="mt-1 block font-bold">{prev.title}</span>
         </Link>
       ) : (
         <span />
       )}
       {next && (
-        <Link href={`/projects/${next.slug}`} className="rounded-xl border border-border p-4 text-right hover:border-accent sm:col-start-2">
-          <span className="block text-sm text-muted">{ui.nextProject} →</span>
-          <span className="font-medium">{next.title}</span>
+        <Link href={`/projects/${next.slug}`} className="ui-panel group p-4 text-right transition-colors hover:bg-fg hover:text-bg sm:col-start-2">
+          <span className="ui-label block group-hover:text-bg!">{ui.nextProject} →</span>
+          <span className="mt-1 block font-bold">{next.title}</span>
         </Link>
       )}
     </nav>

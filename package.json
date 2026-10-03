@@ -21,6 +21,7 @@
     "content:check": "tsx scripts/check-content.ts",
     "diagrams": "tsx scripts/render-diagrams.ts",
     "avatar": "tsx scripts/avatar-thumb.ts",
+    "covers": "tsx scripts/project-covers.ts",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {

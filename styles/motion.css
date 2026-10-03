@@ -1,14 +1,11 @@
+/* Scroll motion (visual-direction §7): transform and opacity only, never on section#top, nav or footer. */
 @keyframes reveal-up {
-  from { opacity: 0; transform: translateY(var(--reveal-distance, 24px)); }
+  from { opacity: 0; transform: translateY(var(--reveal-distance, 16px)); }
   to { opacity: 1; transform: none; }
 }
 @keyframes reveal-fade {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-@keyframes draw-y {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
 }
 @keyframes grow-x {
   from { transform: scaleX(0); }
@@ -18,19 +15,15 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes hero-out {
-  to { transform: translateY(-10%); opacity: 0.2; }
-}
-@keyframes node-pulse {
-  50% { opacity: 0.35; }
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-35%); }
 }
 
 .scroll-progress { display: none; }
 .site-header::before { opacity: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .hero-node { animation: node-pulse 6s ease-in-out infinite; }
-
   /* Native path: CSS scroll-driven animations (work without JS). The `animation` shorthand resets the timeline, so timeline/range come after it. */
   @supports (animation-timeline: view()) {
     [data-reveal] {
@@ -40,12 +33,11 @@
     }
     [data-reveal="fade"] { animation-name: reveal-fade; }
 
-    .timeline { view-timeline: --tl block; }
-    .timeline-line {
-      transform-origin: top;
-      animation: draw-y linear both;
-      animation-timeline: --tl;
-      animation-range: cover 10% cover 70%;
+    /* Marquee h2: moves only while scrolling with the heading on screen; static without support. */
+    .marquee-track {
+      animation: marquee-x linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
     }
 
     .scroll-progress {
@@ -60,32 +52,29 @@
       animation-timeline: scroll(root block);
       animation-range: 0 120px;
     }
-
-    .hero-bg {
-      animation: hero-out linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 100vh;
-    }
   }
 
   /* Fallback: IntersectionObserver, only once RevealObserver has set .reveal-io. */
   @supports not (animation-timeline: view()) {
     html.reveal-io [data-reveal] {
-      transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
-      transition-delay: calc(var(--i, 0) * 60ms);
+      transition: opacity var(--dur-reveal, 400ms) var(--ease-snap), transform var(--dur-reveal, 400ms) var(--ease-snap);
+      transition-delay: calc(var(--i, 0) * var(--stagger, 60ms));
     }
     html.reveal-io [data-reveal]:not([data-revealed]) {
       opacity: 0;
-      transform: translateY(var(--reveal-distance, 24px));
+      transform: translateY(var(--reveal-distance, 16px));
     }
     html.reveal-io [data-reveal="fade"]:not([data-revealed]) { transform: none; }
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track > [aria-hidden="true"]:nth-child(n + 3) { display: none; }
+}
+
 @media print {
   [data-reveal],
-  .timeline-line,
-  .hero-bg {
+  .marquee-track {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

@@ -17,7 +17,7 @@ export function BackLink({ label }: { label: string }) {
   };
 
   return (
-    <HomeLink href="/#projects" onClick={onClick} className="inline-flex min-h-11 items-center text-sm text-muted hover:text-fg">
+    <HomeLink href="/#projects" onClick={onClick} className="ui-label inline-flex min-h-11 items-center hover:text-fg">
       ← {label}
     </HomeLink>
   );

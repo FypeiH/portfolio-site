@@ -1,0 +1,26 @@
+{
+  "email-scraper": {
+    "source": "assets/project-logos/takefreetours.svg",
+    "sha256": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199"
+  },
+  "takefreetours": {
+    "source": "assets/project-logos/takefreetours.svg",
+    "sha256": "361db17deb41977e40d93f1a5727f0747e7161e9828f423a8b6ec5c3de7c3199"
+  },
+  "benched": {
+    "source": "assets/project-logos/benched-app-icon-1024.png",
+    "sha256": "767227bdf491ed2efec5cab0c743ef7337c7d7450c09e2859597de666fa3e4ca"
+  },
+  "fidu-bot": {
+    "source": "public/diagrams/fidu-bot.svg",
+    "sha256": "be97712e10f9dda7e6a1411ddc49486100f9b4430941cff3ba316c0d38544ed4"
+  },
+  "portfolio-site": {
+    "source": "public/diagrams/portfolio-site.svg",
+    "sha256": "a3c4b625d0af6f5b4c973a8a2663b198e883dc41543f8efdc1c899501325890f"
+  },
+  "dynamic-cv": {
+    "source": "public/diagrams/dynamic-cv.svg",
+    "sha256": "ef520aa48bfc5a26be70ff26ff23ec196f02073f92c80c07f43ebdbe9913e066"
+  }
+}

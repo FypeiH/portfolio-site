@@ -13,16 +13,24 @@ const OUTPUT_DIR = "public/diagrams";
 
 const MERMAID_CONFIG = {
   theme: "dark",
+  // Classic look: the default "neo" look adds blurred drop shadows and gradient strokes (visual-direction §8).
+  look: "classic",
   // SVG text instead of <foreignObject> HTML, so the diagram renders reliably inside an <img>.
   htmlLabels: false,
   flowchart: { htmlLabels: false },
+  // Site palette (styles/globals.css): hard fg borders on surface, muted edges, no blue accent.
   themeVariables: {
     background: "transparent",
-    primaryColor: "#1a1f26",
-    primaryBorderColor: "#7cc4fa",
-    primaryTextColor: "#e7e9ec",
-    lineColor: "#a3acb7",
-    fontFamily: "ui-sans-serif, system-ui, sans-serif",
+    primaryColor: "#1f1f1f",
+    primaryBorderColor: "#f2f2f2",
+    primaryTextColor: "#f2f2f2",
+    secondaryColor: "#141414",
+    tertiaryColor: "#141414",
+    clusterBkg: "#141414",
+    clusterBorder: "#6b6b6b",
+    edgeLabelBackground: "#141414",
+    lineColor: "#a3a3a3",
+    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
 } as const;
 

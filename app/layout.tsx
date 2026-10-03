@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { ProductionAnalytics } from "@/components/analytics/ProductionAnalytics";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -13,8 +13,16 @@ import { baseOpenGraph } from "@/lib/metadata";
 import { siteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
-// No preload: the woff2 request competed with the intro paragraph, the LCP element (Sonar review).
-const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter", preload: false });
+// The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s only. Never in
+// section#top, so it can't be the LCP element; no preload, because the headings are below the fold.
+const anton = localFont({
+  src: "../assets/fonts/anton-latin-400.woff2",
+  weight: "400",
+  display: "swap",
+  preload: false,
+  variable: "--font-anton",
+  fallback: ["Impact", "Arial Narrow", "sans-serif"],
+});
 
 /** Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3). */
 const MARK_JS = "document.documentElement.classList.add('js')";
@@ -32,11 +40,11 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export const viewport: Viewport = { themeColor: "#0b0d10", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#0a0a0a", colorScheme: "dark" };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className={anton.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: MARK_JS }} />
       </head>

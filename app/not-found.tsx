@@ -14,13 +14,13 @@ export default function NotFound() {
     { href: "/#contact", label: ui.notFoundContact },
   ];
   return (
-    <div className="mx-auto max-w-3xl px-5 py-24 md:px-8">
-      <h1 className="text-3xl font-bold tracking-tight md:text-5xl">{ui.notFoundTitle}</h1>
-      <p className="mt-4 text-muted">{ui.notFoundBody}</p>
-      <ul className="mt-8 flex flex-wrap gap-3">
+    <div className="ui-container py-(--section-py)">
+      <h1 className="page-title border-b-2 border-fg pb-(--space-4)">{ui.notFoundTitle}</h1>
+      <p className="mt-(--space-5) max-w-2xl text-muted">{ui.notFoundBody}</p>
+      <ul className="mt-(--space-6) flex flex-wrap gap-4">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="ui-btn-outline px-5">
+            <Link href={link.href} className="ui-btn ui-btn-outline">
               {link.label}
             </Link>
           </li>

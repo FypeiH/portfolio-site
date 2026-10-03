@@ -10,6 +10,6 @@ export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export const YEAR_MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const isYearMonth = (value: string) => YEAR_MONTH_PATTERN.test(value);
 
-/** The hero shows the avatar at 112 CSS px; `pnpm avatar` writes a 2× (224 px) WebP next to the source. */
+/** The About portrait is 224 CSS px (visual-direction B1); `pnpm avatar` writes a 224 px WebP next to the source. */
 export const AVATAR_THUMB_PX = 224;
 export const avatarThumbPath = (src: string) => src.replace(/(\.[a-z0-9]+)?$/i, `-${AVATAR_THUMB_PX}.webp`);

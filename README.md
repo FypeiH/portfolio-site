@@ -68,12 +68,25 @@ PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome pnpm diagrams   # path to any l
 
 ## Avatar
 
-The hero shows the profile photo at 112 px from a 224 px WebP next to the source (`filipe-bravo-224.webp`). Regenerate it after changing the photo. `pnpm avatar` records the photo's SHA-256 in `assets/avatar-thumb.json`. The build fails if the thumbnail is missing, and `pnpm avatar --check`, `pnpm content:check` and `pnpm test` fail if it was made from a different photo.
+The About section shows the profile photo at 224 px (grayscale via CSS) from a 224 px WebP next to the source (`filipe-bravo-224.webp`). Regenerate it after changing the photo. `pnpm avatar` records the photo's SHA-256 in `assets/avatar-thumb.json`. The build fails if the thumbnail is missing, and `pnpm avatar --check`, `pnpm content:check` and `pnpm test` fail if it was made from a different photo.
 
 ```bash
 pnpm avatar           # regenerate
 pnpm avatar --check   # verify only
 ```
+
+## Project covers
+
+Cards and case-study pages show a 1200×750 (16:10) cover per project, mapped by slug in `lib/project-covers.ts`. `pnpm covers` composes each one from a committed source onto the site background: an official logo in `assets/project-logos/` (SVG stays SVG; a raster logo is written as WebP) or the project's rendered diagram. It writes `public/covers/<slug>.{svg,webp}` and records the source hashes in `assets/project-covers.json`. `pnpm covers --check`, `pnpm content:check` and `pnpm test` fail when a source changed after its cover was made, so re-run `pnpm covers` after `pnpm diagrams`. Sources, origin URLs and licences are listed in [`ASSETS.md`](ASSETS.md).
+
+```bash
+pnpm covers           # regenerate
+pnpm covers --check   # verify only
+```
+
+## Design
+
+The visual direction is "Dark + Brutal" (`portfolio-design/visual-direction.md`). Tokens (colours, type scale, spacing, motion, hard shadows, zero radius) live in the `@theme` and `:root` blocks of `styles/globals.css`; repeated patterns are `@utility` classes there (`ui-container`, `ui-btn*`, `ui-link`, `ui-card`, `ui-ruled`, `marquee`, `site-meta`…). Body and UI use system fonts. The only web font is Anton 400 (`assets/fonts/`, SIL OFL, subset to ASCII + `§ · —`, 10.7 KB), loaded with `next/font/local` without preload and used only by the marquee section headings, never in `section#top` (an e2e test checks this). The footer shows the build commit (`VERCEL_GIT_COMMIT_SHA`, "local" elsewhere) and the build date (`BUILD_DATE`, defaulting to the build day), both inlined at build time.
 
 ## Checks
 
