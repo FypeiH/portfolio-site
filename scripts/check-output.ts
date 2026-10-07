@@ -23,7 +23,8 @@ function walk(dir: string): string[] {
 }
 
 const files = walk(OUTPUT_DIR).filter(isScannableOutput);
-// Marker texts the source scan exempted (`{{ … }}` in code, `placeholder-ok`) are allowed here too.
+// Non-placeholder marker texts the source scan exempted with `placeholder-ok` (TODO, TBD, FIXME, lorem
+// ipsum) are allowed here too. A `{{…}}` is never allowed, in code or anywhere else.
 const allowed = allowedShippedMarkers(repoFiles());
 const svgs = fs.existsSync(PUBLIC_DIR) ? walk(PUBLIC_DIR).filter((file) => file.endsWith(".svg")) : [];
 const hits = [
