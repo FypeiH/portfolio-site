@@ -1,0 +1,32 @@
+{
+  "assets/rendered/diagrams/benched.svg": {
+    "source": "content/diagrams/benched.mmd",
+    "sourceSha256": "68006e1df6008afba16b8fd45107d3dcdccd21333d8a0e53f870d5d4635b268c",
+    "sha256": "cdc47417284446a716811a6a7265b7a040a4e233c437b8c0c4622543dbd97e04"
+  },
+  "assets/rendered/diagrams/dynamic-cv.svg": {
+    "source": "content/diagrams/dynamic-cv.mmd",
+    "sourceSha256": "4039f4bc13576a34224853dcfeb01ff9e7617995bc7da26107db21988ade8ad1",
+    "sha256": "d2e3a8917d3e789b356ce7f1c4eec46fded08499a0c8f3a81bc9311b1d8ec366"
+  },
+  "assets/rendered/diagrams/email-scraper.svg": {
+    "source": "content/diagrams/email-scraper.mmd",
+    "sourceSha256": "c7d252a013dc0d64e8d9291be860e5cb7811b994c132144793a5566bb30b53b4",
+    "sha256": "9cb18abeadbfa9172bd9b2f0ee82d20e8d293357dd835cbc19f62b35282c5238"
+  },
+  "assets/rendered/diagrams/fidu-bot.svg": {
+    "source": "content/diagrams/fidu-bot.mmd",
+    "sourceSha256": "010d6f3955c758031b07407b34a2b67d56ad243e5e61902f73303b08ebb28477",
+    "sha256": "3f788ee2ba1f80d206129ba0084ef0b7172e34c365b529f6739b0d780a69e58a"
+  },
+  "assets/rendered/diagrams/portfolio-site.svg": {
+    "source": "content/diagrams/portfolio-site.mmd",
+    "sourceSha256": "8188b7e1e3a2dcab4794543eb2b20983536ba5a96a1e9beb5c4f548edf8e1965",
+    "sha256": "ffc91d6787223a9a5d8ff2f0b6e9909ba24a77bcb83252b50a3bc15b090ef44e"
+  },
+  "assets/rendered/diagrams/takefreetours.svg": {
+    "source": "content/diagrams/takefreetours.mmd",
+    "sourceSha256": "e92b0bc20c5cad15339d2994a1452d73de9ed400e52a65282c4792ee7741a528",
+    "sha256": "0c04001a01a3d0221929a0435b9cbff830f97aa1f7fbf822c8b2f5bac799e61d"
+  }
+}

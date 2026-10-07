@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { PROJECTS_DIR, projectFile } from "./content/conventions";
 import { renderedDiagramPath } from "./content/diagrams";
+import { unsafeDiagramReasons } from "./diagrams-manifest";
 import { coverFor } from "./project-covers";
 import { PUBLISHED_ASSET_DIRS, renderedFile } from "./rendered-assets";
 
@@ -50,11 +51,22 @@ export class MissingAssetError extends Error {
   }
 }
 
+export class UnsafeAssetError extends Error {
+  constructor(readonly reasons: string[]) {
+    super(`publish-assets: refusing to publish, rendered diagrams failed the SVG sanitizer:\n  ${reasons.join("\n  ")}`);
+    this.name = "UnsafeAssetError";
+  }
+}
+
 /**
  * Empties public/{diagrams,covers} and copies in this build's assets. Returns the public paths written.
  * A missing file fails the build (Sonar m3): it would otherwise be a broken image on a shown project.
+ * An unsafe rendered diagram (any of them, see unsafeDiagramReasons) fails it too.
  */
 export function publishAssets(root: string, showDrafts: boolean): string[] {
+  // Every rendered diagram, shown or not, must pass sanitizeSvg (Sonar on 9631ada); nothing is copied otherwise.
+  const unsafe = unsafeDiagramReasons(root);
+  if (unsafe.length > 0) throw new UnsafeAssetError(unsafe);
   const assets = publishedAssets(readProjectAssets(root), showDrafts);
   for (const { slug, src } of assets) {
     const file = renderedFile(src);
