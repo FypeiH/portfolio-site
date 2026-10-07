@@ -2,16 +2,17 @@
  * Renders content/diagrams/*.mmd to assets/rendered/diagrams/<slug>.svg (published by scripts/publish-assets.ts) with a source hash (spec §3.1).
  * Local/CI only, never on Vercel. Uses the Chrome found by Puppeteer (set PUPPETEER_EXECUTABLE_PATH to reuse a system Chrome).
  * `pnpm diagrams --check` (run by `pnpm build:production`) renders nothing: it fails when a rendered SVG
- * is missing or its `src-sha256` comment doesn't match its .mmd source. It can't tell whether the SVG
- * body was edited by hand; the output scan (scripts/check-output.ts) reads that body for markers.
+ * is missing, its `src-sha256` comment doesn't match its .mmd source, its bytes differ from the hash in
+ * assets/diagrams.json (written here after rendering, so a hand edit is caught), or any SVG in the
+ * output folder fails sanitizeSvg (lib/diagrams-manifest.ts).
  */
-import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { hashComment, isDiagramCurrent } from "../lib/content/diagrams";
+import { hashComment } from "../lib/content/diagrams";
+import { DIAGRAMS_OUTPUT_DIR, DIAGRAMS_SOURCE_DIR, staleDiagramReasons, writeDiagramsManifest } from "../lib/diagrams-manifest";
 
-const SOURCE_DIR = "content/diagrams";
-const OUTPUT_DIR = "assets/rendered/diagrams";
+const SOURCE_DIR = DIAGRAMS_SOURCE_DIR;
+const OUTPUT_DIR = DIAGRAMS_OUTPUT_DIR;
 
 const MERMAID_CONFIG = {
   theme: "dark",
@@ -33,19 +34,15 @@ const MERMAID_CONFIG = {
     edgeLabelBackground: "#141414",
     lineColor: "#a3a3a3",
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    // 18 px labels: the case study shows a diagram at ≥ 78% of its intrinsic size, so text stays ≥ 14 px (Diagram.tsx).
+    fontSize: "18px",
   },
 } as const;
 
-async function check(sources: string[]): Promise<void> {
-  const stale: string[] = [];
-  for (const name of sources) {
-    const output = path.join(OUTPUT_DIR, name.replace(/\.mmd$/, ".svg"));
-    if (!existsSync(output)) stale.push(`missing ${output}`);
-    else if (!isDiagramCurrent(await readFile(path.join(SOURCE_DIR, name), "utf8"), await readFile(output, "utf8")))
-      stale.push(`${output} is older than ${SOURCE_DIR}/${name}`);
-  }
+function check(sources: string[]): void {
+  const stale = staleDiagramReasons(process.cwd());
   if (stale.length > 0) {
-    console.error(`Diagrams are out of date (run pnpm diagrams):\n  ${stale.join("\n  ")}`);
+    console.error(`Diagrams are out of date or unsafe (run pnpm diagrams):\n  ${stale.join("\n  ")}`);
     process.exit(1);
   }
   console.log(`Diagrams are current (${sources.length}).`);
@@ -74,6 +71,9 @@ async function main(): Promise<void> {
   } finally {
     await browser.close();
   }
+  writeDiagramsManifest(process.cwd());
+  const unsafe = staleDiagramReasons(process.cwd());
+  if (unsafe.length > 0) throw new Error(`Rendered diagrams failed the check:\n  ${unsafe.join("\n  ")}`);
 }
 
 main().catch((error: unknown) => {
