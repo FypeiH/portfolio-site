@@ -86,7 +86,8 @@ test.describe("rendered assets (Sonar f49)", () => {
   test("covers, diagrams and the portrait still render through <img>", async ({ page }) => {
     for (const route of ["/", ...published.map((slug) => `/projects/${slug}`)]) {
       await page.goto(route);
-      const images = page.locator("main img");
+      // The full-size diagram view lives in a closed <dialog> (not rendered until opened; fil8-layout.spec covers it).
+      const images = page.locator("main img:not(dialog img)");
       const count = await images.count();
       for (let i = 0; i < count; i++) {
         const image = images.nth(i);

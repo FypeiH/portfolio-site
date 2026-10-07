@@ -22,13 +22,15 @@ test.describe("anchor navigation", () => {
     await expectHeadingBelowHeader(page, "experience");
   });
 
-  test("hero CTAs jump to projects and contact", async ({ page }) => {
+  test("hero CTAs: email first, then a jump to projects", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "View projects" }).click();
+    const ctas = page.locator("#top a");
+    await expect(ctas).toHaveCount(2);
+    await expect(ctas.nth(0)).toHaveText("Contact me");
+    await expect(ctas.nth(0)).toHaveAttribute("href", "mailto:filipe.abravo@gmail.com");
+    await expect(ctas.nth(1)).toHaveText("View projects");
+    await ctas.nth(1).click();
     await expectHeadingBelowHeader(page, "projects");
-    await page.goto("/");
-    await page.getByRole("link", { name: "Contact me" }).click();
-    await expectHeadingBelowHeader(page, "contact");
   });
 
   test("skip link targets main", async ({ page }) => {

@@ -229,14 +229,12 @@
   font-weight: 700;
 }
 
-@utility hero-name {
-  font: 800 var(--text-display) / 0.9 var(--font-sans);
-  letter-spacing: -0.04em;
+/* Hero title (B4): system sans 800, two short lines; never Anton (it's the LCP element). */
+@utility hero-title {
+  font: 800 clamp(2.25rem, 1.2rem + 3.6vw, 4rem) / 1 var(--font-sans);
+  letter-spacing: -0.03em;
   text-transform: uppercase;
   color: var(--color-fg);
-  margin-inline-start: -0.04em; /* optical alignment with the grid edge */
-  border-bottom: var(--border-thick) solid var(--color-fg);
-  padding-bottom: var(--space-4);
 }
 
 @utility page-title {
@@ -251,15 +249,13 @@
   overflow: hidden;
   contain: paint;
   border-block: var(--border-thick) solid var(--color-fg);
-  padding-block: var(--space-3);
+  padding: var(--space-3) var(--gutter);
   margin-inline: calc(var(--gutter) * -1);
 }
 
 @utility marquee-track {
   display: flex;
-  gap: 0.35em;
   width: max-content;
-  padding-inline: var(--gutter);
   /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, app/layout.tsx). */
   font: 400 var(--text-marquee) / 1 var(--font-display-fallback);
   :where(html.fonts-ready) & {
@@ -267,6 +263,14 @@
   }
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* Each group ends with the same gap it has inside, so sliding by one group lands on an identical frame. */
+@utility marquee-group {
+  display: flex;
+  flex: none;
+  gap: 0.35em;
+  padding-inline-end: 0.35em;
 }
 
 /* Decorative copies: the text comes from data-text, so it's not in the DOM text (Section.tsx). */
@@ -278,6 +282,55 @@
 @utility marquee-ghost {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--color-fg);
+}
+
+/* Case-study diagram: breaks out of the 52rem text column up to 1100px; drawn at its intrinsic width
+   when it fits, never upscaled, and from md up never below --diagram-min-w (14 px labels; Diagram.tsx). */
+@utility diagram-figure {
+  --figure-w: min(1100px, 100vw - 2 * var(--gutter));
+  width: var(--figure-w);
+  margin-inline: calc((100% - var(--figure-w)) / 2);
+}
+@utility diagram-img {
+  display: block;
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--diagram-w);
+  height: auto;
+  @media (width >= 48rem) {
+    min-width: var(--diagram-min-w);
+  }
+}
+@utility diagram-dialog {
+  width: min(100vw - 2rem, 1600px);
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: var(--border-thick) solid var(--color-fg);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  &::backdrop {
+    background: rgb(10 10 10 / 0.85);
+  }
+}
+
+/* Experience: company tile (official logo in monochrome, or initials). */
+@utility company-mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: var(--border-thick) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+@utility company-logo {
+  display: block;
+  /* Any colour logo -> flat foreground grey, so every company reads the same. */
+  filter: grayscale(1) brightness(0) invert(0.95);
 }
 
 /* ---------- Controls (§6) ---------- */
