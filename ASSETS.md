@@ -26,13 +26,13 @@ Shown in the Experience timeline in a 56 px tile, flattened to the foreground gr
 
 | File | Source URL | Retrieved | Permission | Notes |
 | --- | --- | --- | --- | --- |
-| `public/images/companies/altyra-solutions.webp` | https://altyra.com/lovable-uploads/29c94a1b-009d-4189-a0e5-07db02e7796a.png (the logo on the company's own site, alt "Altyra Solutions - Company logo"; the domain is the one named in Filipe's internship report) | 2026-10-03 | Pending confirmation by Filipe (added at his request in FIL-8; no permission from Altyra Solutions on record) | Original PNG 166×87, SHA-256 `0b4893e4…14b0059`; converted to lossless WebP (676 bytes); pixels unchanged. Added at Filipe's request (FIL-8) |
-| `public/images/companies/gigantic-digital-growth.webp` | `gigantic-logo-black.png` supplied by Filipe on 2026-10-15 (black and white mark with yellow "DIGITAL GROWTH", transparent background, 889×818, SHA-256 `8b352335…952a1f99e`). It replaced a copy taken from https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (yellow square background). Filipe also sent a yellow variant, not used | 2026-10-15 | Pending confirmation by Filipe (added at his request in FIL-8; no permission from Gigantic Digital Growth on record) | **Edited**: the white letter fills and the yellow text were made transparent and only the black body kept (alpha × clamp((0.8 − luminance) / 0.6)), so the `company-logo` CSS filter can flatten it to grey; trimmed to the mark; resized to 80×73 (2× the 40 px display width); lossless WebP (1,660 bytes). Added at Filipe's request (FIL-8) |
+| `public/images/companies/altyra-solutions.webp` | https://altyra.com/lovable-uploads/29c94a1b-009d-4189-a0e5-07db02e7796a.png (the logo on the company's own site, alt "Altyra Solutions - Company logo"; the domain is the one named in Filipe's internship report) | 2026-10-03 | Usado com autorização, confirmada pelo Filipe Bravo a 2026-10-15 | Original PNG 166×87, SHA-256 `0b4893e4…14b0059`; converted to lossless WebP (676 bytes); pixels unchanged. Added at Filipe's request (FIL-8) |
+| `public/images/companies/gigantic-digital-growth.webp` | `gigantic-logo-black.png` supplied by Filipe on 2026-10-15 (black and white mark with yellow "DIGITAL GROWTH", transparent background, 889×818, SHA-256 `8b352335…952a1f99e`). It replaced a copy taken from https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (yellow square background). Filipe also sent a yellow variant, not used | 2026-10-15 | Usado com autorização, confirmada pelo Filipe Bravo a 2026-10-15 | **Edited**: the white letter fills and the yellow text were made transparent and only the black body kept (alpha × clamp((0.8 − luminance) / 0.6)), so the `company-logo` CSS filter can flatten it to grey; trimmed to the mark; resized to 80×73 (2× the 40 px display width); lossless WebP (1,660 bytes). Added at Filipe's request (FIL-8) |
 | `public/images/companies/ocr-technology-and-productivity.webp` | `ocr-logo-white.png` supplied by Filipe on 2026-10-15 (white logo for dark backgrounds, transparent background, 289×93, SHA-256 `d46fb88c…9ebe620`; the wordmark's own spelling "Tecnology" is kept). Filipe also sent `ocr-logo-black.png` for light backgrounds, not used | 2026-10-15 | Pending confirmation by Filipe (added at his request in FIL-8; no permission from OCR on record) | Resized to 80×26 (2× the 40 px display width), lossless WebP; no other edits. Added at Filipe's request (FIL-8) |
 
 ## Case-study screenshots
 
-Filipe's own captures of his app, taken in its demo mode with fictitious data (no client name, logo or real records), supplied on 2026-10-15. Listed in the project's `screenshots` frontmatter and lazy-loaded below the case-study body (`components/project/ProjectScreenshots.tsx`). Only the WebP ships; the PNG masters and AVIF copies stay outside the repo (`/workspace/portfolio-assets/contacts-report/`).
+Filipe's own captures of his app, taken in its demo mode with fictitious data (no client name, logo or real records), supplied on 2026-10-15. Listed in the project's `screenshots` frontmatter and lazy-loaded below the case-study body (`components/project/ProjectScreenshots.tsx`). Only the WebP ships; the PNG masters are kept in `assets/originals/contacts-report/` (see Originals below).
 
 | File | Master (PNG, SHA-256) | Size | Notes |
 | --- | --- | --- | --- |
@@ -47,3 +47,17 @@ Filipe's own captures of his app, taken in its demo mode with fictitious data (n
 ## Where generated images live
 
 Rendered diagrams and covers are committed under `assets/rendered/` and copied into `public/` per build by `scripts/publish-assets.ts` (published projects only, drafts too when `SHOW_DRAFTS=true`), so a production deployment never serves a draft's images. `public/diagrams/` and `public/covers/` are gitignored. Both are served with `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'` (`next.config.ts`), and every SVG source is sanitized before it is nested in a cover (`lib/project-covers-compose.ts`).
+
+## Originals
+
+Master files the shipped assets were made from, kept so they can be regenerated without asking for them again. `assets/` is outside `public/` and nothing imports these files, so they are never served or bundled (`tests/unit/output-guards.test.ts`). SHA-256 as listed in the tables above.
+
+| File | Made into |
+| --- | --- |
+| `assets/originals/contacts-report/contacts-report-dashboard.png` | `public/images/projects/contacts-report/contacts-report-dashboard.webp` |
+| `assets/originals/contacts-report/contacts-report-contact-detail.png` | `public/images/projects/contacts-report/contacts-report-contact-detail.webp` |
+| `assets/originals/contacts-report/contacts-report-excel-groups.png` | `public/images/projects/contacts-report/contacts-report-excel-groups.webp` |
+| `assets/originals/companies/gigantic-logo-black.png` | `public/images/companies/gigantic-digital-growth.webp` |
+| `assets/originals/companies/ocr-logo-white.png` | `public/images/companies/ocr-technology-and-productivity.webp` |
+
+The unused variants Filipe also sent (`gigantic-logo-yellow.png`, 626 KB, and `ocr-logo-black.png`) are not committed.

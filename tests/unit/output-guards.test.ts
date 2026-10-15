@@ -188,3 +188,22 @@ describe("Sonar v2 follow-up: HTML size budget in the build check", () => {
     expect(pkg.scripts["build:production"]).toContain("tsx scripts/check-output.ts");
   });
 });
+
+describe("Sonar v2 follow-up: master originals are kept but never shipped", () => {
+  const originals = ["contacts-report", "companies"].flatMap((dir) =>
+    fs.readdirSync(path.join(root, "assets/originals", dir)).map((file) => `assets/originals/${dir}/${file}`),
+  );
+
+  it("keeps the 5 masters, each listed in ASSETS.md", () => {
+    expect(originals).toHaveLength(5);
+    for (const file of originals) expect(read("ASSETS.md")).toContain(`\`${file}\``);
+  });
+
+  it("is outside public/ and referenced by no app, component, lib or script code", () => {
+    const code = ["app", "components", "lib", "scripts"]
+      .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" }).map((f) => `${dir}/${f}`))
+      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file));
+    expect(code.filter((file) => read(file).includes("originals"))).toEqual([]);
+    expect(read("next.config.ts")).not.toContain("originals");
+  });
+});
