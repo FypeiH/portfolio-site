@@ -187,3 +187,26 @@ test("contacts-report: the screenshots gallery shows three lazy, sized images wi
     await expect.poll(() => image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
   }
 });
+
+test("header: the FB monogram sits before the name inside the home link, which keeps the name as its accessible name", async ({ page }) => {
+  await page.goto("/");
+  const home = page.locator("header a[href='/#top']").first();
+  await expect(home).toHaveAccessibleName(/^Filipe Bravo/);
+  const mark = home.locator("svg.site-monogram");
+  await expect(mark).toHaveAttribute("aria-hidden", "true");
+  await expect(mark).toBeVisible();
+  const box = (await mark.boundingBox())!;
+  expect([Math.round(box.width), Math.round(box.height)]).toEqual([36, 36]);
+});
+
+test("favicons: SVG, ICO (16 + 32), PNG 32 and apple-touch 180, all served", async ({ page, request }) => {
+  await page.goto("/");
+  const icons = await page.locator("head link[rel='icon'], head link[rel='apple-touch-icon']").evaluateAll((links) =>
+    links.map((link) => ({ rel: link.getAttribute("rel"), href: link.getAttribute("href")!, sizes: link.getAttribute("sizes"), type: link.getAttribute("type") })),
+  );
+  expect(icons.some((icon) => icon.href.startsWith("/favicon.ico"))).toBe(true);
+  expect(icons.some((icon) => icon.type === "image/svg+xml")).toBe(true);
+  expect(icons.some((icon) => icon.type === "image/png" && icon.sizes === "32x32")).toBe(true);
+  expect(icons.some((icon) => icon.rel === "apple-touch-icon" && icon.sizes === "180x180")).toBe(true);
+  for (const icon of icons) expect((await request.get(icon.href)).status()).toBe(200);
+});

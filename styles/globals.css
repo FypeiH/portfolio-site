@@ -581,6 +581,13 @@
   }
 }
 
+@utility site-monogram {
+  display: block;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  box-shadow: 3px 3px 0 0 var(--color-fg);
+}
 @utility hero-photo {
   display: block;
   width: 18rem;

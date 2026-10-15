@@ -55,7 +55,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
     expect(script).toContain("Rendered output check failed");
   });
 
-  it("build:production runs the output scan, then covers/avatar/diagrams --check", () => {
+  it("build:production runs the output scan, then covers/avatar/monogram/diagrams --check", () => {
     const steps = pkg.scripts["build:production"]!.split("&&").map((s) => s.trim());
     expect(steps).toEqual([
       "pnpm assets",
@@ -63,6 +63,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
       "tsx scripts/check-output.ts",
       "pnpm covers --check",
       "pnpm avatar --check",
+      "pnpm monogram --check",
       "pnpm diagrams --check",
     ]);
   });
@@ -216,5 +217,24 @@ describe("Sonar v2 follow-up: master originals are kept but never shipped", () =
       .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file) && !["scripts/hero-photo.ts", "scripts/company-logos.ts"].includes(file));
     expect(code.filter((file) => read(file).includes("originals"))).toEqual([]);
     expect(read("next.config.ts")).not.toContain("originals");
+  });
+});
+
+describe("FB monogram", () => {
+  it("is drawn from outlined paths only, so it needs no font", async () => {
+    const { monogramSvg } = await import("@/lib/monogram");
+    for (const variant of ["full", "small"] as const) {
+      const svg = monogramSvg(variant);
+      expect(svg).not.toMatch(/<text|font-family/);
+      expect(svg.match(/<path /g)).toHaveLength(2);
+    }
+  });
+
+  it("the committed favicon set is current and the ICO holds 16 and 32 px images", () => {
+    const check = spawnSync("pnpm", ["-s", "monogram", "--check"], { cwd: root, encoding: "utf8" });
+    expect(check.status, check.stderr).toBe(0);
+    const ico = fs.readFileSync(path.join(root, "app/favicon.ico"));
+    const sizes = Array.from({ length: ico.readUInt16LE(4) }, (_, i) => ico.readUInt8(6 + i * 16));
+    expect(sizes).toEqual([16, 32]);
   });
 });
