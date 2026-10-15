@@ -1,4 +1,4 @@
-import { HeroGrid } from "@/components/sections/HeroGrid";
+import { HeroPhoto } from "@/components/sections/HeroPhoto";
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { getUi } from "@/lib/content/load";
@@ -7,10 +7,9 @@ import type { Profile } from "@/lib/content/types";
 
 /**
  * Hero (visual-direction §3, B4; spec §1.1; Filipe's hierarchy, 2026-10-15): the name as the h1 in
- * Anton, the role in two short lines, one supporting line, the availability badge and two CTAs, with an
- * inline-SVG grid on the right. The name paints in a local fallback face until the page has loaded
- * (styles/globals.css, hero-name), so nothing here waits for a web font. No images; the portrait lives
- * in #about.
+ * Anton, the role in two short lines, one supporting line, the availability badge and two CTAs, with the
+ * duotone portrait on wide screens (HeroPhoto; phones never download it). The name paints in a local fallback
+ * face until the page has loaded (styles/globals.css, hero-name), so nothing here waits for a web font.
  */
 export function HeroSection({ profile }: { profile: Profile }) {
   const ui = getUi();
@@ -37,7 +36,7 @@ export function HeroSection({ profile }: { profile: Profile }) {
           </ButtonLink>
         </div>
       </div>
-      <HeroGrid className="mx-auto w-full max-w-[22rem] lg:col-span-4 lg:max-w-none" />
+      <HeroPhoto />
     </section>
   );
 }

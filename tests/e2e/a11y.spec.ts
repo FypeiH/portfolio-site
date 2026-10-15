@@ -45,9 +45,12 @@ test("the photo has alt text and explicit dimensions", async ({ page }) => {
   const photo = page.getByRole("img", { name: "Portrait of Filipe Bravo" });
   await expect(photo).toHaveAttribute("width", "224");
   await expect(photo).toHaveAttribute("height", "224");
-  // The portrait lives in #about; the hero has no images (visual-direction §8.13).
   await expect(page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
-  await expect(page.locator("#top img")).toHaveCount(0);
+  // The hero's duotone portrait (wide screens only) has a short alt and fixed dimensions too.
+  const heroPhoto = page.locator("#top img");
+  await expect(heroPhoto).toHaveAttribute("alt", "Filipe Bravo");
+  await expect(heroPhoto).toHaveAttribute("width", "288");
+  await expect(heroPhoto).toHaveAttribute("height", "360");
 });
 
 test("the hero paints without the web font: Anton only after load, on the name only (LCP rule)", async ({ page }) => {

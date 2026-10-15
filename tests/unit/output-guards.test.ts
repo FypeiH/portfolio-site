@@ -190,19 +190,24 @@ describe("Sonar v2 follow-up: HTML size budget in the build check", () => {
 });
 
 describe("Sonar v2 follow-up: master originals are kept but never shipped", () => {
-  const originals = ["contacts-report", "companies"].flatMap((dir) =>
+  const originals = ["contacts-report", "companies", "profile"].flatMap((dir) =>
     fs.readdirSync(path.join(root, "assets/originals", dir)).map((file) => `assets/originals/${dir}/${file}`),
   );
 
-  it("keeps the 5 masters, each listed in ASSETS.md", () => {
-    expect(originals).toHaveLength(5);
+  it("keeps the 6 masters, each listed in ASSETS.md", () => {
+    expect(originals).toHaveLength(6);
     for (const file of originals) expect(read("ASSETS.md")).toContain(`\`${file}\``);
   });
 
-  it("is outside public/ and referenced by no app, component, lib or script code", () => {
+  it("keeps only the small processed hero master, never the high-resolution photo", () => {
+    expect(fs.readdirSync(path.join(root, "assets/originals/profile"))).toEqual(["filipe-bravo-hero.webp"]);
+    expect(fs.statSync(path.join(root, "assets/originals/profile/filipe-bravo-hero.webp")).size).toBeLessThan(300 * 1024);
+  });
+
+  it("is outside public/ and referenced by no app, component, lib or script code (except the generator that writes it)", () => {
     const code = ["app", "components", "lib", "scripts"]
       .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" }).map((f) => `${dir}/${f}`))
-      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file));
+      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file) && file !== "scripts/hero-photo.ts");
     expect(code.filter((file) => read(file).includes("originals"))).toEqual([]);
     expect(read("next.config.ts")).not.toContain("originals");
   });

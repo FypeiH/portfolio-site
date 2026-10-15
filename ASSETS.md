@@ -30,6 +30,14 @@ Shown in the Experience timeline in a 56 px tile, mapped by company name in `lib
 | `public/images/companies/gigantic-digital-growth.webp` | `gigantic-logo-yellow.png` supplied by Filipe on 2026-10-15 (yellow body, black letters and "DIGITAL GROWTH", transparent background, 2048×1855, SHA-256 `c8487fc1…f7bc5d6fc`). It replaced the black variant (`gigantic-logo-black.png`, SHA-256 `8b352335…952a1f99e`), used until 2026-10-15 | 2026-10-15 | Usado com autorização, confirmada pelo Filipe Bravo a 2026-10-15 | **Edited**: every pixel inside the logo outline made fully opaque (11,504 letter-edge pixels had alpha 254), so the letters render solid; the background outside the logo stays transparent; resized to 80×72 (2× the 40 px display width); lossless WebP (4,300 bytes); shown in colour, without the grey filter. Added at Filipe's request (FIL-8) |
 | `public/images/companies/ocr-technology-and-productivity.webp` | `ocr-logo-white.png` supplied by Filipe on 2026-10-15 (white logo for dark backgrounds, transparent background, 289×93, SHA-256 `d46fb88c…9ebe620`; the wordmark's own spelling "Tecnology" is kept). Filipe also sent `ocr-logo-black.png` for light backgrounds, not used | 2026-10-15 | Usado com autorização, confirmada pelo Filipe Bravo a 2026-10-15 | Resized to 80×26 (2× the 40 px display width), lossless WebP; no other edits. Added at Filipe's request (FIL-8) |
 
+## Hero photo
+
+Filipe's own photo, supplied by him on 2026-10-15 for the hero (FIL-8). Treated by `scripts/hero-photo.ts` with image processing only (crop, hand-traced silhouette mask, tone curve, duotone, seeded grain); no generative or AI step. Shown only from the lg breakpoint (`components/sections/HeroPhoto.tsx`); phones never download it.
+
+| File | Source | Retrieved | Permission | Notes |
+| --- | --- | --- | --- | --- |
+| `public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}` | `filipe-hero-original.png` supplied by Filipe (1024×1536 PNG, 2,431,535 bytes, SHA-256 `b9db36db…230715870`). **Not committed**: it stays outside the repo (`/workspace/portfolio-assets/photo/` on the agent box); rerun with `pnpm tsx scripts/hero-photo.ts --source=<file>` | 2026-10-15 | Filipe's own photo, supplied by him for this use | Cropped to head and shoulders (800×1000 from x 0, y 80), background outside the traced silhouette replaced with near-black, subject mapped to a near-black → #FF5A1F duotone with a steep tone curve and seeded grain. Displayed at 288×360; AVIF 5,749 / 19,106 bytes and WebP 6,922 / 19,714 bytes (1x / 2x). Processed master: `assets/originals/profile/filipe-bravo-hero.webp` (800×1000, 79,382 bytes) |
+
 ## Case-study screenshots
 
 Filipe's own captures of his app, taken in its demo mode with fictitious data (no client name, logo or real records), supplied on 2026-10-15. Listed in the project's `screenshots` frontmatter and lazy-loaded below the case-study body (`components/project/ProjectScreenshots.tsx`). Only the WebP ships; the PNG masters are kept in `assets/originals/contacts-report/` (see Originals below).
@@ -59,5 +67,6 @@ Master files the shipped assets were made from, kept so they can be regenerated 
 | `assets/originals/contacts-report/contacts-report-excel-groups.png` | `public/images/projects/contacts-report/contacts-report-excel-groups.webp` |
 | `assets/originals/companies/gigantic-logo-yellow.png` | `public/images/companies/gigantic-digital-growth.webp` |
 | `assets/originals/companies/ocr-logo-white.png` | `public/images/companies/ocr-technology-and-productivity.webp` |
+| `assets/originals/profile/filipe-bravo-hero.webp` (processed master, not the original photo) | `public/images/profile/filipe-bravo-hero-*.{avif,webp}` |
 
 The variants not used (`gigantic-logo-black.png`, replaced by the yellow one on 2026-10-15, and `ocr-logo-black.png`) are not committed.

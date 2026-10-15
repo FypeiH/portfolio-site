@@ -577,6 +577,14 @@
   }
 }
 
+@utility hero-photo {
+  display: block;
+  width: 18rem;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border: var(--border-thick) solid var(--color-fg);
+  box-shadow: var(--shadow-hard);
+}
 @utility portrait {
   width: 224px;
   height: 224px;
