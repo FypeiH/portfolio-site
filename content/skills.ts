@@ -8,11 +8,11 @@ export const skills = [
     id: "backend",
     label: "Backend",
     items: [
-      { name: "C# / .NET", projects: ["email-scraper", "takefreetours", "contacts-report"] }, // merged (rev. 6) to make room for the AI group within 25
+      { name: "C# / .NET", projects: ["email-scraper", "takefreetours"] }, // merged (rev. 6) to make room for the AI group within 25
       { name: "Python", projects: ["fidu-bot"] },
       { name: "Node.js" },
       { name: "REST APIs", projects: ["takefreetours"] },
-      { name: "SQL / SQL Server", projects: ["email-scraper", "contacts-report"] },
+      { name: "SQL / SQL Server", projects: ["email-scraper"] },
       { name: "PHP" },
       { name: "PayPal API" }, // Altyra (law firm website); experience only, no case study
     ],

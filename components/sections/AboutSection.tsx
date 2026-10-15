@@ -60,7 +60,6 @@ export function AboutSection({ profile }: { profile: Profile }) {
           )}
         </Reveal>
         <Reveal className="space-y-4 lg:col-span-8 lg:col-start-5" variant="fade">
-          <p className="ui-label text-accent!">{profile.role}</p>
           {knownOnly(profile.about).map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}

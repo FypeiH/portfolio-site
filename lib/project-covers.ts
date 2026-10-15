@@ -28,7 +28,6 @@ export const COVER_SOURCES = {
   "fidu-bot": { kind: "diagram", file: `${DIAGRAMS}/fidu-bot.svg` },
   "portfolio-site": { kind: "diagram", file: `${DIAGRAMS}/portfolio-site.svg` },
   "dynamic-cv": { kind: "diagram", file: `${DIAGRAMS}/dynamic-cv.svg` },
-  "contacts-report": { kind: "diagram", file: `${DIAGRAMS}/contacts-report.svg` },
 } as const satisfies Record<string, CoverSource>;
 
 export type CoverSlug = keyof typeof COVER_SOURCES;

@@ -63,7 +63,7 @@ export function OgLabel({ children }: { children: ReactNode }) {
  * Shared 1200×630 frame: black page, a 2 px light border with a hard orange offset shadow (no blur,
  * no radius), and a footer rule with the site address.
  */
-export function OgFrame({ children, footer, compact = false }: { children: ReactNode; footer: string; compact?: boolean }) {
+export function OgFrame({ children, footer }: { children: ReactNode; footer: string }) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", background: ogColors.bg, color: ogColors.fg, fontFamily: "Inter", padding: "40px 52px 52px 40px" }}>
       <div
@@ -77,14 +77,10 @@ export function OgFrame({ children, footer, compact = false }: { children: React
           boxShadow: `12px 12px 0 0 ${ogColors.accent}`,
         }}
       >
-        {/* The body can never push the footer: it clips instead (minHeight 0 lets it shrink), and the footer doesn't shrink. */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flexGrow: 1, minHeight: 0, overflow: "hidden", padding: compact ? "24px 56px" : "40px 56px" }}>
-          {children}
-        </div>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flexGrow: 1, padding: "40px 56px" }}>{children}</div>
         <div
           style={{
             display: "flex",
-            flexShrink: 0,
             justifyContent: "space-between",
             borderTop: `2px solid ${ogColors.border}`,
             padding: "18px 56px",

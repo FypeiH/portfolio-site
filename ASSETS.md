@@ -20,15 +20,6 @@ Official logos, taken from each owner's own public site or store listing, unmodi
 | `assets/project-logos/benched-app-icon-1024.png` | App Store icon of Benched (id 6744754854): `artworkUrl512` from https://itunes.apple.com/lookup?id=6744754854, requested at 1024×1024 PNG | 2026-09-30 | Usado com autorização do cliente, confirmada pelo Filipe Bravo a 2026-10-03 | `assets/rendered/covers/benched.webp` (raster, so the cover is WebP; no PNG ships) |
 | ~~`assets/project-logos/ramos-correia-logo-white.png`~~ (removed 2026-10-03) | https://ramoscorreia.com/wp-content/uploads/2025/07/logotipo_nrc_white.png (largest logo on the site; no SVG is published) | 2026-09-30 | n/a | **Removed from the repo** (unused: Ramos Correia & Associados is experience-only, so no cover was ever generated or shipped) |
 
-## Company logos (Experience)
-
-Shown in the Experience timeline in a 56 px tile, flattened to the foreground grey with a CSS filter (`company-logo` in `styles/globals.css`), mapped by company name in `lib/company-logos.ts`. A company without a file there (today only OCR) gets its initials instead (decorative, `aria-hidden`; the name is in the heading next to it).
-
-| File | Source URL | Retrieved | Notes |
-| --- | --- | --- | --- |
-| `public/images/companies/altyra-solutions.webp` | https://altyra.com/lovable-uploads/29c94a1b-009d-4189-a0e5-07db02e7796a.png (the logo on the company's own site, alt "Altyra Solutions - Company logo"; the domain is the one named in Filipe's internship report) | 2026-10-03 | Original PNG 166×87, SHA-256 `0b4893e4…14b0059`; converted to lossless WebP (676 bytes), no other edits. Added at Filipe's request (FIL-8) |
-| `public/images/companies/gigantic-digital-growth.webp` | https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (official logo, listed by the site's own `wp-json/wp/v2/media` API; the 2026-10-03 attempt hit a bot challenge, a plain request on 2026-10-15 returned the file) | 2026-10-15 | Original PNG 1080×1080 (black and white mark on a yellow square), SHA-256 `6f9a6037…4a95e9e`. Converted to an alpha mask so the `company-logo` filter can flatten it: yellow and white pixels transparent, black opaque (alpha = clamp((0.8 − luminance) / 0.6)), cropped to the mark with 4 px padding, resized to 160×147, lossless WebP (3,688 bytes). No other edits. Added at Filipe's request (FIL-8) |
-
 ## Diagram covers
 
 `fidu-bot`, `portfolio-site` and `dynamic-cv` have no logo: their covers embed the project's own architecture diagram (`assets/rendered/diagrams/<slug>.svg`, rendered from `content/diagrams/*.mmd` with the site palette) on the same background.

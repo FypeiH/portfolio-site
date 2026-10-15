@@ -2,10 +2,10 @@
   "email-scraper": {
     "sources": {
       "assets/project-logos/takefreetours.svg": "23323221cc2ffd2b2d8fab6e1e88e62cdba250cbd7f8b79bdf2c3e751f10343d",
-      "assets/rendered/diagrams/email-scraper.svg": "3af26213b2ba8be51721fe0c60b4a69d6ee2f38b571db2318775bebc2713a3c0"
+      "assets/rendered/diagrams/email-scraper.svg": "495215a5d7409aea2b7845d6f8f462786938975fb01df6d40c8d95dc5f769e32"
     },
     "output": "assets/rendered/covers/email-scraper.svg",
-    "sha256": "8653de9d9786422b917ef69e057bdc1a49c3c49c6cbc24f6708498e0cb4b14ee"
+    "sha256": "b5aada21f9e00eba0f24171c9811d63884bdc2c047ebc378e96a562612fe5263"
   },
   "takefreetours": {
     "sources": {
@@ -23,30 +23,23 @@
   },
   "fidu-bot": {
     "sources": {
-      "assets/rendered/diagrams/fidu-bot.svg": "7b03765d2995ce2fd6b0fdfe5bdc1613fccf7a31997c4525aecae495bbd5fcce"
+      "assets/rendered/diagrams/fidu-bot.svg": "02b3b0d3aa772366ea73b40ee4dd0fc590241e614d8a5470eaee7d4ceb238350"
     },
     "output": "assets/rendered/covers/fidu-bot.svg",
-    "sha256": "0ae3debefed94bf39f0476bb18eecdc725cf65770edb1837688bcb461f5cfa44"
+    "sha256": "9c740cb40f6fc7fad3a5ed2d72c9a398085022a3589fcb0e2f09bb1f51da0cfd"
   },
   "portfolio-site": {
     "sources": {
-      "assets/rendered/diagrams/portfolio-site.svg": "c44d96f68547e2173da72b50cdc943ed6e367f882a113b60a2756fdfc8e6fff1"
+      "assets/rendered/diagrams/portfolio-site.svg": "d31bbb876d79692640d219f63af61b411f11a84038b493b58848e4b8784cb237"
     },
     "output": "assets/rendered/covers/portfolio-site.svg",
-    "sha256": "e1d3182f939a3dd3111329ac003ec656fcff2796d6543dff64edbe7830674651"
+    "sha256": "32e88234849251b5f43b2de586e58a690b2f18e67691c31dbfd9b79c1457cad0"
   },
   "dynamic-cv": {
     "sources": {
-      "assets/rendered/diagrams/dynamic-cv.svg": "ac57b5b0033ae5fddbef9af75ae2c1c4a44191411c3e6c907824ae394afb5aa7"
+      "assets/rendered/diagrams/dynamic-cv.svg": "cf3891b51ead2b8783d3bf771ac8703a937beb066b192ef6f2b9aa5a7a14a408"
     },
     "output": "assets/rendered/covers/dynamic-cv.svg",
-    "sha256": "c0256c574476d1fd9457c63f9f8de049f0cec181279c22fd6045d65f34337ed7"
-  },
-  "contacts-report": {
-    "sources": {
-      "assets/rendered/diagrams/contacts-report.svg": "47a358965165d14e381ee1893e59307660d5d6449c810c81827aa3a99cc3640b"
-    },
-    "output": "assets/rendered/covers/contacts-report.svg",
-    "sha256": "206be0ae0b3c7938400809480423a551c197781e55052752bf06fb3a950c4e4c"
+    "sha256": "5ce5e2647551a23910f6158bb0f7fff6d6631b580087c7be071f3b9da0595542"
   }
 }

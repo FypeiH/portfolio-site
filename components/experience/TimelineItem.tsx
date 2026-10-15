@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CompanyMark } from "@/components/experience/CompanyMark";
 import { TagList } from "@/components/ui/Tag";
 import { EMPLOYMENT_LABEL_KEYS, WORK_MODE_LABEL_KEYS } from "@/lib/content/labels";
 import { getUi } from "@/lib/content/load";
@@ -35,12 +34,9 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
         {item.end === "present" ? ui.present : <time dateTime={toDateTime(item.end)}>{formatYearMonth(item.end)}</time>}
       </p>
       <div className="lg:col-span-9">
-        <div className="flex items-start gap-4">
-          <CompanyMark company={item.company} />
-          <h3 className="ui-h3 min-w-0 flex-1">
-            {item.role} <span className="text-subtle">·</span> <span className="text-accent">{item.company}</span>
-          </h3>
-        </div>
+        <h3 className="ui-h3">
+          {item.role} <span className="text-subtle">·</span> <span className="text-accent">{item.company}</span>
+        </h3>
         {details.length > 0 && <p className="ui-micro mt-2 text-subtle">{details.join(" · ")}</p>}
         <p className="mt-3">{item.summary}</p>
         <ul className="mt-3 list-[square] space-y-1 pl-5 text-muted marker:text-accent">

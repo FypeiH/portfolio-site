@@ -75,7 +75,6 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
       for (const f of fs.readdirSync(path.join(root, "content/diagrams"))) fs.copyFileSync(path.join(root, "content/diagrams", f), path.join(tmp, "content/diagrams", f));
       for (const f of fs.readdirSync(path.join(root, "assets/rendered/diagrams")))
         fs.copyFileSync(path.join(root, "assets/rendered/diagrams", f), path.join(tmp, "assets/rendered/diagrams", f));
-      fs.copyFileSync(path.join(root, "assets/diagrams.json"), path.join(tmp, "assets/diagrams.json"));
       const run = () =>
         spawnSync(path.join(root, "node_modules/.bin/tsx"), [path.join(root, "scripts/render-diagrams.ts"), "--check"], { cwd: tmp, encoding: "utf8" });
       expect(run().status).toBe(0);
@@ -148,9 +147,9 @@ describe("QA r3 O1: OG image text is checked before rendering", () => {
     expect(read("lib/og.tsx")).toMatch(/assertOgText\(route, element, \{ allowed: \(\) => allowedShippedMarkers\(repoFiles\(\)\) \}\);\s*return new ImageResponse/);
   });
 
-  it("keeps the case-study OG cache-buster with template version 3 (worst-case layout, Sonar on 9631ada)", async () => {
+  it("keeps the case-study OG cache-buster with template version 2", async () => {
     const { OG_TEMPLATE_VERSION } = await import("@/lib/og-size");
-    expect(OG_TEMPLATE_VERSION).toBe(3);
+    expect(OG_TEMPLATE_VERSION).toBe(2);
     expect(read("lib/metadata.ts")).toContain("OG_TEMPLATE_VERSION");
   });
 });

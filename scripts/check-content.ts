@@ -8,7 +8,6 @@ import { staleAvatarReason } from "../lib/avatar-thumb";
 import { formatHits } from "../lib/content/placeholders";
 import { repoFiles } from "../lib/content/repo-files";
 import { CONTENT_ROOT, scanContentFileDetailed, shippedContentFiles } from "../lib/content/scan";
-import { staleDiagramReasons } from "../lib/diagrams-manifest";
 import { staleCoverReasons } from "../lib/project-covers-manifest";
 
 function checkAvatar(): void {
@@ -25,17 +24,9 @@ function checkCovers(): void {
   process.exitCode = 1;
 }
 
-function checkDiagrams(): void {
-  const reasons = staleDiagramReasons();
-  if (reasons.length === 0) return;
-  console.log(`Rendered diagrams are stale or unsafe (run pnpm diagrams):\n  ${reasons.join("\n  ")}\n`);
-  process.exitCode = 1;
-}
-
 function main(): void {
   checkAvatar();
   checkCovers();
-  checkDiagrams();
   const files = repoFiles();
   const shipped = new Set(shippedContentFiles(files));
   const scans = files

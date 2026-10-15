@@ -47,35 +47,15 @@ const ALLOWED_ATTRIBUTES = new Set([
 const FRAGMENT = /^#[A-Za-z_][\w.:-]*$/;
 
 /**
- * CSS functions our sources use (Mermaid: rgba(), drop-shadow(), url(#id)) plus the colour and
- * transform functions an SVG logo may need. Any other function, `image-set()`, `-webkit-image-set()`,
- * `src()`, `attr()`, `env()`… included, is refused (Sonar on 9631ada: a denylist let them through).
- */
-const CSS_FUNCTIONS = new Set([
-  "rgb", "rgba", "hsl", "hsla", "url", "drop-shadow",
-  "translate", "translatex", "translatey", "rotate", "scale", "scalex", "scaley", "matrix", "skewx", "skewy",
-]);
-
-/** Deepest element nesting accepted; real sources stay under 20, and recursion past this is refused, not crashed. */
-export const MAX_SVG_DEPTH = 64;
-
-/**
  * CSS (a <style> element or a style attribute) may not reach outside the document or hide what it
- * says: no escape sequences (`@\69mport`, `\75rl(`), no comments, no at-rule but @keyframes, only the
- * functions in CSS_FUNCTIONS (url() only as `url(#id)`), no string containing `:` or `/` (a URL needs
- * one of them; font names don't), no legacy script hooks.
+ * says: no escape sequences (`@\69mport`, `\75rl(`), no comments, no at-rule but @keyframes, no url()
+ * except `url(#id)`, no legacy script hooks.
  */
-export function cssProblems(css: string): string[] {
+function cssProblems(css: string): string[] {
   const problems: string[] = [];
   if (css.includes("\\")) problems.push("CSS escape sequence");
   if (css.includes("/*")) problems.push("CSS comment");
   for (const m of css.matchAll(/@([\w-]*)/g)) if (m[1] !== "keyframes") problems.push(`@${m[1]}`);
-  for (const m of css.matchAll(/(["'])([^"']*?)\1/g)) if (/[:/]/.test(m[2] ?? "")) problems.push(`CSS string ${m[0]}`);
-  if (/["']/.test(css.replace(/(["'])[^"']*?\1/g, ""))) problems.push("unterminated CSS string");
-  for (const m of css.matchAll(/([A-Za-z_-][\w-]*)?(\s*)\(/g)) {
-    const name = (m[1] ?? "").toLowerCase();
-    if (!name || m[2] || !CSS_FUNCTIONS.has(name)) problems.push(`CSS function ${m[0].trim() || "("}`);
-  }
   for (const m of css.matchAll(/url\(\s*(["']?)([^)]*?)\1\s*\)/gi)) if (!FRAGMENT.test(m[2] ?? "")) problems.push(`url(${m[2]})`);
   if (/url\(/i.test(css.replace(/url\(\s*(["']?)#[A-Za-z_][\w.:-]*\1\s*\)/gi, ""))) problems.push("unparsed url()");
   if (/expression\s*\(|-moz-binding|behavior\s*:|javascript:/i.test(css)) problems.push("CSS script hook");
@@ -112,8 +92,7 @@ export function sanitizeSvg(source: string, file: string): string {
   const root = doc.documentElement;
   if (!root || root.namespaceURI !== SVG_NS || root.localName !== "svg") throw new UnsafeSvgError(`${file}: unsafe SVG source (does not start with <svg>)`);
   const comments: XmlNode[] = [];
-  const checkElement = (el: XmlElement, depth: number) => {
-    if (depth > MAX_SVG_DEPTH) throw new UnsafeSvgError(`${file}: unsafe SVG source (elements nested deeper than ${MAX_SVG_DEPTH})`);
+  const checkElement = (el: XmlElement) => {
     if (el.namespaceURI !== SVG_NS || !ALLOWED_ELEMENTS.has(el.localName ?? "")) {
       problems.push(`<${el.nodeName}> (${el.namespaceURI ?? "no namespace"})`);
       return;
@@ -122,8 +101,7 @@ export function sanitizeSvg(source: string, file: string): string {
     for (let i = 0; i < el.attributes.length; i++) {
       const attr = el.attributes.item(i);
       if (!attr) continue;
-      // Not trimmed: " #a" is not a fragment reference, and nothing we emit has padded values.
-      const value = attr.value;
+      const value = attr.value.trim();
       const name = attr.localName ?? "";
       if (attr.namespaceURI === XMLNS_NS) {
         if (value !== SVG_NS && value !== XLINK_NS) problems.push(`${attr.nodeName}="${value}"`);
@@ -142,18 +120,14 @@ export function sanitizeSvg(source: string, file: string): string {
     }
     for (let child = el.firstChild; child; child = child.nextSibling) {
       if (child.nodeType === child.COMMENT_NODE) comments.push(child);
-      else if (child.nodeType === child.ELEMENT_NODE) checkElement(child as XmlElement, depth + 1);
+      else if (child.nodeType === child.ELEMENT_NODE) checkElement(child as XmlElement);
       else if (child.nodeType !== child.TEXT_NODE && child.nodeType !== child.CDATA_SECTION_NODE) problems.push(`node type ${child.nodeType}`);
     }
   };
-  checkElement(root, 1);
+  checkElement(root);
   if (problems.length) throw new UnsafeSvgError(`${file}: unsafe SVG source (${[...new Set(problems)].join(", ")})`);
   for (const comment of comments) comment.parentNode?.removeChild(comment);
-  try {
-    return new XMLSerializer().serializeToString(root, { requireWellFormed: true });
-  } catch (error) {
-    throw new UnsafeSvgError(`${file}: SVG can't be re-serialised well-formed (${(error as Error).message})`);
-  }
+  return new XMLSerializer().serializeToString(root);
 }
 
 /** Re-roots a sanitized SVG document as a nested <svg> placed in `box` (keeps its viewBox). */

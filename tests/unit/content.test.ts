@@ -35,9 +35,9 @@ describe("current content (Will, rev. 2)", () => {
     }
   });
 
-  it("frozen content (rev. 6): 4 featured published and no placeholders in published content", () => {
+  it("frozen content (rev. 6): 3 featured published and no placeholders in published content", () => {
     const published = projects.filter((p) => p.status === "published");
-    expect(published.filter((p) => p.featured).map((p) => p.slug).sort()).toEqual(["contacts-report", "email-scraper", "fidu-bot", "portfolio-site"]);
+    expect(published.filter((p) => p.featured).map((p) => p.slug).sort()).toEqual(["email-scraper", "fidu-bot", "portfolio-site"]);
     expect(projects.find((p) => p.slug === "dynamic-cv")?.featured).toBe(false);
     const messages = collectContentIssues(snapshot, files, { strict: true, showDrafts: false }).map((i) => i.message);
     expect(messages.filter((m) => m.includes("placeholders") || m.includes("featured projects are published"))).toEqual([]);

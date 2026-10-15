@@ -27,8 +27,6 @@ export const ImageRefSchema = z.object({
   height: z.number().int().positive(),
 });
 
-export const ScreenshotSchema = ImageRefSchema.extend({ alt: text(125), caption: text(160).optional() });
-
 export const MetricSchema = z.object({
   value: text(12),
   label: text(40),
@@ -170,7 +168,6 @@ export const ProjectFrontmatterSchema = z
     }),
     cover: ImageRefSchema.optional(),
     diagram: DiagramSchema.optional(),
-    screenshots: z.array(ScreenshotSchema).max(3).optional(),
     featured: z.boolean(),
     order: z.number().int().min(1),
     status: z.enum(["published", "draft"]),
