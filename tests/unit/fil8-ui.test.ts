@@ -30,7 +30,7 @@ describe("company logos", () => {
       const logo = companyLogo(company);
       return logo ? [{ company, logo }] : [];
     });
-    expect(mapped.map(({ company }) => company)).toContain("Altyra Solutions");
+    expect(mapped.map(({ company }) => company)).toEqual(expect.arrayContaining(["Altyra Solutions", "Gigantic Digital Growth"]));
     for (const { company, logo } of mapped) {
       expect(logo.alt).toBe(`${company} logo`);
       const file = path.join(process.cwd(), "public", logo.src);

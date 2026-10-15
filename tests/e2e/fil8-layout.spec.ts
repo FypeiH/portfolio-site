@@ -94,7 +94,7 @@ test("experience: company logos have alt text and fixed dimensions; others show 
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
-    await expect(logo).toHaveAttribute("alt", "Altyra Solutions logo");
+    await expect(logo).toHaveAttribute("alt", /^(Altyra Solutions|Gigantic Digital Growth) logo$/);
     await expect(logo).toHaveAttribute("width", /^\d+$/);
     await expect(logo).toHaveAttribute("height", /^\d+$/);
     await logo.scrollIntoViewIfNeeded();
@@ -102,5 +102,5 @@ test("experience: company logos have alt text and fixed dimensions; others show 
   }
   const initials = page.locator("#experience [data-company-mark=initials] span");
   await expect(initials.first()).toHaveAttribute("aria-hidden", "true");
-  await expect(initials.first()).toHaveText("GD");
+  await expect(initials.first()).toHaveText("OT");
 });
