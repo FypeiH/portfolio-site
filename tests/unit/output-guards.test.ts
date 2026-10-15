@@ -204,6 +204,12 @@ describe("Sonar v2 follow-up: master originals are kept but never shipped", () =
     expect(fs.statSync(path.join(root, "assets/originals/profile/filipe-bravo-hero.webp")).size).toBeLessThan(300 * 1024);
   });
 
+  it("serves the hero photo only as small AVIF/WebP files (1x and 2x, 20 KB or less each)", () => {
+    const served = fs.readdirSync(path.join(root, "public/images/profile")).filter((file) => file.startsWith("filipe-bravo-hero"));
+    expect(served.sort()).toEqual(["filipe-bravo-hero-288.avif", "filipe-bravo-hero-288.webp", "filipe-bravo-hero-576.avif", "filipe-bravo-hero-576.webp"]);
+    for (const file of served) expect(fs.statSync(path.join(root, "public/images/profile", file)).size).toBeLessThanOrEqual(20 * 1024);
+  });
+
   it("is outside public/ and referenced by no app, component, lib or script code (except the generator that writes it)", () => {
     const code = ["app", "components", "lib", "scripts"]
       .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" }).map((f) => `${dir}/${f}`))

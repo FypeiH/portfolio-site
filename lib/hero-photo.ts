@@ -4,7 +4,7 @@ export const HERO_PHOTO = {
   height: 360,
   srcsetWidths: [288, 576],
   /** Width of the processed master the script keeps (4:5, like the display size). */
-  masterWidth: 800,
+  masterWidth: 576,
   treatment: "duotone",
   alt: "Filipe Bravo",
 } as const;

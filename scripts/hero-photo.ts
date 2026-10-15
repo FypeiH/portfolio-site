@@ -1,6 +1,6 @@
 /**
- * Hero photo: a brutalist treatment of Filipe's real photo, image processing only (crop, hand-drawn
- * silhouette mask, tone curve, duotone or black and white, seeded grain); no generative or AI step.
+ * Hero photo: a brutalist treatment of Filipe's real photo, image processing only (face-first crop, tone
+ * curve, duotone or black and white over the whole frame, background included, seeded grain); no generative or AI step.
  * The source stays outside the repo (ASSETS.md), so pass it with --source=<file>. Writes a small processed
  * master to assets/originals/profile/ and the displayed sizes (AVIF + WebP, 1x and 2x) to public/images/profile/.
  * `--treatment=bw|duotone --out=<dir>` only writes a preview there (used for the option comparison).
@@ -11,28 +11,20 @@ import sharp from "sharp";
 import { HERO_PHOTO, heroPhotoPath } from "../lib/hero-photo";
 
 const MASTER = "assets/originals/profile/filipe-bravo-hero.webp";
-/** Head and shoulders in the 1024×1536 source. */
-const CROP = { left: 0, top: 80, width: 800, height: 1000 };
-/** Silhouette of head and shoulders in crop pixels, traced by hand; everything outside is background. */
-const SILHOUETTE = [
-  [0, 1000], [0, 600], [50, 575], [110, 545], [150, 525], [160, 470], [150, 420], [150, 360], [118, 320], [115, 250],
-  [130, 180], [170, 120], [230, 85], [300, 68], [380, 68], [450, 92], [510, 135], [560, 195], [588, 260], [585, 310],
-  [560, 345], [553, 385], [553, 440], [525, 445], [510, 470], [500, 495], [478, 505], [470, 530], [465, 550], [455, 580],
-  [460, 600], [520, 595], [600, 605], [660, 630], [710, 670], [760, 730], [800, 790], [800, 1000],
-] as const;
-const FEATHER = 2;
+/** Face-first crop of the 1024×1536 source (4:5, like the display size). */
+const CROP = { left: 82, top: 120, width: 576, height: 720 };
 const NEAR_BLACK = [10, 10, 10] as const;
 const WHITE = [245, 245, 245] as const;
 const ACCENT = [0xff, 0x5a, 0x1f] as const;
-const GRAIN = 12;
+const GRAIN = 8;
 
 type Treatment = "bw" | "duotone";
 type Rgb = readonly [number, number, number];
 
-/** Treatment = [shadow colour, highlight colour, background colour]. */
-const PALETTES: Record<Treatment, readonly [Rgb, Rgb, Rgb]> = {
-  bw: [NEAR_BLACK, WHITE, WHITE],
-  duotone: [NEAR_BLACK, ACCENT, NEAR_BLACK],
+/** Treatment = [shadow colour, highlight colour]. */
+const PALETTES: Record<Treatment, readonly [Rgb, Rgb]> = {
+  bw: [NEAR_BLACK, WHITE],
+  duotone: [NEAR_BLACK, ACCENT],
 };
 
 /** Steep S-curve: deep blacks, clipped highlights. */
@@ -52,25 +44,14 @@ function seededNoise(seed: number) {
   };
 }
 
-async function silhouetteMask(): Promise<Buffer> {
-  const points = SILHOUETTE.map(([x, y]) => `${x},${y}`).join(" ");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${CROP.width}" height="${CROP.height}"><polygon points="${points}" fill="#fff"/></svg>`;
-  return sharp(Buffer.from(svg)).blur(FEATHER).greyscale().raw().toBuffer();
-}
-
 async function treat(source: string, treatment: Treatment) {
-  const [shadow, highlight, background] = PALETTES[treatment];
+  const [shadow, highlight] = PALETTES[treatment];
   const grey = await sharp(source).extract(CROP).greyscale().normalise().raw().toBuffer();
-  const mask = await silhouetteMask();
   const out = Buffer.alloc(CROP.width * CROP.height * 3);
   const noise = seededNoise(2026);
   for (let i = 0; i < CROP.width * CROP.height; i++) {
     const t = Math.min(1, Math.max(0, toneCurve(grey[i]!) + (noise() * GRAIN) / 255));
-    const subject = mask[i]! / 255;
-    for (let c = 0; c < 3; c++) {
-      const tone = shadow[c]! + (highlight[c]! - shadow[c]!) * t;
-      out[i * 3 + c] = Math.round(tone * subject + background[c]! * (1 - subject));
-    }
+    for (let c = 0; c < 3; c++) out[i * 3 + c] = Math.round(shadow[c]! + (highlight[c]! - shadow[c]!) * t);
   }
   return sharp(out, { raw: { width: CROP.width, height: CROP.height, channels: 3 } }).resize(HERO_PHOTO.masterWidth);
 }
@@ -91,8 +72,8 @@ async function main(): Promise<void> {
   for (const width of HERO_PHOTO.srcsetWidths) {
     const height = Math.round((width * HERO_PHOTO.height) / HERO_PHOTO.width);
     const resized = sharp(MASTER).resize(width, height);
-    const avif = await resized.clone().avif({ quality: 55, effort: 9 }).toFile(path.join("public", heroPhotoPath(width, "avif")));
-    const webp = await resized.clone().webp({ quality: 72, effort: 6 }).toFile(path.join("public", heroPhotoPath(width, "webp")));
+    const avif = await resized.clone().avif({ quality: 50, effort: 9 }).toFile(path.join("public", heroPhotoPath(width, "avif")));
+    const webp = await resized.clone().webp({ quality: 62, effort: 6 }).toFile(path.join("public", heroPhotoPath(width, "webp")));
     console.log(`${width}×${height}: AVIF ${avif.size} bytes, WebP ${webp.size} bytes`);
   }
 }

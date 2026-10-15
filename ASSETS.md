@@ -32,11 +32,11 @@ Shown in the Experience timeline in a 56 px tile, mapped by company name in `lib
 
 ## Hero photo
 
-Filipe's own photo, supplied by him on 2026-10-15 for the hero (FIL-8). Treated by `scripts/hero-photo.ts` with image processing only (crop, hand-traced silhouette mask, tone curve, duotone, seeded grain); no generative or AI step. Shown only from the lg breakpoint (`components/sections/HeroPhoto.tsx`); phones never download it.
+Filipe's own photo, supplied by him on 2026-10-15 for the hero (FIL-8). Treated by `scripts/hero-photo.ts` with image processing only (face-first crop, tone curve, duotone over the whole frame, seeded grain); no masking, no generative or AI step. Shown only from the lg breakpoint (`components/sections/HeroPhoto.tsx`); phones never download it.
 
 | File | Source | Retrieved | Permission | Notes |
 | --- | --- | --- | --- | --- |
-| `public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}` | `filipe-hero-original.png` supplied by Filipe (1024×1536 PNG, 2,431,535 bytes, SHA-256 `b9db36db…230715870`). **Not committed**: it stays outside the repo (`/workspace/portfolio-assets/photo/` on the agent box); rerun with `pnpm tsx scripts/hero-photo.ts --source=<file>` | 2026-10-15 | Filipe's own photo, supplied by him for this use | Cropped to head and shoulders (800×1000 from x 0, y 80), background outside the traced silhouette replaced with near-black, subject mapped to a near-black → #FF5A1F duotone with a steep tone curve and seeded grain. Displayed at 288×360; AVIF 5,749 / 19,106 bytes and WebP 6,922 / 19,714 bytes (1x / 2x). Processed master: `assets/originals/profile/filipe-bravo-hero.webp` (800×1000, 79,382 bytes) |
+| `public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}` | `filipe-hero-original.png` supplied by Filipe (1024×1536 PNG, 2,431,535 bytes, SHA-256 `b9db36db…230715870`). **Not committed**: it stays outside the repo (`/workspace/portfolio-assets/photo/` on the agent box); rerun with `pnpm tsx scripts/hero-photo.ts --source=<file>` | 2026-10-15 | Filipe's own photo, supplied by him for this use | Cropped around the face (576×720 from x 82, y 120 of the source, 4:5), the whole frame, original background included, mapped to a near-black → #FF5A1F duotone with a steep tone curve and seeded grain. Displayed at 288×360; AVIF 6,313 / 19,753 bytes and WebP 7,386 / 18,942 bytes (1x / 2x). Processed master: `assets/originals/profile/filipe-bravo-hero.webp` (576×720, 46,260 bytes); it replaced the earlier 800×1000 cut-out master |
 
 ## Case-study screenshots
 
