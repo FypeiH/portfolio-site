@@ -7,6 +7,8 @@ import { ProjectOgCard } from "@/lib/og-project-card";
 // dynamicParams = false makes every other slug a 404 without rendering or caching anything (Sonar M1).
 // The per-project alt text lives in the page's generateMetadata (openGraph.images / twitter.images),
 // which takes precedence over this file's metadata; `alt` here is only the generic fallback.
+// Outside the app/(site) group on purpose: inside a route group Next adds a hash to the route
+// (/opengraph-image-<hash>), and the pages link /projects/<slug>/opengraph-image (lib/metadata.ts).
 export const size = OG_SIZE;
 export const contentType = "image/png";
 export const alt = getUi().ogImageAlt;

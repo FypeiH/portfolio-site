@@ -154,7 +154,7 @@ export const site = {
     notFoundProjects: "Projects",
     notFoundContact: "Contact",
 
-    // ---------- Generic error (not in spec §5.1 tree; for app/error.tsx if added) ----------
+    // ---------- Generic error (not in spec §5.1 tree; for app/(site)/error.tsx) ----------
     errorTitle: "Something went wrong",
     errorBody: "The problem is on my side, not yours. Try again, or come back in a few minutes.",
     errorRetry: "Try again",

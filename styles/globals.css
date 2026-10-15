@@ -6,7 +6,7 @@
 
 /*
  * Metric-matched stand-ins for Anton (Sonar m2). The marquee h2s use them until the page has loaded
- * (Anton is requested only then, see app/layout.tsx) and during Anton's swap period. Unadjusted, a
+ * (Anton is requested only then, see components/layout/SiteDocument.tsx) and during Anton's swap period. Unadjusted, a
  * sans-serif fallback is ~48% wider than Anton, so the copies after the title moved when Anton arrived
  * (CLS 0.05 on /#projects). size-adjust scales each face so the uppercase section titles match Anton's
  * width (measured in Chrome over every title: within +2.3% / -5.3% per title, under 1% in total); the
@@ -256,7 +256,7 @@
 @utility marquee-track {
   display: flex;
   width: max-content;
-  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, app/layout.tsx). */
+  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, components/layout/SiteDocument.tsx). */
   font: 400 var(--text-marquee) / 1 var(--font-display-fallback);
   :where(html.fonts-ready) & {
     font-family: var(--font-display);

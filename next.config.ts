@@ -27,7 +27,8 @@ const nextConfig: NextConfig = {
   // The one stylesheet (~35 KB raw, ~7 KB brotli) is inlined in each page's <head>: no render-blocking
   // CSS request before the first paint. Measured on / (Lighthouse mobile, RUNS=5): worst LCP 2040 → 1773 ms
   // (QA FIL-8 r2, N1). Costs: every HTML page carries the CSS (no cross-page CSS cache).
-  experimental: { inlineCss: true },
+  // globalNotFound: app/global-not-found.tsx, the 404 for unmatched URLs (see app/(site)/layout.tsx).
+  experimental: { inlineCss: true, globalNotFound: true },
   async redirects() {
     return [{ source: "/projects", destination: "/#projects", permanent: true }];
   },

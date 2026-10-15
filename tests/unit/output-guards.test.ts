@@ -140,7 +140,7 @@ describe("QA r3 O1: OG image text is checked before rendering", () => {
   });
 
   it("every OG image goes through ogImageResponse (no bare ImageResponse)", () => {
-    for (const file of ["app/opengraph-image.tsx", "app/projects/[slug]/opengraph-image.tsx"]) {
+    for (const file of ["app/(site)/opengraph-image.tsx", "app/projects/[slug]/opengraph-image.tsx"]) {
       const source = read(file);
       expect(source, file).toContain("ogImageResponse(");
       expect(source, file).not.toContain("new ImageResponse");

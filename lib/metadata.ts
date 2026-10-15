@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { getProfile, getUi } from "@/lib/content/load";
 import { fill } from "@/lib/content/ui";
+import { isProductionDeployment } from "@/lib/env";
 import { OG_MAX_TAGS, OG_SIZE, OG_TEMPLATE_VERSION } from "@/lib/og-size";
+import { siteUrl } from "@/lib/site-url";
 
 /**
  * Shared Open Graph fields. Next replaces `openGraph` as a whole when a page sets it, so pages
@@ -13,6 +15,25 @@ export function baseOpenGraph(): NonNullable<Metadata["openGraph"]> {
   const { seo, name } = getProfile();
   return { type: "website", siteName: name, locale: "en_US", title: seo.title, description: seo.description };
 }
+
+/** "Page title · Name", as Next applies it to every page title below the root layout. */
+export const siteTitleTemplate = (name: string) => `%s · ${name}`;
+
+/** Site-wide metadata: the root layout's, which the global 404 (outside that layout) repeats. */
+export function siteMetadata(): Metadata {
+  const { seo, name } = getProfile();
+  const indexable = isProductionDeployment();
+  return {
+    metadataBase: siteUrl(),
+    title: { default: seo.title, template: siteTitleTemplate(name) },
+    description: seo.description,
+    openGraph: baseOpenGraph(),
+    twitter: { card: "summary_large_image" },
+    robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
+  };
+}
+
+export const siteViewport: Viewport = { themeColor: "#0a0a0a", colorScheme: "dark" };
 
 /** What a case-study OG card draws (app/projects/[slug]/opengraph-image.tsx). */
 export interface OgCardInput {

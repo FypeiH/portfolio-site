@@ -1,4 +1,3 @@
-import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { ProductionAnalytics } from "@/components/analytics/ProductionAnalytics";
@@ -7,18 +6,14 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { RouteTracker } from "@/components/motion/RouteTracker";
-import { getProfile, getUi } from "@/lib/content/load";
-import { isProductionDeployment } from "@/lib/env";
+import { getUi } from "@/lib/content/load";
 import { APPLY_MOTION_PREFERENCE_JS } from "@/lib/motion-preference";
-import { baseOpenGraph } from "@/lib/metadata";
-import { siteUrl } from "@/lib/site-url";
-import "@/styles/globals.css";
 
 // The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s only. Never in
 // section#top, so it can't be the LCP element. Not preloaded, and not used until `.fonts-ready` (after
 // the load event, see MARK_JS), so it is requested after the LCP paint.
 const anton = localFont({
-  src: "../assets/fonts/anton-latin-400.woff2",
+  src: "../../assets/fonts/anton-latin-400.woff2",
   weight: "400",
   display: "swap",
   preload: false,
@@ -41,22 +36,11 @@ const MARK_JS =
   "addEventListener('load',function(){d.classList.add('fonts-ready')},{once:true});" +
   APPLY_MOTION_PREFERENCE_JS;
 
-export function generateMetadata(): Metadata {
-  const { seo, name } = getProfile();
-  const indexable = isProductionDeployment();
-  return {
-    metadataBase: siteUrl(),
-    title: { default: seo.title, template: `%s · ${name}` },
-    description: seo.description,
-    openGraph: baseOpenGraph(),
-    twitter: { card: "summary_large_image" },
-    robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
-  };
-}
-
-export const viewport: Viewport = { themeColor: "#0a0a0a", colorScheme: "dark" };
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+/**
+ * The whole HTML document around a page: the root layout (app/(site)/layout.tsx) and the global 404
+ * (app/global-not-found.tsx) both render it, each importing styles/globals.css itself.
+ */
+export function SiteDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={anton.variable} suppressHydrationWarning>
       <head>

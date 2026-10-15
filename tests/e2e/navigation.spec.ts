@@ -56,6 +56,20 @@ test.describe("routes", () => {
     for (const name of ["Home", "Projects", "Contact"]) await expect(main.getByRole("link", { name, exact: true })).toBeVisible();
   });
 
+  // Unmatched URLs and unknown slugs render app/global-not-found.tsx, outside the (site) layout: it must
+  // bring the same document, header, footer and stylesheet itself.
+  for (const url of ["/does-not-exist", "/projects/does-not-exist"]) {
+    test(`${url} is a styled 404 inside the site header and footer`, async ({ page }) => {
+      const response = await page.goto(url);
+      expect(response?.status()).toBe(404);
+      await expect(page).toHaveTitle("Page not found · Filipe Bravo");
+      await expect(page.getByRole("banner")).toBeVisible();
+      await expect(page.getByRole("contentinfo")).toBeVisible();
+      const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      expect(background).toBe("rgb(10, 10, 10)");
+    });
+  }
+
   test("every card links to an existing case study", async ({ page, request }) => {
     await page.goto("/");
     const hrefs = await page.locator("#projects h3 a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));

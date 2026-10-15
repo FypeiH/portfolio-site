@@ -149,3 +149,15 @@ test("unknown slugs never write to the build cache (Sonar M1)", async ({ request
   expect(countFiles(nextDir)).toBe(before);
   for (const slug of slugs) expect(fs.existsSync(path.join(nextDir, "server/app/projects", slug)), slug).toBe(false);
 });
+
+// experimental.inlineCss: the stylesheet belongs in the <style> tag and once in the flight data. Next adds
+// a third copy for global-error when the root layout sits directly under app/ (vercel/next.js#98110),
+// ~8 KB gzip per page, enough to push the home HTML past Lighthouse's two-round-trip TCP window.
+test("the inlined stylesheet is in each page's HTML twice, not three times", async ({ request }) => {
+  for (const url of ["/", `/projects/${published[0]}`]) {
+    const html = await (await request.get(url)).text();
+    const head = /<style[^>]*>([^"<\\]{60})/.exec(html)?.[1];
+    expect(head, url).toBeTruthy();
+    expect(html.split(head!).length - 1, url).toBe(2);
+  }
+});
