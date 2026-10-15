@@ -30,6 +30,16 @@ Shown in the Experience timeline in a 56 px tile, flattened to the foreground gr
 | `public/images/companies/gigantic-digital-growth.webp` | `gigantic-logo-black.png` supplied by Filipe on 2026-10-15 (black and white mark with yellow "DIGITAL GROWTH", transparent background, 889×818, SHA-256 `8b352335…952a1f99e`). It replaced a copy taken from https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (yellow square background). Filipe also sent a yellow variant, not used | 2026-10-15 | Pending confirmation by Filipe (added at his request in FIL-8; no permission from Gigantic Digital Growth on record) | **Edited**: the white letter fills and the yellow text were made transparent and only the black body kept (alpha × clamp((0.8 − luminance) / 0.6)), so the `company-logo` CSS filter can flatten it to grey; trimmed to the mark; resized to 80×73 (2× the 40 px display width); lossless WebP (1,660 bytes). Added at Filipe's request (FIL-8) |
 | `public/images/companies/ocr-technology-and-productivity.webp` | `ocr-logo-white.png` supplied by Filipe on 2026-10-15 (white logo for dark backgrounds, transparent background, 289×93, SHA-256 `d46fb88c…9ebe620`; the wordmark's own spelling "Tecnology" is kept). Filipe also sent `ocr-logo-black.png` for light backgrounds, not used | 2026-10-15 | Pending confirmation by Filipe (added at his request in FIL-8; no permission from OCR on record) | Resized to 80×26 (2× the 40 px display width), lossless WebP; no other edits. Added at Filipe's request (FIL-8) |
 
+## Case-study screenshots
+
+Filipe's own captures of his app, taken in its demo mode with fictitious data (no client name, logo or real records), supplied on 2026-10-15. Listed in the project's `screenshots` frontmatter and lazy-loaded below the case-study body (`components/project/ProjectScreenshots.tsx`). Only the WebP ships; the PNG masters and AVIF copies stay outside the repo (`/workspace/portfolio-assets/contacts-report/`).
+
+| File | Master (PNG, SHA-256) | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/projects/contacts-report/contacts-report-dashboard.webp` | `contacts-report-dashboard.png` (`159b1f20…88650ebde`) | 1600×1000, 56,550 bytes | Dashboard: filters and the five summary cards. Filipe's own work, fake data |
+| `public/images/projects/contacts-report/contacts-report-contact-detail.webp` | `contacts-report-contact-detail.png` (`6bdf4813…c0d20ed6cd`) | 1600×1000, 61,794 bytes | Expanded contact with its quotes and contracts. Filipe's own work, fake data |
+| `public/images/projects/contacts-report/contacts-report-excel-groups.webp` | `contacts-report-excel-groups.png` (`15cac0b1…ae253a08`) | 1600×1000, 119,390 bytes | Excel export in LibreOffice Calc with outline groups. Filipe's own work, fake data |
+
 ## Diagram covers
 
 `fidu-bot`, `portfolio-site` and `dynamic-cv` have no logo: their covers embed the project's own architecture diagram (`assets/rendered/diagrams/<slug>.svg`, rendered from `content/diagrams/*.mmd` with the site palette) on the same background.

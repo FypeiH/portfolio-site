@@ -78,5 +78,10 @@ describe("ProjectFrontmatterSchema screenshots (optional gallery)", () => {
   it("rejects a fourth screenshot and an empty alt", () => {
     expect(issues({ ...privateProject, screenshots: [shot(1), shot(2), shot(3), shot(4)] })).not.toEqual([]);
     expect(issues({ ...privateProject, screenshots: [{ ...shot(1), alt: "" }] })).not.toEqual([]);
+    expect(issues({ ...privateProject, screenshots: [{ ...shot(1), alt: "x".repeat(251) }] })).not.toEqual([]);
+  });
+
+  it("allows a descriptive alt of up to 250 characters", () => {
+    expect(issues({ ...privateProject, screenshots: [{ ...shot(1), alt: "x".repeat(250) }] })).toEqual([]);
   });
 });

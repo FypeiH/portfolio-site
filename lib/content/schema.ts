@@ -27,7 +27,8 @@ export const ImageRefSchema = z.object({
   height: z.number().int().positive(),
 });
 
-export const ScreenshotSchema = ImageRefSchema.extend({ alt: text(125), caption: text(160).optional() });
+// Screenshots carry dense UI, so their alt may run longer than the 125 chars of a decorative image.
+export const ScreenshotSchema = ImageRefSchema.extend({ alt: text(250), caption: text(160).optional() });
 
 export const MetricSchema = z.object({
   value: text(12),

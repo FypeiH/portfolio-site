@@ -103,3 +103,17 @@ test("experience: every company shows its logo, decorative with fixed dimensions
   }
   await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
 });
+
+test("contacts-report: the screenshots gallery shows three lazy, sized images with descriptive alt text", async ({ page }) => {
+  await page.goto("/projects/contacts-report");
+  const gallery = page.getByRole("region", { name: "Screenshots" });
+  const images = gallery.locator("img");
+  await expect(images).toHaveCount(3);
+  for (const image of await images.all()) {
+    await expect(image).toHaveAttribute("loading", "lazy");
+    await expect(image).toHaveAttribute("width", "1600");
+    await expect(image).toHaveAttribute("alt", /\(demo data\)\.$/);
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+  }
+});

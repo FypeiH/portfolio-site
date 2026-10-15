@@ -14,7 +14,20 @@ period: { start: "2026-10", end: "2026-10" } # ended 2026-10-13; the schema stor
 stack: ["C#", ".NET", "ASP.NET Core", "Razor Pages", "Dapper", "SQL Server", "OpenXML"]
 metrics: [] # no client numbers by rule
 links: {} # V2: no repo for private projects
-# No cover image: no client screenshots.
+# Cover: the architecture diagram. Screenshots: Filipe's own captures of the app's demo mode (fictitious data, no client logo).
+screenshots:
+  - src: "/images/projects/contacts-report/contacts-report-dashboard.webp"
+    alt: "Contacts Report dashboard: date, origin and salesperson filters above five summary cards showing contacts, contacts with quotes, contacts with contracts, and total quote and contract values (demo data)."
+    width: 1600
+    height: 1000
+  - src: "/images/projects/contacts-report/contacts-report-contact-detail.webp"
+    alt: "An expanded contact row in Contacts Report listing four quotes and two contracts with date, status, salesperson, value excluding VAT and line count, plus section totals (demo data)."
+    width: 1600
+    height: 1000
+  - src: "/images/projects/contacts-report/contacts-report-excel-groups.webp"
+    alt: "Excel export of Contacts Report in LibreOffice Calc: a summary block of filters and totals, then outline-grouped rows nesting contacts, their quotes and contracts, and the document lines (demo data)."
+    width: 1600
+    height: 1000
 diagram:
   kind: "mermaid"
   source: "content/diagrams/contacts-report.mmd"
