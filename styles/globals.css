@@ -339,11 +339,15 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
   border: var(--border-thick) solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-muted);
+}
+@utility company-mark-light {
+  /* Off-white tile for a logo whose dark parts would vanish on the dark site (Gigantic). */
+  background: var(--color-fg);
 }
 @utility company-logo {
   display: block;

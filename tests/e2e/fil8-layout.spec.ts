@@ -145,19 +145,26 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: every company shows its logo, decorative with fixed dimensions, and the name stays as text", async ({ page }) => {
+test("experience: every company shows its logo below the dates, sized and decorative", async ({ page }, testInfo) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
     await expect(logo).toHaveAttribute("alt", "");
     await expect(logo).toHaveAttribute("width", /^\d+$/);
-    await expect(logo).toHaveAttribute("height", /^\d+$/);
+    await expect(logo).toHaveAttribute("srcset", /-104\.webp 2x$/);
     await logo.scrollIntoViewIfNeeded();
     await expect.poll(() => logo.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    await expect(logo.locator("xpath=ancestor::div[1]/following-sibling::h3")).toContainText(/Altyra Solutions|Gigantic Digital Growth|OCR – Technology and Productivity/);
+    const article = logo.locator("xpath=ancestor::article[1]");
+    const dates = (await article.locator("p.ui-label").first().boundingBox())!;
+    const tile = (await logo.locator("xpath=ancestor::div[@data-company-mark][1]").boundingBox())!;
+    expect(Math.round(tile.width)).toBe(64);
+    if (isMobile(testInfo)) expect(tile.x).toBeLessThan(dates.x);
+    else expect(tile.y).toBeGreaterThanOrEqual(dates.y + dates.height);
   }
   await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
+  const gigantic = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator('img[src*=gigantic]') }).first();
+  await expect(gigantic).toHaveCSS("background-color", "rgb(242, 242, 242)");
 });
 
 test("contacts-report: the screenshots gallery shows three lazy, sized images with descriptive alt text", async ({ page }) => {

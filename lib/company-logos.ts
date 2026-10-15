@@ -1,23 +1,37 @@
 /**
  * Company logos for the Experience timeline, keyed by the company name in content/experience.ts
- * (content/ has no logo field, so the mapping lives in code). Sources and dates: ASSETS.md.
+ * (content/ has no logo field, so the mapping lives in code). Sources and dates: ASSETS.md; files: pnpm logos.
  * A company without an entry gets a typographic mark (initials) instead of a guessed logo.
  */
+
+/** Largest side of a logo inside its tile, in CSS px; files are written at 1x and 2x of it. */
+export const COMPANY_LOGO_BOX = 52;
+
+/** Master file per logo (scripts/company-logos.ts); `solidLetters` makes see-through areas inside the logo opaque. */
+export const LOGO_FILES: Readonly<Record<string, { master: string; solidLetters?: boolean }>> = {
+  "altyra-solutions": { master: "altyra-solutions.webp" },
+  "gigantic-digital-growth": { master: "gigantic-logo-yellow.png", solidLetters: true },
+  "ocr-technology-and-productivity": { master: "ocr-logo-white.png" },
+};
+
+export const companyLogoPath = (slug: string, scale: 1 | 2) => `/images/companies/${slug}-${COMPANY_LOGO_BOX * scale}.webp`;
+
 export interface CompanyLogo {
-  src: string;
+  slug: string;
+  /** Display size in CSS px (the 1x file). */
   width: number;
   height: number;
   /** Shown in its own colours instead of flattened to the foreground grey. */
   keepColours?: boolean;
+  /** Light tile, for a logo with dark parts that would vanish on the dark site. */
+  lightTile?: boolean;
 }
 
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
-  // Official logo from altyra.com (PNG 166×87, converted to lossless WebP).
-  "Altyra Solutions": { src: "/images/companies/altyra-solutions.webp", width: 166, height: 87 },
-  // Yellow logo supplied by Filipe, letters made fully opaque; kept in colour at his request.
-  "Gigantic Digital Growth": { src: "/images/companies/gigantic-digital-growth.webp", width: 80, height: 72, keepColours: true },
-  // Logo supplied by Filipe (white on transparent, for dark backgrounds), resized only.
-  "OCR – Technology and Productivity": { src: "/images/companies/ocr-technology-and-productivity.webp", width: 80, height: 26 },
+  "Altyra Solutions": { slug: "altyra-solutions", width: 52, height: 27 },
+  // Yellow logo with black letters, kept in colour on a light tile at Filipe's request.
+  "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 52, height: 47, keepColours: true, lightTile: true },
+  "OCR – Technology and Productivity": { slug: "ocr-technology-and-productivity", width: 52, height: 15 },
 };
 
 export function companyLogo(company: string): CompanyLogo | undefined {

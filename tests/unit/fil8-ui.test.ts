@@ -3,7 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { experience } from "@/content/experience";
-import { companyInitials, companyLogo } from "@/lib/company-logos";
+import { COMPANY_LOGO_BOX, companyInitials, companyLogo, companyLogoPath } from "@/lib/company-logos";
 
 describe("company logos", () => {
   it("initials: first letter of the first two words that start with a letter", () => {
@@ -20,22 +20,30 @@ describe("company logos", () => {
     });
     expect(mapped.map(({ company }) => company)).toEqual(expect.arrayContaining(["Altyra Solutions", "Gigantic Digital Growth", "OCR – Technology and Productivity"]));
     for (const { logo } of mapped) {
-      const file = path.join(process.cwd(), "public", logo.src);
-      expect(existsSync(file)).toBe(true);
-      const meta = await sharp(readFileSync(file)).metadata();
-      expect([meta.format, meta.width, meta.height]).toEqual(["webp", logo.width, logo.height]);
+      for (const scale of [1, 2] as const) {
+        const file = path.join(process.cwd(), "public", companyLogoPath(logo.slug, scale));
+        expect(existsSync(file)).toBe(true);
+        const meta = await sharp(readFileSync(file)).metadata();
+        expect(meta.format).toBe("webp");
+        expect(Math.max(meta.width!, meta.height!)).toBe(COMPANY_LOGO_BOX * scale);
+        expect(Math.abs(meta.width! - logo.width * scale)).toBeLessThanOrEqual(1);
+        expect(Math.abs(meta.height! - logo.height * scale)).toBeLessThanOrEqual(1);
+      }
     }
   });
 
-  it("Gigantic keeps its yellow colours with solid letters; the other logos stay monochrome", async () => {
+  it("Gigantic keeps its yellow colours with solid letters on a light tile; the other logos stay monochrome", async () => {
     expect(companyLogo("Gigantic Digital Growth")?.keepColours).toBe(true);
+    expect(companyLogo("Gigantic Digital Growth")?.lightTile).toBe(true);
     expect(companyLogo("Altyra Solutions")?.keepColours).toBeUndefined();
     expect(companyLogo("OCR – Technology and Productivity")?.keepColours).toBeUndefined();
-    const { data, info } = await sharp(path.join(process.cwd(), "public/images/companies/gigantic-digital-growth.webp"))
-      .ensureAlpha()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    expect(nonOpaqueInsideOutline(data, info.width, info.height)).toBe(0);
+    for (const scale of [1, 2] as const) {
+      const { data, info } = await sharp(path.join(process.cwd(), "public", companyLogoPath("gigantic-digital-growth", scale)))
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      expect(nonOpaqueInsideOutline(data, info.width, info.height)).toBe(0);
+    }
   });
 });
 

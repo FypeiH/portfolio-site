@@ -1,24 +1,23 @@
-import { companyInitials, companyLogo } from "@/lib/company-logos";
-
-/** Display size of the logo inside the 56 px tile; the aspect ratio of the source file is kept. */
-const LOGO_WIDTH = 40;
+import { companyInitials, companyLogo, companyLogoPath } from "@/lib/company-logos";
 
 /**
- * Square tile next to the company: the official logo (monochrome unless it keeps its colours) when there is one, otherwise the
- * initials. Both are decorative (empty alt, aria-hidden): the company name is in the heading right next to it.
+ * 64 px tile under the dates: the official logo (monochrome unless it keeps its colours) when there is one,
+ * otherwise the initials. Both are decorative (empty alt, aria-hidden): the company name is in the heading.
  */
 export function CompanyMark({ company }: { company: string }) {
   const logo = companyLogo(company);
+  const tile = logo?.lightTile ? "company-mark company-mark-light" : "company-mark";
   return (
-    <div className="company-mark" data-company-mark={logo ? "logo" : "initials"}>
+    <div className={tile} data-company-mark={logo ? "logo" : "initials"}>
       {logo ? (
-        // Plain <img>: tiny pre-sized WebP; next/image would add client JS for nothing.
+        // Plain <img>: tiny pre-sized WebPs (pnpm logos); next/image would add client JS for nothing.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={logo.src}
+          src={companyLogoPath(logo.slug, 1)}
+          srcSet={`${companyLogoPath(logo.slug, 1)} 1x, ${companyLogoPath(logo.slug, 2)} 2x`}
           alt=""
-          width={LOGO_WIDTH}
-          height={Math.round((LOGO_WIDTH * logo.height) / logo.width)}
+          width={logo.width}
+          height={logo.height}
           loading="lazy"
           decoding="async"
           className={logo.keepColours ? "company-logo" : "company-logo company-logo-mono"}

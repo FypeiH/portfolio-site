@@ -194,8 +194,8 @@ describe("Sonar v2 follow-up: master originals are kept but never shipped", () =
     fs.readdirSync(path.join(root, "assets/originals", dir)).map((file) => `assets/originals/${dir}/${file}`),
   );
 
-  it("keeps the 6 masters, each listed in ASSETS.md", () => {
-    expect(originals).toHaveLength(6);
+  it("keeps the 7 masters, each listed in ASSETS.md", () => {
+    expect(originals).toHaveLength(7);
     for (const file of originals) expect(read("ASSETS.md")).toContain(`\`${file}\``);
   });
 
@@ -210,10 +210,10 @@ describe("Sonar v2 follow-up: master originals are kept but never shipped", () =
     for (const file of served) expect(fs.statSync(path.join(root, "public/images/profile", file)).size).toBeLessThanOrEqual(20 * 1024);
   });
 
-  it("is outside public/ and referenced by no app, component, lib or script code (except the generator that writes it)", () => {
+  it("is outside public/ and referenced by no app, component, lib or script code (except the generators that read or write them)", () => {
     const code = ["app", "components", "lib", "scripts"]
       .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" }).map((f) => `${dir}/${f}`))
-      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file) && file !== "scripts/hero-photo.ts");
+      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file) && !["scripts/hero-photo.ts", "scripts/company-logos.ts"].includes(file));
     expect(code.filter((file) => read(file).includes("originals"))).toEqual([]);
     expect(read("next.config.ts")).not.toContain("originals");
   });
