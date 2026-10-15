@@ -17,6 +17,7 @@ import { KeyFacts } from "./KeyFacts";
 import { ProjectCover } from "./ProjectCover";
 import { ProjectMeta } from "./ProjectMeta";
 import { ProjectPager } from "./ProjectPager";
+import { ProjectScreenshots } from "./ProjectScreenshots";
 
 interface CaseStudyLayoutProps {
   project: Project;
@@ -76,6 +77,7 @@ export function CaseStudyLayout({ project, prev, next, body: Body, diagram, diag
         {placement === "header" && facts}
         <Body components={{ Diagram: DiagramSlot }} />
       </div>
+      {project.screenshots && project.screenshots.length > 0 && <ProjectScreenshots screenshots={project.screenshots} label={ui.screenshotsLabel} />}
       {updatedAt && (
         <p className="ui-label mt-12">
           <time dateTime={toDateTime(updatedAt)}>{fill(ui.updatedOn, { date: formatYearMonth(updatedAt) })}</time>

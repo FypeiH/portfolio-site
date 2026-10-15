@@ -8,6 +8,7 @@ import type {
   PlaceholderSchema,
   ProfileSchema,
   ProjectFrontmatterSchema,
+  ScreenshotSchema,
   SectionIdSchema,
   SiteConfigSchema,
   SkillGroupSchema,
@@ -16,6 +17,7 @@ import type {
 export type Placeholder = z.infer<typeof PlaceholderSchema>;
 export type Link = z.infer<typeof LinkSchema>;
 export type ImageRef = z.infer<typeof ImageRefSchema>;
+export type Screenshot = z.infer<typeof ScreenshotSchema>;
 export type Metric = z.infer<typeof MetricSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
