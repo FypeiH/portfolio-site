@@ -33,7 +33,7 @@ test("hero photo: the real portrait, sized and prioritised on wide screens, neve
   await page.goto("/", { waitUntil: "networkidle" });
   const photo = page.locator("#top img");
   await expect(photo).toHaveCount(1);
-  await expect(photo).toHaveAttribute("alt", "Portrait of Filipe Bravo");
+  await expect(photo).toHaveAttribute("alt", "");
   await expect(photo).toHaveAttribute("width", "288");
   await expect(photo).toHaveAttribute("height", "360");
   if (isMobile(testInfo)) {
@@ -95,6 +95,37 @@ test("hero name at 320 px with 200% text zoom: still one line inside its column 
     expect(state.right).toBeLessThanOrEqual(320);
   }
 });
+
+for (const path of ["/", "/projects/contacts-report"]) {
+  test(`whole page at 320 px with 200% text zoom (${path}): no horizontal scroll, header name and Menu apart, Menu tappable`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(path);
+    await page.evaluate(() => (document.documentElement.style.fontSize = "200%"));
+    await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+    await page.evaluate(() => document.fonts.ready);
+    const menu = page.locator('header button[aria-controls="mobile-nav"]');
+    await expect(menu).toBeVisible();
+    const state = await page.evaluate(() => {
+      const button = document.querySelector<HTMLButtonElement>('header button[aria-controls="mobile-nav"]')!;
+      const name = document.querySelector("header .site-name");
+      const m = button.getBoundingClientRect();
+      // The name hides itself when the header is too narrow; if shown, it must not reach the Menu button.
+      const n = name && getComputedStyle(name).display !== "none" ? name.getBoundingClientRect() : null;
+      const hit = document.elementFromPoint(m.left + m.width / 2, m.top + m.height / 2);
+      const overflowing = [button, ...document.querySelectorAll("#top p")].filter((el) => el.scrollWidth > el.clientWidth || el.getBoundingClientRect().right > innerWidth);
+      return {
+        page: document.documentElement.scrollWidth - innerWidth,
+        apart: !n || n.right <= m.left || n.bottom <= m.top || n.top >= m.bottom,
+        hitIsMenu: !!hit && button.contains(hit),
+        overflowing: overflowing.map((el) => el.textContent),
+      };
+    });
+    expect(state.page).toBeLessThanOrEqual(0);
+    expect(state.apart).toBe(true);
+    expect(state.hitIsMenu).toBe(true);
+    expect(state.overflowing).toEqual([]);
+  });
+}
 
 test("about shows the role as its eyebrow", async ({ page }) => {
   await page.goto("/");

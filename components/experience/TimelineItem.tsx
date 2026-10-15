@@ -28,7 +28,7 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
   });
 
   return (
-    <article className="grid gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
+    <article className="grid grid-cols-1 gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
       {/* Dates, then the logo tile below them (stacked at every width, so a phone keeps the dates on one line). */}
       <div className="flex flex-col items-start gap-3 lg:col-span-3 lg:pt-1.5">
         <p className="ui-label">

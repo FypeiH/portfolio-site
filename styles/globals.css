@@ -49,10 +49,13 @@
   /* Fonts: no web font in body/UI; Anton only via --font-anton (next/font/local): marquee h2s and the hero name.
      Short stacks on purpose: every family the system lacks is a font-matching lookup during the first
      style/layout. The long §3.1 stacks doubled style+layout time and pushed the home LCP from ~1.88 s to
-     ~2.48 s in Lighthouse. system-ui is the platform UI font everywhere; ui-monospace is SF Mono in
-     Safari, Menlo covers Chrome/Firefox on macOS, and monospace is Consolas on Windows. */
+     ~2.48 s in Lighthouse. system-ui is the platform UI font everywhere. The mono stack is the generic
+     monospace (Consolas on Windows, DejaVu/Liberation Mono on Linux, Droid Sans Mono on Android), written
+     twice so it keeps the normal font size (a lone `monospace` triggers the browser's smaller-mono quirk).
+     Apple systems get SF Mono/Menlo below: on other systems those two names each cost a failed lookup per
+     mono font size, which was ~70% of the home page's first layout (QA FIL-8, Kaner v2 @ 6af0209). */
   --font-sans: system-ui, sans-serif;
-  --font-mono: ui-monospace, Menlo, monospace;
+  --font-mono: monospace, monospace;
   --font-display: var(--font-anton), "Anton", "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
   --font-display-fallback: "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
 
@@ -110,6 +113,17 @@
   --ease-snap: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* SF Mono (Safari, all iOS browsers) and Menlo (Chrome/Firefox on macOS), as before; `.apple` is set before
+   first paint by the inline script in components/layout/SiteDocument.tsx, @supports covers Safari without JS. */
+:root.apple {
+  --font-mono: ui-monospace, Menlo, monospace;
+}
+@supports (font: -apple-system-body) {
+  :root {
+    --font-mono: ui-monospace, Menlo, monospace;
+  }
+}
+
 :root {
   /* Layout */
   --container: 75rem;
@@ -155,6 +169,8 @@
     font-size: var(--text-body);
     line-height: 1.6;
     text-rendering: optimizeLegibility;
+    /* A long word breaks instead of widening the page (e.g. with 200% text zoom at 320 px). */
+    overflow-wrap: break-word;
   }
 
   /* Base outline colour on every element: Tailwind's transition-colors includes outline-color, so a
@@ -340,8 +356,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 8rem;
-  height: 8rem;
+  /* px, not rem: an image box that must not grow with text zoom (it overflowed 320 px at 200%). */
+  width: 128px;
+  height: 128px;
   border: var(--border-thick) solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-muted);
@@ -516,6 +533,11 @@
   transition:
     background-color var(--dur-fast) linear,
     color var(--dur-fast) linear;
+  /* With large text a word of the organisation may be wider than the space left: break it, don't overflow. */
+  & > :last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
   :is(.ui-card:hover, .ui-card:focus-within) & {
     background: var(--color-fg);
     color: var(--color-bg);
@@ -544,6 +566,7 @@
 
 @utility ui-ruled {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1px;
   background: var(--color-border);
   border: 1px solid var(--color-border);
@@ -555,7 +578,7 @@
 
 @utility skills-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   @media (width >= 64rem) {
     grid-template-columns: 3fr 9fr;
   }
@@ -575,6 +598,18 @@
     content: "/";
     margin-inline-end: var(--space-2);
     color: var(--color-subtle);
+  }
+}
+
+/* Header: with large text (e.g. 200% text zoom at 320 px) the name no longer fits beside Menu, so only the
+   monogram stays (the link keeps its accessible name, aria-label). rem tracks the user's text size; at
+   the default size the name shows from a 272 px viewport up. */
+@utility site-header-bar {
+  container-type: inline-size;
+}
+@container (width < 15rem) {
+  .site-name {
+    display: none;
   }
 }
 

@@ -18,7 +18,7 @@ export function ProjectsSection({ projects, githubUrl }: ProjectsSectionProps) {
   return (
     <Section id="projects" title={ui.projectsTitle} intro={ui.projectsIntro} count={projects.length}>
       {projects.length > 0 ? (
-        <ol className="grid gap-(--gutter) md:grid-cols-2">
+        <ol className="grid grid-cols-1 gap-(--gutter) md:grid-cols-2">
           {projects.map((project, index) => {
             const wide = wideFirst && index === 0;
             return (

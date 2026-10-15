@@ -29,10 +29,12 @@ const anton = localFont({
  * page has loaded: only then do the marquee headings switch to Anton, so the font request starts after
  * the LCP paint and can never sit in its critical chain (QA FIL-8 r2, N1: Lighthouse counted the font
  * in the LCP graph whenever it finished before the paint, ~2.5 s instead of ~1.9 s). Also applies a
- * saved "pause animations" choice (components/motion/MotionToggle.tsx). The site sends no page CSP.
+ * saved "pause animations" choice (components/motion/MotionToggle.tsx), and marks Apple systems (`.apple`), the
+ * only ones whose mono font (SF Mono/Menlo) is named in the CSS (styles/globals.css). The site sends no page CSP.
  */
 const MARK_JS =
   "var d=document.documentElement;d.classList.add('js');" +
+  "if(/Mac|iPhone|iPad|iPod/.test(navigator.platform))d.classList.add('apple');" +
   "addEventListener('load',function(){d.classList.add('fonts-ready')},{once:true});" +
   APPLY_MOTION_PREFERENCE_JS;
 
