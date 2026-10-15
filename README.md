@@ -105,6 +105,7 @@ pnpm exec playwright install               # once
 pnpm e2e                                   # both suites below, one after the other
 pnpm e2e:preview                           # Playwright + axe, 5 browsers; preview build on :3200
 pnpm e2e:production                        # Chromium; production build on :3201: drafts are 404 and never linked
+E2E_PORT=3300 E2E_PRODUCTION_PORT=3301 pnpm e2e   # other ports: outside CI a server already on the port is reused as is
 pnpm build && pnpm start -p 3100           # then, in another terminal:
 BASE_URL=http://localhost:3100 CHROME_PATH=/usr/bin/google-chrome pnpm lighthouse   # RUNS=5 by default
 ```
