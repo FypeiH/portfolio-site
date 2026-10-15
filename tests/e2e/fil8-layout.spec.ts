@@ -89,7 +89,7 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: company logos are decorative with fixed dimensions, the name stays as text; others show initials", async ({ page }) => {
+test("experience: every company shows its logo, decorative with fixed dimensions, and the name stays as text", async ({ page }) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
@@ -99,9 +99,7 @@ test("experience: company logos are decorative with fixed dimensions, the name s
     await expect(logo).toHaveAttribute("height", /^\d+$/);
     await logo.scrollIntoViewIfNeeded();
     await expect.poll(() => logo.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    await expect(logo.locator("xpath=ancestor::div[1]/following-sibling::h3")).toContainText(/Altyra Solutions|Gigantic Digital Growth/);
+    await expect(logo.locator("xpath=ancestor::div[1]/following-sibling::h3")).toContainText(/Altyra Solutions|Gigantic Digital Growth|OCR – Technology and Productivity/);
   }
-  const initials = page.locator("#experience [data-company-mark=initials] span");
-  await expect(initials.first()).toHaveAttribute("aria-hidden", "true");
-  await expect(initials.first()).toHaveText("OT");
+  await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
 });
