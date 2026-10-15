@@ -238,7 +238,8 @@
  * nothing below moves.
  */
 @utility hero-name {
-  font: 400 clamp(2.5rem, 19cqi, 8.5rem) / 0.9 var(--font-display-fallback);
+  /* No rem minimum: with 200% text zoom at 320 px it outgrew its column (19cqi alone always fits). */
+  font: 400 min(19cqi, 8.5rem) / 0.9 var(--font-display-fallback);
   :where(html.fonts-ready) & {
     font-family: var(--font-display);
   }

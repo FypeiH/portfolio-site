@@ -33,7 +33,7 @@ test("hero photo: the real portrait, sized and prioritised on wide screens, neve
   await page.goto("/", { waitUntil: "networkidle" });
   const photo = page.locator("#top img");
   await expect(photo).toHaveCount(1);
-  await expect(photo).toHaveAttribute("alt", "Filipe Bravo");
+  await expect(photo).toHaveAttribute("alt", "Portrait of Filipe Bravo");
   await expect(photo).toHaveAttribute("width", "288");
   await expect(photo).toHaveAttribute("height", "360");
   if (isMobile(testInfo)) {
@@ -71,6 +71,30 @@ for (const width of [320, 360, 375, 390]) {
     }
   });
 }
+
+test("hero name at 320 px with 200% text zoom: still one line inside its column (a rem minimum made it 412 px wide)", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/");
+  // Text-only zoom (browser font-size setting): rem and em double, viewport and container units do not.
+  await page.evaluate(() => (document.documentElement.style.fontSize = "200%"));
+  for (const fontsReady of [false, true]) {
+    if (fontsReady) {
+      await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+      await page.evaluate(() => document.fonts.ready);
+    }
+    const state = await page.locator("#top h1").evaluate((h1) => {
+      const range = document.createRange();
+      range.selectNodeContents(h1);
+      const text = range.getBoundingClientRect();
+      const line = parseFloat(getComputedStyle(h1).lineHeight);
+      return { text: text.width, right: text.right, box: h1.clientWidth, overflow: h1.scrollWidth - h1.clientWidth, lines: Math.round(h1.getBoundingClientRect().height / line) };
+    });
+    expect(state.lines).toBe(1);
+    expect(state.text).toBeLessThanOrEqual(state.box);
+    expect(state.overflow).toBe(0);
+    expect(state.right).toBeLessThanOrEqual(320);
+  }
+});
 
 test("about shows the role as its eyebrow", async ({ page }) => {
   await page.goto("/");
@@ -145,12 +169,12 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: every company shows its logo below the dates, sized, with the company in its alt", async ({ page }) => {
+test("experience: every company shows its logo below the dates, sized, decorative (empty alt: the h3 names the company)", async ({ page }) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
-    await expect(logo).toHaveAttribute("alt", /^(Altyra Solutions|Gigantic Digital Growth|OCR – Technology and Productivity) logo$/);
+    await expect(logo).toHaveAttribute("alt", "");
     await expect(logo).toHaveAttribute("width", /^\d+$/);
     await expect(logo).toHaveAttribute("srcset", /-1x\.webp 1x, .+-2x\.webp 2x$/);
     await logo.scrollIntoViewIfNeeded();
@@ -167,7 +191,7 @@ test("experience: every company shows its logo below the dates, sized, with the 
   const altyra = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator("img[src*=altyra]") }).first();
   const tileBackground = await altyra.evaluate((el) => getComputedStyle(el).backgroundColor);
   await expect(gigantic).toHaveCSS("background-color", tileBackground);
-  await expect(gigantic.locator("img")).toHaveAttribute("alt", "Gigantic Digital Growth logo");
+  await expect(gigantic.locator("img")).toHaveAttribute("alt", "");
   await expect(gigantic.locator("img")).not.toHaveClass(/company-logo-mono/);
 });
 
@@ -175,7 +199,7 @@ test("the OCR name is spelled correctly in every text and alt (the misspelling l
   await page.goto("/");
   expect(await page.content()).not.toMatch(/Tecnology/i);
   await expect(page.locator("#experience h3").filter({ hasText: "OCR – Technology and Productivity" })).toHaveCount(1);
-  await expect(page.getByRole("img", { name: "OCR – Technology and Productivity logo" })).toHaveCount(1);
+  await expect(page.locator("#experience [data-company-mark=logo] img[src*=ocr-technology]")).toHaveAttribute("alt", "");
 });
 
 test("contacts-report: the screenshots gallery shows three lazy, sized images with descriptive alt text", async ({ page }) => {

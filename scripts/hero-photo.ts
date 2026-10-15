@@ -11,8 +11,8 @@ import sharp from "sharp";
 import { HERO_PHOTO, heroPhotoPath } from "../lib/hero-photo";
 
 const MASTER = "assets/originals/profile/filipe-bravo-hero.webp";
-/** Face-first crop of the 1024×1536 source (4:5, like the display size). */
-const CROP = { left: 82, top: 120, width: 576, height: 720 };
+/** Face-first crop of the 1024×1536 source (4:5, like the display size), already at the master's width. */
+const CROP = { left: 82, top: 120, width: HERO_PHOTO.masterWidth, height: 720 };
 const NEAR_BLACK = [10, 10, 10] as const;
 const WHITE = [245, 245, 245] as const;
 const ACCENT = [0xff, 0x5a, 0x1f] as const;
@@ -53,10 +53,15 @@ async function treat(source: string, treatment: Treatment) {
     const t = Math.min(1, Math.max(0, toneCurve(grey[i]!) + (noise() * GRAIN) / 255));
     for (let c = 0; c < 3; c++) out[i * 3 + c] = Math.round(shadow[c]! + (highlight[c]! - shadow[c]!) * t);
   }
-  return sharp(out, { raw: { width: CROP.width, height: CROP.height, channels: 3 } }).resize(HERO_PHOTO.masterWidth);
+  return out;
 }
 
-const arg = (name: string) => process.argv.find((value) => value.startsWith(`--${name}=`))?.split("=")[1];
+const image = (pixels: Buffer) => sharp(pixels, { raw: { width: CROP.width, height: CROP.height, channels: 3 } });
+
+const arg = (name: string) => {
+  const prefix = `--${name}=`;
+  return process.argv.find((value) => value.startsWith(prefix))?.slice(prefix.length);
+};
 
 async function main(): Promise<void> {
   const source = arg("source");
@@ -64,16 +69,18 @@ async function main(): Promise<void> {
   const treatment = (arg("treatment") ?? HERO_PHOTO.treatment) as Treatment;
   const outDir = arg("out");
   if (outDir) {
-    await (await treat(source, treatment)).png().toFile(path.join(outDir, `hero-${treatment}.png`));
+    await image(await treat(source, treatment)).png().toFile(path.join(outDir, `hero-${treatment}.png`));
     return;
   }
   fs.mkdirSync(path.dirname(MASTER), { recursive: true });
-  await (await treat(source, treatment)).webp({ quality: 85 }).toFile(MASTER);
+  // Every output is encoded once, from the treated pixels (not re-encoded from the lossy master).
+  const pixels = await treat(source, treatment);
+  await image(pixels).webp({ quality: 85 }).toFile(MASTER);
   for (const width of HERO_PHOTO.srcsetWidths) {
     const height = Math.round((width * HERO_PHOTO.height) / HERO_PHOTO.width);
-    const resized = sharp(MASTER).resize(width, height);
+    const resized = image(pixels).resize(width, height);
     const avif = await resized.clone().avif({ quality: 50, effort: 9 }).toFile(path.join("public", heroPhotoPath(width, "avif")));
-    const webp = await resized.clone().webp({ quality: 62, effort: 6 }).toFile(path.join("public", heroPhotoPath(width, "webp")));
+    const webp = await resized.clone().webp({ quality: 56, effort: 6 }).toFile(path.join("public", heroPhotoPath(width, "webp")));
     console.log(`${width}×${height}: AVIF ${avif.size} bytes, WebP ${webp.size} bytes`);
   }
 }

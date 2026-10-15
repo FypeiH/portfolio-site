@@ -55,7 +55,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
     expect(script).toContain("Rendered output check failed");
   });
 
-  it("build:production runs the output scan, then covers/avatar/monogram/diagrams --check", () => {
+  it("build:production runs the output scan, then covers/avatar/logos/monogram/diagrams --check", () => {
     const steps = pkg.scripts["build:production"]!.split("&&").map((s) => s.trim());
     expect(steps).toEqual([
       "pnpm assets",
@@ -63,6 +63,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
       "tsx scripts/check-output.ts",
       "pnpm covers --check",
       "pnpm avatar --check",
+      "pnpm logos --check",
       "pnpm monogram --check",
       "pnpm diagrams --check",
     ]);
@@ -236,5 +237,12 @@ describe("FB monogram", () => {
     const ico = fs.readFileSync(path.join(root, "app/favicon.ico"));
     const sizes = Array.from({ length: ico.readUInt16LE(4) }, (_, i) => ico.readUInt8(6 + i * 16));
     expect(sizes).toEqual([16, 32]);
+  });
+});
+
+describe("company logos", () => {
+  it("logos --check passes on the committed files", () => {
+    const check = spawnSync("pnpm", ["-s", "logos", "--check"], { cwd: root, encoding: "utf8" });
+    expect(check.status, check.stderr).toBe(0);
   });
 });

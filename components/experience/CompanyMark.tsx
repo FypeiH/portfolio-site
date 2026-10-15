@@ -2,8 +2,8 @@ import { companyInitials, companyLogo, companyLogoPath } from "@/lib/company-log
 
 /**
  * 128 px tile under the dates: the official logo (monochrome unless it keeps its colours) when there is one,
- * otherwise the initials. The logo alt names the company ("OCR – Technology and Productivity logo"), spelled as in
- * content/experience.ts, never as in a wordmark; the initials are decorative (aria-hidden).
+ * otherwise the initials. Both are decorative: the h3 beside them already names the company (spelled as in
+ * content/experience.ts, never as in a wordmark), so the logo has an empty alt and the initials are aria-hidden.
  */
 export function CompanyMark({ company }: { company: string }) {
   const logo = companyLogo(company);
@@ -15,7 +15,7 @@ export function CompanyMark({ company }: { company: string }) {
         <img
           src={companyLogoPath(logo.slug, 1)}
           srcSet={`${companyLogoPath(logo.slug, 1)} 1x, ${companyLogoPath(logo.slug, 2)} 2x`}
-          alt={`${company} logo`}
+          alt=""
           width={logo.width}
           height={logo.height}
           loading="lazy"

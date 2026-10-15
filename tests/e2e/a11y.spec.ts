@@ -42,13 +42,13 @@ test("Benched shows its App Store link", async ({ page }) => {
 
 test("the photo has alt text and explicit dimensions", async ({ page }) => {
   await page.goto("/");
-  const photo = page.getByRole("img", { name: "Portrait of Filipe Bravo" });
+  const photo = page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" });
   await expect(photo).toHaveAttribute("width", "224");
   await expect(photo).toHaveAttribute("height", "224");
   await expect(page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
-  // The hero's duotone portrait (wide screens only) has a short alt and fixed dimensions too.
+  // The hero's duotone portrait (wide screens only) has the same alt and fixed dimensions too.
   const heroPhoto = page.locator("#top img");
-  await expect(heroPhoto).toHaveAttribute("alt", "Filipe Bravo");
+  await expect(heroPhoto).toHaveAttribute("alt", "Portrait of Filipe Bravo");
   await expect(heroPhoto).toHaveAttribute("width", "288");
   await expect(heroPhoto).toHaveAttribute("height", "360");
 });

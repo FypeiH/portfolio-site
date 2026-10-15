@@ -6,7 +6,7 @@ export const HERO_PHOTO = {
   /** Width of the processed master the script keeps (4:5, like the display size). */
   masterWidth: 576,
   treatment: "duotone",
-  alt: "Filipe Bravo",
+  alt: "Portrait of Filipe Bravo",
 } as const;
 
 export const heroPhotoPath = (width: number, format: "avif" | "webp") => `/images/profile/filipe-bravo-hero-${width}.${format}`;
