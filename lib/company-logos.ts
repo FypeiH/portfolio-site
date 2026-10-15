@@ -7,13 +7,15 @@ export interface CompanyLogo {
   src: string;
   width: number;
   height: number;
+  /** Shown in its own colours instead of flattened to the foreground grey. */
+  keepColours?: boolean;
 }
 
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
   // Official logo from altyra.com (PNG 166×87, converted to lossless WebP).
   "Altyra Solutions": { src: "/images/companies/altyra-solutions.webp", width: 166, height: 87 },
-  // Logo supplied by Filipe (black/white on transparent); white and yellow made transparent: the CSS filter needs an alpha mask.
-  "Gigantic Digital Growth": { src: "/images/companies/gigantic-digital-growth.webp", width: 80, height: 73 },
+  // Yellow logo supplied by Filipe, letters made fully opaque; kept in colour at his request.
+  "Gigantic Digital Growth": { src: "/images/companies/gigantic-digital-growth.webp", width: 80, height: 72, keepColours: true },
   // Logo supplied by Filipe (white on transparent, for dark backgrounds), resized only.
   "OCR – Technology and Productivity": { src: "/images/companies/ocr-technology-and-productivity.webp", width: 80, height: 26 },
 };

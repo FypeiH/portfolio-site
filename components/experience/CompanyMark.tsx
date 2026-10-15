@@ -4,7 +4,7 @@ import { companyInitials, companyLogo } from "@/lib/company-logos";
 const LOGO_WIDTH = 40;
 
 /**
- * Square tile next to the company: the official logo in monochrome when there is one, otherwise the
+ * Square tile next to the company: the official logo (monochrome unless it keeps its colours) when there is one, otherwise the
  * initials. Both are decorative (empty alt, aria-hidden): the company name is in the heading right next to it.
  */
 export function CompanyMark({ company }: { company: string }) {
@@ -21,7 +21,7 @@ export function CompanyMark({ company }: { company: string }) {
           height={Math.round((LOGO_WIDTH * logo.height) / logo.width)}
           loading="lazy"
           decoding="async"
-          className="company-logo"
+          className={logo.keepColours ? "company-logo" : "company-logo company-logo-mono"}
         />
       ) : (
         <span aria-hidden="true" className="ui-label">

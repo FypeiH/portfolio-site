@@ -347,6 +347,8 @@
 }
 @utility company-logo {
   display: block;
+}
+@utility company-logo-mono {
   /* Any colour logo -> flat foreground grey, so every company reads the same. */
   filter: grayscale(1) brightness(0) invert(0.95);
 }
