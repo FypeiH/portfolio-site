@@ -44,9 +44,9 @@ Filipe's own captures of his app, taken in its demo mode with fictitious data (n
 
 | File | Master (PNG, SHA-256) | Size | Notes |
 | --- | --- | --- | --- |
-| `public/images/projects/contacts-report/contacts-report-dashboard.webp` | `contacts-report-dashboard.png` (`159b1f20…88650ebde`) | 1600×1000, 56,550 bytes | Dashboard: filters and the five summary cards. Filipe's own work, fake data |
-| `public/images/projects/contacts-report/contacts-report-contact-detail.webp` | `contacts-report-contact-detail.png` (`6bdf4813…c0d20ed6cd`) | 1600×1000, 61,794 bytes | Expanded contact with its quotes and contracts. Filipe's own work, fake data |
-| `public/images/projects/contacts-report/contacts-report-excel-groups.webp` | `contacts-report-excel-groups.png` (`15cac0b1…ae253a08`) | 1600×1000, 119,390 bytes | Excel export in LibreOffice Calc with outline groups. Filipe's own work, fake data |
+| `public/images/projects/contacts-report/contacts-report-dashboard.webp` | `contacts-report-dashboard.png` (`177d8a36…fdd64935`) | 1600×1000, 56,670 bytes | Dashboard: filters and the five summary cards. Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
+| `public/images/projects/contacts-report/contacts-report-contact-detail.webp` | `contacts-report-contact-detail.png` (`1a4e2a4b…37333429`) | 1600×1000, 61,946 bytes | Expanded contact with its quotes (Orçamento Série A/B) and contracts (Contrato Anual/Serviços). Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
+| `public/images/projects/contacts-report/contacts-report-excel-groups.webp` | `contacts-report-excel-groups.png` (`4bff4206…d6743e03`) | 1600×1000, 106,232 bytes | Excel export in LibreOffice Calc with outline groups; line items are Produto A/B, Artigo standard, Componente X, Serviço de consultoria/manutenção. Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
 
 ## Diagram covers
 
