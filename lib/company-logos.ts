@@ -10,10 +10,10 @@
  */
 export const COMPANY_LOGO_BOX = 112;
 
-/** Master file per logo (scripts/company-logos.ts); `solidLetters` makes see-through areas inside the logo opaque. */
-export const LOGO_FILES: Readonly<Record<string, { master: string; solidLetters?: boolean }>> = {
+/** Master file per logo (scripts/company-logos.ts). */
+export const LOGO_FILES: Readonly<Record<string, { master: string }>> = {
   "altyra-solutions": { master: "altyra-solutions.webp" },
-  "gigantic-digital-growth": { master: "gigantic-logo-yellow.png", solidLetters: true },
+  "gigantic-digital-growth": { master: "gigantic-logo-yellow.png" },
   "ocr-technology-and-productivity": { master: "ocr-logo-white.png" },
 };
 
