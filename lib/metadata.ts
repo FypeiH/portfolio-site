@@ -33,7 +33,7 @@ export function projectOgImagePath(project: OgCardInput): string {
   return `/projects/${project.slug}/opengraph-image?${hash}`;
 }
 
-/** Per-project og:image:alt / twitter:image:alt, from site.ui.ogProjectAlt ("{title}: case study by …"). */
+/** Per-project og:image:alt / twitter:image:alt, from site.ui.ogProjectAlt ("{title} — case study by …"). */
 export function projectOgAlt(title: string): string {
   return fill(getUi().ogProjectAlt, { title });
 }

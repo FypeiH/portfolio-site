@@ -167,7 +167,7 @@ export const site = {
     metaNotFoundTitle: "Page not found", // → "Page not found · Filipe Bravo" via title template
     metaErrorTitle: "Something went wrong",
     ogImageAlt: "Filipe Bravo, Software Engineer · Backend & AI",
-    ogProjectAlt: "{title}: case study by Filipe Bravo",
+    ogProjectAlt: "{title} — case study by Filipe Bravo", // no colon: titles may have one ("Contacts Report: ERP sales")
 
     // ---------- Preview mode only (SHOW_DRAFTS=true); never rendered in production ----------
     draftBadge: "Draft",
