@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
@@ -6,6 +6,14 @@ import { experience } from "@/content/experience";
 import { COMPANY_LOGO_BOX, companyInitials, companyLogo, companyLogoPath } from "@/lib/company-logos";
 
 describe("company logos", () => {
+  it("no content, code or UI string spells the OCR name as its wordmark does", () => {
+    const dirs = ["content", "components", "lib", "app"];
+    const files = dirs.flatMap((dir) => readdirSync(path.join(process.cwd(), dir), { recursive: true, encoding: "utf8" }).map((file) => path.join(dir, file)));
+    const offenders = files.filter((file) => /\.(ts|tsx|mdx?|json)$/.test(file) && /Tecnology/i.test(readFileSync(path.join(process.cwd(), file), "utf8")));
+    expect(offenders).toEqual([]);
+    expect(experience.map((item) => item.company)).toContain("OCR – Technology and Productivity");
+  });
+
   it("initials: first letter of the first two words that start with a letter", () => {
     expect(companyInitials("Gigantic Digital Growth")).toBe("GD");
     expect(companyInitials("OCR – Technology and Productivity")).toBe("OT");

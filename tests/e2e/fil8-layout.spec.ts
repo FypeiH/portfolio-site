@@ -145,12 +145,12 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: every company shows its logo below the dates, sized and decorative", async ({ page }, testInfo) => {
+test("experience: every company shows its logo below the dates, sized, with the company in its alt", async ({ page }, testInfo) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
-    await expect(logo).toHaveAttribute("alt", "");
+    await expect(logo).toHaveAttribute("alt", /^(Altyra Solutions|Gigantic Digital Growth|OCR – Technology and Productivity) logo$/);
     await expect(logo).toHaveAttribute("width", /^\d+$/);
     await expect(logo).toHaveAttribute("srcset", /-104\.webp 2x$/);
     await logo.scrollIntoViewIfNeeded();
@@ -165,6 +165,13 @@ test("experience: every company shows its logo below the dates, sized and decora
   await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
   const gigantic = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator('img[src*=gigantic]') }).first();
   await expect(gigantic).toHaveCSS("background-color", "rgb(242, 242, 242)");
+});
+
+test("the OCR name is spelled correctly in every text and alt (the misspelling lives only inside its logo image)", async ({ page }) => {
+  await page.goto("/");
+  expect(await page.content()).not.toMatch(/Tecnology/i);
+  await expect(page.locator("#experience h3").filter({ hasText: "OCR – Technology and Productivity" })).toHaveCount(1);
+  await expect(page.getByRole("img", { name: "OCR – Technology and Productivity logo" })).toHaveCount(1);
 });
 
 test("contacts-report: the screenshots gallery shows three lazy, sized images with descriptive alt text", async ({ page }) => {
