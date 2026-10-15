@@ -46,9 +46,10 @@ test("the photo has alt text and explicit dimensions", async ({ page }) => {
   await expect(photo).toHaveAttribute("width", "224");
   await expect(photo).toHaveAttribute("height", "224");
   await expect(page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
-  // The hero's duotone portrait (wide screens only) has the same alt and fixed dimensions too.
+  // The hero's duotone portrait (wide screens only) is decorative next to the h1, so it isn't announced twice.
   const heroPhoto = page.locator("#top img");
-  await expect(heroPhoto).toHaveAttribute("alt", "Portrait of Filipe Bravo");
+  await expect(heroPhoto).toHaveAttribute("alt", "");
+  await expect(page.getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
   await expect(heroPhoto).toHaveAttribute("width", "288");
   await expect(heroPhoto).toHaveAttribute("height", "360");
 });
