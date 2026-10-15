@@ -41,5 +41,12 @@
     },
     "output": "assets/rendered/covers/dynamic-cv.svg",
     "sha256": "c0256c574476d1fd9457c63f9f8de049f0cec181279c22fd6045d65f34337ed7"
+  },
+  "contacts-report": {
+    "sources": {
+      "assets/rendered/diagrams/contacts-report.svg": "47a358965165d14e381ee1893e59307660d5d6449c810c81827aa3a99cc3640b"
+    },
+    "output": "assets/rendered/covers/contacts-report.svg",
+    "sha256": "206be0ae0b3c7938400809480423a551c197781e55052752bf06fb3a950c4e4c"
   }
 }

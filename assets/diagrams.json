@@ -4,6 +4,11 @@
     "sourceSha256": "68006e1df6008afba16b8fd45107d3dcdccd21333d8a0e53f870d5d4635b268c",
     "sha256": "cdc47417284446a716811a6a7265b7a040a4e233c437b8c0c4622543dbd97e04"
   },
+  "assets/rendered/diagrams/contacts-report.svg": {
+    "source": "content/diagrams/contacts-report.mmd",
+    "sourceSha256": "d23dcc8f798c448554c867ae202d876da35cac5e6280746d45f7b1d0a3382a31",
+    "sha256": "e99985e95b96838de7adeda0e8b2603abb1e7ec0db1b3287f64573033230a3c9"
+  },
   "assets/rendered/diagrams/dynamic-cv.svg": {
     "source": "content/diagrams/dynamic-cv.mmd",
     "sourceSha256": "4039f4bc13576a34224853dcfeb01ff9e7617995bc7da26107db21988ade8ad1",
