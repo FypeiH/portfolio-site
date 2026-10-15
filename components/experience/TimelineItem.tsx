@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompanyMark } from "@/components/experience/CompanyMark";
 import { TagList } from "@/components/ui/Tag";
 import { EMPLOYMENT_LABEL_KEYS, WORK_MODE_LABEL_KEYS } from "@/lib/content/labels";
 import { getUi } from "@/lib/content/load";
@@ -27,12 +28,16 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
   });
 
   return (
-    <article className="grid gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
-      <p className="ui-label lg:col-span-3 lg:pt-1.5">
-        <time dateTime={toDateTime(item.start)}>{formatYearMonth(item.start)}</time>
-        {" — "}
-        {item.end === "present" ? ui.present : <time dateTime={toDateTime(item.end)}>{formatYearMonth(item.end)}</time>}
-      </p>
+    <article className="grid grid-cols-1 gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
+      {/* Dates, then the logo tile below them (stacked at every width, so a phone keeps the dates on one line). */}
+      <div className="flex flex-col items-start gap-3 lg:col-span-3 lg:pt-1.5">
+        <p className="ui-label">
+          <time dateTime={toDateTime(item.start)}>{formatYearMonth(item.start)}</time>
+          {" — "}
+          {item.end === "present" ? ui.present : <time dateTime={toDateTime(item.end)}>{formatYearMonth(item.end)}</time>}
+        </p>
+        <CompanyMark company={item.company} />
+      </div>
       <div className="lg:col-span-9">
         <h3 className="ui-h3">
           {item.role} <span className="text-subtle">·</span> <span className="text-accent">{item.company}</span>

@@ -27,6 +27,9 @@ export const ImageRefSchema = z.object({
   height: z.number().int().positive(),
 });
 
+// Screenshots carry dense UI, so their alt may run longer than the 125 chars of a decorative image.
+export const ScreenshotSchema = ImageRefSchema.extend({ alt: text(250), caption: text(160).optional() });
+
 export const MetricSchema = z.object({
   value: text(12),
   label: text(40),
@@ -168,6 +171,7 @@ export const ProjectFrontmatterSchema = z
     }),
     cover: ImageRefSchema.optional(),
     diagram: DiagramSchema.optional(),
+    screenshots: z.array(ScreenshotSchema).max(3).optional(),
     featured: z.boolean(),
     order: z.number().int().min(1),
     status: z.enum(["published", "draft"]),

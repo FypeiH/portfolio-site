@@ -1,56 +1,42 @@
+import { HeroPhoto } from "@/components/sections/HeroPhoto";
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { ExternalLink } from "@/components/ui/ExternalLink";
 import { getUi } from "@/lib/content/load";
 import { known } from "@/lib/content/placeholders";
 import type { Profile } from "@/lib/content/types";
 
 /**
- * Hero (visual-direction §3, B4): system fonts only and nothing animated, so the h1 and the intro
- * paint with the HTML. No images here; the portrait lives in #about.
+ * Hero (visual-direction §3, B4; spec §1.1; Filipe's hierarchy, 2026-10-15): the name as the h1 in
+ * Anton, the role in two short lines, one supporting line, the availability badge and two CTAs, with the
+ * duotone portrait on wide screens (HeroPhoto; phones never download it). The name paints in a local fallback
+ * face until the page has loaded (styles/globals.css, hero-name), so nothing here waits for a web font.
  */
 export function HeroSection({ profile }: { profile: Profile }) {
   const ui = getUi();
-  const links = [
-    ...profile.links.flatMap((link) => {
-      const href = known(link.href);
-      return (link.kind === "github" || link.kind === "linkedin") && href ? [{ href, label: link.kind === "github" ? ui.github : ui.linkedin }] : [];
-    }),
-    { href: profile.cv.href, label: `${ui.resume} ${ui.pdfSuffix}` },
-  ];
-
+  const email = known(profile.email);
   return (
-    <section id="top" aria-labelledby="top-heading" className="ui-container pb-(--section-py) pt-(--space-9)">
-      <AvailabilityBadge availability={profile.availability} />
-      <h1 id="top-heading" className="hero-name mt-(--space-5)">
-        {profile.name}
-      </h1>
-      <p className="ui-label mt-(--space-4) text-accent!">{profile.role}</p>
-      <div className="mt-(--space-6) max-w-[42rem]">
-        <p className="text-lead font-medium">{profile.tagline}</p>
-        <p className="mt-(--space-4) text-muted">{profile.intro}</p>
+    <section id="top" aria-labelledby="top-heading" className="ui-container grid items-center gap-(--space-8) pb-(--section-py) pt-(--space-9) lg:grid-cols-12 lg:gap-x-(--gutter)">
+      <div className="@container lg:col-span-8">
+        <h1 id="top-heading" className="hero-name">
+          {profile.name}
+        </h1>
+        <p className="hero-title mt-(--space-4)">
+          {ui.heroTitleLine1}
+          <br />{" "}
+          {ui.heroTitleLine2}
+        </p>
+        <p className="mt-(--space-5) max-w-[38rem] text-lead text-muted">{ui.heroSupport}</p>
+        <div className="mt-(--space-5)">
+          <AvailabilityBadge availability={profile.availability} />
+        </div>
+        <div className="mt-(--space-6) flex flex-wrap gap-4">
+          <ButtonLink href={email ? `mailto:${email}` : "#contact"}>{ui.heroCtaContact}</ButtonLink>
+          <ButtonLink href="#projects" variant="secondary">
+            {ui.heroCtaProjects}
+          </ButtonLink>
+        </div>
       </div>
-      <div className="mt-(--space-6) flex flex-wrap gap-4">
-        <ButtonLink href="#projects">{ui.heroCtaProjects}</ButtonLink>
-        <ButtonLink href="#contact" variant="secondary">
-          {ui.heroCtaContact}
-        </ButtonLink>
-      </div>
-      <ul className="mt-(--space-5) flex flex-wrap items-center gap-x-3">
-        {links.map((link, index) => (
-          <li key={link.href} className="flex items-center gap-x-3">
-            {index > 0 && (
-              <span aria-hidden="true" className="text-subtle">
-                ·
-              </span>
-            )}
-            <ExternalLink href={link.href} className="ui-text-link">
-              {link.label}
-              <span aria-hidden="true">&nbsp;↗</span>
-            </ExternalLink>
-          </li>
-        ))}
-      </ul>
+      <HeroPhoto />
     </section>
   );
 }

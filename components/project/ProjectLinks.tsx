@@ -22,7 +22,7 @@ export function ProjectLinks({ project }: { project: Project }) {
       {links.map((link) => (
         <ExternalLink key={link.href} href={link.href} className={linkClass}>
           {link.label}
-          <span aria-hidden="true">&nbsp;↗</span>
+          &nbsp;<span aria-hidden="true" className="ui-arrow">↗</span>
         </ExternalLink>
       ))}
     </div>

@@ -17,21 +17,26 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const TRACK_CHARS = 40;
 
 /**
- * aria-hidden copies after the title, alternating outline/solid; at least 3 (§7.1). They are empty
+ * Copies after the title, alternating outline/solid; at least 3 (§7.1). They are empty aria-hidden
  * elements painted by CSS (`content: attr(data-text)`), so the document text holds the title once
  * (crawlers and copy-paste see "Skills", not "Skills Skills Skills…").
  */
 const copiesFor = (title: string) => Array.from({ length: Math.max(3, Math.ceil(TRACK_CHARS / title.length)) }, (_, i) => i % 2 === 0);
 
+const Copy = ({ title, ghost }: { title: string; ghost: boolean }) => (
+  <span aria-hidden="true" data-text={title} className={ghost ? "marquee-copy marquee-ghost" : "marquee-copy"} />
+);
+
 /**
  * Section anatomy (visual-direction §4): mono label row `§nn / NAV LABEL ── [count]`, a full-bleed
- * marquee h2 (Anton), then the content 48 px below. `§nn` is the section's position in site.nav.
+ * marquee h2 (Anton) that scrolls on its own (CSS only), then the content 48 px below. `§nn` is the section's position in site.nav.
  */
 export function Section({ id, title, intro, count, children }: SectionProps) {
   const headingId = `${id}-heading`;
   const { nav } = getSite();
   const position = nav.findIndex((item) => item.id === id);
   const label = nav[position]?.label ?? title;
+  const copies = copiesFor(title);
   return (
     <section id={id} aria-labelledby={headingId} className="ui-section">
       <div className="ui-container">
@@ -41,12 +46,21 @@ export function Section({ id, title, intro, count, children }: SectionProps) {
           </span>
           {count !== undefined && <span>[{pad(count)}]</span>}
         </p>
+        {/* Two identical groups: the band loops by sliding one group's width (motion.css). */}
         <h2 id={headingId} className="marquee">
           <span className="marquee-track">
-            <span>{title}</span>
-            {copiesFor(title).map((ghost, index) => (
-              <span key={index} aria-hidden="true" data-text={title} className={ghost ? "marquee-copy marquee-ghost" : "marquee-copy"} />
-            ))}
+            <span className="marquee-group">
+              <span>{title}</span>
+              {copies.map((ghost, index) => (
+                <Copy key={index} title={title} ghost={ghost} />
+              ))}
+            </span>
+            <span className="marquee-group" aria-hidden="true">
+              <Copy title={title} ghost={false} />
+              {copies.map((ghost, index) => (
+                <Copy key={index} title={title} ghost={ghost} />
+              ))}
+            </span>
           </span>
         </h2>
         {intro && <p className="mt-(--space-5) max-w-2xl text-muted">{intro}</p>}

@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3201;
+/** Override when 3201 is taken (another checkout's server would otherwise be reused, see reuseExistingServer). */
+const PORT = Number(process.env.E2E_PRODUCTION_PORT ?? 3201);
 
 /** Runs against the production build (CONTENT_STRICT=true, no drafts): what visitors get. */
 export default defineConfig({

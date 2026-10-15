@@ -1,3 +1,4 @@
+import { MotionToggle } from "@/components/motion/MotionToggle";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 import { HomeLink } from "@/components/ui/HomeLink";
 import { buildInfo } from "@/lib/build-env";
@@ -32,7 +33,7 @@ export function SiteFooter() {
             <span aria-hidden="true">·</span>
             <ExternalLink href={sourceUrl} aria-label={ui.footerSourceAria}>
               {ui.footerSource}
-              <span aria-hidden="true">&nbsp;↗</span>
+              &nbsp;<span aria-hidden="true" className="ui-arrow">↗</span>
             </ExternalLink>
           </>
         )}
@@ -42,9 +43,11 @@ export function SiteFooter() {
             <span>{fill(ui.footerCopyright, { year })}</span>
           </>
         )}
+        <span aria-hidden="true" className="hidden js:inline">·</span>
+        <MotionToggle label={ui.motionPause} />
         <span aria-hidden="true">·</span>
         <HomeLink href="/#top">
-          <span aria-hidden="true">↑&nbsp;</span>
+          <span aria-hidden="true" className="ui-arrow">↑</span>&nbsp;
           {ui.backToTop}
         </HomeLink>
       </div>

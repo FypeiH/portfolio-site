@@ -91,6 +91,9 @@ function checkPublicFiles({ profile, projects }: ContentSnapshot, files: Content
   }
   for (const p of projects) {
     if (p.cover && missing(p.cover.src)) issues.push({ severity: "error", message: `Cover of "${p.slug}" is missing: public${p.cover.src}` });
+    for (const shot of p.screenshots ?? []) {
+      if (missing(shot.src)) issues.push({ severity: "error", message: `Screenshot of "${p.slug}" is missing: public${shot.src}` });
+    }
     if (p.diagram?.kind === "image" && !files.exists(renderedFile(p.diagram.src)))
       issues.push({ severity: "error", message: `V6: diagram of "${p.slug}" is missing: ${renderedFile(p.diagram.src)}` });
   }

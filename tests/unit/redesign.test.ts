@@ -261,6 +261,14 @@ describe("case-study OG image alt (QA r2 N3)", () => {
     expect(fill(site.ui.ogProjectAlt, { title: "Email Scraper" })).toBe(site.ui.ogProjectAlt.replace("{title}", "Email Scraper"));
     expect(fill(site.ui.ogProjectAlt, { title: "A" })).not.toBe(fill(site.ui.ogProjectAlt, { title: "B" }));
   });
+
+  it("adds no colon of its own, so a title with one doesn't read as a double colon", async () => {
+    const { site } = await import("@/content/site");
+    const { fill } = await import("@/lib/content/ui");
+    const alt = fill(site.ui.ogProjectAlt, { title: "Contacts Report: ERP sales" });
+    expect(alt.split(":")).toHaveLength(2);
+    expect(alt).toBe("Contacts Report: ERP sales — case study by Filipe Bravo");
+  });
 });
 
 describe("case-study OG image URL cache-buster", () => {

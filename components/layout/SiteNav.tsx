@@ -44,8 +44,9 @@ export function SiteNav({ items, cv, labels }: SiteNavProps) {
     </a>
   );
 
+  // With JS the nav never shrinks below the Menu button (200% text zoom); without JS its link list scrolls instead.
   return (
-    <nav aria-label={labels.nav} ref={containerRef} onBlur={closeOnFocusLeave} className="flex min-w-0 flex-1 items-center justify-end gap-2">
+    <nav aria-label={labels.nav} ref={containerRef} onBlur={closeOnFocusLeave} className="flex flex-1 items-center justify-end gap-2 no-js:min-w-0 md:min-w-0">
       <ul className="hidden min-w-0 items-center overflow-x-auto md:flex no-js:flex">{links}</ul>
       <div className="hidden md:block">{resumeLink}</div>
       <button

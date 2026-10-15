@@ -1,15 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Deep links land with a marquee h2 in view while it is still in the fallback face; when Anton takes
- * over after load, the copies after the title must not move (Sonar m2: CLS 0.05 on /#projects with an
+ * The home page lands with the hero name, and deep links with a marquee h2, in view while still in the
+ * fallback face; when Anton takes over after load, nothing after the name or title may move (Sonar m2: CLS 0.05 on /#projects with an
  * unmatched fallback). The fallback faces are metric-matched in styles/globals.css.
  *
  * Each face is forced in turn by injecting a stylesheet into the HTML response, so the three faces are
  * covered on any machine that has Arial Narrow (or Liberation Sans Narrow / Nimbus Sans Narrow), Arial
  * (or Liberation Sans / Arimo) and Roboto. A face whose local font is missing is skipped, not passed.
  */
-const HASHES = ["#projects", "#experience", "#skills"];
+const HASHES = ["", "#projects", "#experience", "#skills"];
 const MAX_CLS = 0.01;
 const FACES = ["Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto"];
 
@@ -66,9 +66,9 @@ test.describe("layout shift from the marquee font swap", () => {
     });
   }
 
-  for (const family of FACES) {
-    test(`forced "${family}": /#projects stays under CLS ${MAX_CLS}`, async ({ page, baseURL, isMobile }) => {
-      const { loaded, cls } = await measure(page, `${baseURL}/#projects`, family, isMobile);
+  for (const [family, hash] of FACES.flatMap((face) => [[face, "#projects"], [face, ""]] as const)) {
+    test(`forced "${family}": /${hash} stays under CLS ${MAX_CLS}`, async ({ page, baseURL, isMobile }) => {
+      const { loaded, cls } = await measure(page, `${baseURL}/${hash}`, family, isMobile);
       test.skip(!loaded.includes(family), `no local font behind "${family}" on this machine`);
       expect(loaded).toContain("anton");
       expect(cls).toBeLessThan(MAX_CLS);

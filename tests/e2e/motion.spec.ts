@@ -51,3 +51,50 @@ test("the email copy button is only rendered with JavaScript", async ({ page, br
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("filipe.abravo@gmail.com");
   }
 });
+
+test.describe("pause animations toggle (WCAG 2.2.2)", () => {
+  const playState = (page: Page) => page.locator("#projects-heading .marquee-track").evaluate((el) => getComputedStyle(el).animationPlayState);
+
+  test("pauses the marquees, exposes aria-pressed and survives a reload", async ({ page }) => {
+    await page.goto("/");
+    const toggle = page.getByRole("button", { name: "Pause animations" });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(await playState(page)).toBe("running");
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("html")).toHaveClass(/\bmotion-paused\b/);
+    expect(await playState(page)).toBe("paused");
+
+    await page.reload();
+    await expect(page.locator("html")).toHaveClass(/\bmotion-paused\b/);
+    await expect(page.getByRole("button", { name: "Pause animations" })).toHaveAttribute("aria-pressed", "true");
+    expect(await playState(page)).toBe("paused");
+
+    await page.getByRole("button", { name: "Pause animations" }).click();
+    await expect(page.locator("html")).not.toHaveClass(/\bmotion-paused\b/);
+    expect(await playState(page)).toBe("running");
+  });
+
+  test("a saved choice is applied before the first marquee is parsed", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("motion", "paused");
+      const probe = window as unknown as { pausedAtFirstMarquee?: boolean };
+      new MutationObserver((_, observer) => {
+        if (!document.querySelector(".marquee-track")) return;
+        probe.pausedAtFirstMarquee = document.documentElement.classList.contains("motion-paused");
+        observer.disconnect();
+      }).observe(document, { childList: true, subtree: true });
+    });
+    await page.goto("/");
+    expect(await page.evaluate(() => (window as unknown as { pausedAtFirstMarquee?: boolean }).pausedAtFirstMarquee)).toBe(true);
+  });
+
+  test("is not rendered without JavaScript", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "Pause animations" })).toBeHidden();
+    await context.close();
+  });
+});

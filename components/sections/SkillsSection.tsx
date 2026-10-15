@@ -30,7 +30,7 @@ export function SkillsSection({ groups, projectTitles }: SkillsSectionProps) {
                   slug && title ? (
                     <Link href={`/projects/${slug}`} title={fill(ui.skillSeeIn, { project: title })} className="ui-chip ui-link">
                       {item.name}
-                      <span aria-hidden="true">&nbsp;↗</span>
+                      &nbsp;<span aria-hidden="true" className="ui-arrow">↗</span>
                       <span className="sr-only">, {fill(ui.skillSeeIn, { project: title })}</span>
                     </Link>
                   ) : (
