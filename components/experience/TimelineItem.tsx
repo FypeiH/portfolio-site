@@ -29,16 +29,14 @@ export function TimelineItem({ item, projectTitles }: TimelineItemProps) {
 
   return (
     <article className="grid gap-x-(--gutter) gap-y-2 py-(--space-3) lg:grid-cols-12">
-      {/* Dates, then the logo tile: side by side on phones (tile first), stacked in the left column from lg. */}
-      <div className="flex items-center gap-4 lg:col-span-3 lg:flex-col lg:items-start lg:gap-3 lg:pt-1.5">
+      {/* Dates, then the logo tile below them (stacked at every width, so a phone keeps the dates on one line). */}
+      <div className="flex flex-col items-start gap-3 lg:col-span-3 lg:pt-1.5">
         <p className="ui-label">
           <time dateTime={toDateTime(item.start)}>{formatYearMonth(item.start)}</time>
           {" — "}
           {item.end === "present" ? ui.present : <time dateTime={toDateTime(item.end)}>{formatYearMonth(item.end)}</time>}
         </p>
-        <div className="-order-1 lg:order-none">
-          <CompanyMark company={item.company} />
-        </div>
+        <CompanyMark company={item.company} />
       </div>
       <div className="lg:col-span-9">
         <h3 className="ui-h3">

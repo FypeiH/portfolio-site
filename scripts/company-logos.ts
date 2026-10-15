@@ -1,5 +1,5 @@
 /**
- * Experience logos: writes each company logo at 1x and 2x of its display box (lossless WebP) from the masters
+ * Experience logos: writes each company logo at 1x and 2x of its display box (lossless WebP; never upscaled, so a small master caps its 2x file) from the masters
  * in assets/originals/companies/ (sources in ASSETS.md). Gigantic's letters are made fully opaque first (pixels
  * the transparent outside can't reach), so they render solid, never showing the tile through them.
  */
@@ -51,7 +51,7 @@ async function main(): Promise<void> {
     const trimmed = await image.png().toBuffer();
     for (const scale of [1, 2] as const) {
       const box = COMPANY_LOGO_BOX * scale;
-      let resized = sharp(await sharp(trimmed).resize(box, box, { fit: "inside" }).png().toBuffer());
+      let resized = sharp(await sharp(trimmed).resize(box, box, { fit: "inside", withoutEnlargement: true }).png().toBuffer());
       // Resampling can leave letter edges a touch see-through again; seal them at the final size too.
       if (solidLetters) resized = await solidInside(resized);
       const info = await resized.webp({ lossless: true, effort: 6 }).toFile(path.join("public", companyLogoPath(slug, scale)));

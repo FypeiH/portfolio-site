@@ -339,8 +339,8 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 4rem;
+  width: 8rem;
+  height: 8rem;
   border: var(--border-thick) solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-muted);

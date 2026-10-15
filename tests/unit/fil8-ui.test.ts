@@ -3,7 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { experience } from "@/content/experience";
-import { COMPANY_LOGO_BOX, companyInitials, companyLogo, companyLogoPath } from "@/lib/company-logos";
+import { COMPANY_LOGO_BOX, companyInitials, companyLogo, companyLogoPath, LOGO_FILES } from "@/lib/company-logos";
 
 describe("company logos", () => {
   it("no content, code or UI string spells the OCR name as its wordmark does", () => {
@@ -20,6 +20,10 @@ describe("company logos", () => {
     expect(companyInitials("Altyra")).toBe("A");
   });
 
+  it("the logo box is 112 px, the smallest at which Gigantic's DIGITAL GROWTH reads at DPR 1", () => {
+    expect(COMPANY_LOGO_BOX).toBe(112);
+  });
+
   it("every mapped logo belongs to a company in content/experience.ts and matches its file", async () => {
     const companies = new Set(experience.map((item) => item.company));
     const mapped = [...companies].flatMap((company) => {
@@ -33,9 +37,15 @@ describe("company logos", () => {
         expect(existsSync(file)).toBe(true);
         const meta = await sharp(readFileSync(file)).metadata();
         expect(meta.format).toBe("webp");
-        expect(Math.max(meta.width!, meta.height!)).toBe(COMPANY_LOGO_BOX * scale);
-        expect(Math.abs(meta.width! - logo.width * scale)).toBeLessThanOrEqual(1);
-        expect(Math.abs(meta.height! - logo.height * scale)).toBeLessThanOrEqual(1);
+        if (scale === 1) {
+          expect(Math.max(meta.width!, meta.height!)).toBe(COMPANY_LOGO_BOX);
+          expect([meta.width, meta.height]).toEqual([logo.width, logo.height]);
+        } else {
+          // 2x of the box, or the trimmed master's own size when that is smaller (never upscaled).
+          const master = await sharp(path.join(process.cwd(), "assets/originals/companies", LOGO_FILES[logo.slug]!.master)).trim().toBuffer({ resolveWithObject: true });
+          expect(Math.max(meta.width!, meta.height!)).toBe(Math.min(COMPANY_LOGO_BOX * 2, Math.max(master.info.width, master.info.height)));
+          expect(Math.abs(meta.height! - (meta.width! * logo.height) / logo.width)).toBeLessThanOrEqual(1.5);
+        }
       }
     }
   });

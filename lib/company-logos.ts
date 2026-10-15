@@ -4,8 +4,11 @@
  * A company without an entry gets a typographic mark (initials) instead of a guessed logo.
  */
 
-/** Largest side of a logo inside its tile, in CSS px; files are written at 1x and 2x of it. */
-export const COMPANY_LOGO_BOX = 52;
+/**
+ * Largest side of a logo inside its 128 px tile, in CSS px; files are written at 1x and 2x of it (2x capped at the
+ * master's own size, never upscaled). 112 is the smallest box at which Gigantic's "DIGITAL GROWTH" reads at DPR 1.
+ */
+export const COMPANY_LOGO_BOX = 112;
 
 /** Master file per logo (scripts/company-logos.ts); `solidLetters` makes see-through areas inside the logo opaque. */
 export const LOGO_FILES: Readonly<Record<string, { master: string; solidLetters?: boolean }>> = {
@@ -14,7 +17,7 @@ export const LOGO_FILES: Readonly<Record<string, { master: string; solidLetters?
   "ocr-technology-and-productivity": { master: "ocr-logo-white.png" },
 };
 
-export const companyLogoPath = (slug: string, scale: 1 | 2) => `/images/companies/${slug}-${COMPANY_LOGO_BOX * scale}.webp`;
+export const companyLogoPath = (slug: string, scale: 1 | 2) => `/images/companies/${slug}-${scale}x.webp`;
 
 export interface CompanyLogo {
   slug: string;
@@ -26,10 +29,10 @@ export interface CompanyLogo {
 }
 
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
-  "Altyra Solutions": { slug: "altyra-solutions", width: 52, height: 27 },
+  "Altyra Solutions": { slug: "altyra-solutions", width: 112, height: 59 },
   // Yellow logo, kept in colour on the dark tile at Filipe's request.
-  "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 52, height: 47, keepColours: true },
-  "OCR – Technology and Productivity": { slug: "ocr-technology-and-productivity", width: 52, height: 15 },
+  "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 112, height: 101, keepColours: true },
+  "OCR – Technology and Productivity": { slug: "ocr-technology-and-productivity", width: 112, height: 33 },
 };
 
 export function companyLogo(company: string): CompanyLogo | undefined {

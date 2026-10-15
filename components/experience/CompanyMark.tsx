@@ -1,7 +1,7 @@
 import { companyInitials, companyLogo, companyLogoPath } from "@/lib/company-logos";
 
 /**
- * 64 px tile under the dates: the official logo (monochrome unless it keeps its colours) when there is one,
+ * 128 px tile under the dates: the official logo (monochrome unless it keeps its colours) when there is one,
  * otherwise the initials. The logo alt names the company ("OCR – Technology and Productivity logo"), spelled as in
  * content/experience.ts, never as in a wordmark; the initials are decorative (aria-hidden).
  */

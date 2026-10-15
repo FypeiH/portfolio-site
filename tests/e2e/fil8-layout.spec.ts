@@ -145,22 +145,22 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: every company shows its logo below the dates, sized, with the company in its alt", async ({ page }, testInfo) => {
+test("experience: every company shows its logo below the dates, sized, with the company in its alt", async ({ page }) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
     await expect(logo).toHaveAttribute("alt", /^(Altyra Solutions|Gigantic Digital Growth|OCR – Technology and Productivity) logo$/);
     await expect(logo).toHaveAttribute("width", /^\d+$/);
-    await expect(logo).toHaveAttribute("srcset", /-104\.webp 2x$/);
+    await expect(logo).toHaveAttribute("srcset", /-1x\.webp 1x, .+-2x\.webp 2x$/);
     await logo.scrollIntoViewIfNeeded();
     await expect.poll(() => logo.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
     const article = logo.locator("xpath=ancestor::article[1]");
     const dates = (await article.locator("p.ui-label").first().boundingBox())!;
     const tile = (await logo.locator("xpath=ancestor::div[@data-company-mark][1]").boundingBox())!;
-    expect(Math.round(tile.width)).toBe(64);
-    if (isMobile(testInfo)) expect(tile.x).toBeLessThan(dates.x);
-    else expect(tile.y).toBeGreaterThanOrEqual(dates.y + dates.height);
+    expect([Math.round(tile.width), Math.round(tile.height)]).toEqual([128, 128]);
+    expect(tile.y).toBeGreaterThanOrEqual(dates.y + dates.height);
+    expect(Math.abs(tile.x - dates.x)).toBeLessThanOrEqual(1);
   }
   await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
   const gigantic = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator('img[src*=gigantic]') }).first();
@@ -214,3 +214,23 @@ test("favicons: SVG, ICO (16 + 32), PNG 32 and apple-touch 180, all served", asy
   expect(icons.some((icon) => icon.rel === "apple-touch-icon" && icon.sizes === "180x180")).toBe(true);
   for (const icon of icons) expect((await request.get(icon.href)).status()).toBe(200);
 });
+
+for (const width of [320, 390]) {
+  test(`experience at ${width} px: the 128 px tiles fit, nothing overflows and the dates and titles keep their width`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+    await page.locator("#experience").scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    for (const article of await page.locator("#experience article").all()) {
+      const box = (await article.boundingBox())!;
+      const dates = article.locator("p.ui-label").first();
+      const lineHeight = await dates.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+      expect((await dates.boundingBox())!.height).toBeLessThanOrEqual(lineHeight * 1.5);
+      const tile = (await article.locator("[data-company-mark]").boundingBox())!;
+      expect(tile.x + tile.width).toBeLessThanOrEqual(box.x + box.width);
+      const title = (await article.locator("h3").boundingBox())!;
+      expect(title.width).toBeGreaterThanOrEqual(box.width * 0.9);
+      expect(await article.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    }
+  });
+}
