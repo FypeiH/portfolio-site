@@ -40,9 +40,8 @@ describe("company logos", () => {
     }
   });
 
-  it("Gigantic keeps its yellow colours with solid letters on a light tile; the other logos stay monochrome", async () => {
+  it("Gigantic keeps its yellow colours with solid letters on the same dark tile; the other logos stay monochrome", async () => {
     expect(companyLogo("Gigantic Digital Growth")?.keepColours).toBe(true);
-    expect(companyLogo("Gigantic Digital Growth")?.lightTile).toBe(true);
     expect(companyLogo("Altyra Solutions")?.keepColours).toBeUndefined();
     expect(companyLogo("OCR – Technology and Productivity")?.keepColours).toBeUndefined();
     for (const scale of [1, 2] as const) {

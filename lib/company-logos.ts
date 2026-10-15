@@ -23,14 +23,12 @@ export interface CompanyLogo {
   height: number;
   /** Shown in its own colours instead of flattened to the foreground grey. */
   keepColours?: boolean;
-  /** Light tile, for a logo with dark parts that would vanish on the dark site. */
-  lightTile?: boolean;
 }
 
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
   "Altyra Solutions": { slug: "altyra-solutions", width: 52, height: 27 },
-  // Yellow logo with black letters, kept in colour on a light tile at Filipe's request.
-  "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 52, height: 47, keepColours: true, lightTile: true },
+  // Yellow logo, kept in colour on the dark tile at Filipe's request.
+  "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 52, height: 47, keepColours: true },
   "OCR – Technology and Productivity": { slug: "ocr-technology-and-productivity", width: 52, height: 15 },
 };
 

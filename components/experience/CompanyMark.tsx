@@ -7,9 +7,8 @@ import { companyInitials, companyLogo, companyLogoPath } from "@/lib/company-log
  */
 export function CompanyMark({ company }: { company: string }) {
   const logo = companyLogo(company);
-  const tile = logo?.lightTile ? "company-mark company-mark-light" : "company-mark";
   return (
-    <div className={tile} data-company-mark={logo ? "logo" : "initials"}>
+    <div className="company-mark" data-company-mark={logo ? "logo" : "initials"}>
       {logo ? (
         // Plain <img>: tiny pre-sized WebPs (pnpm logos); next/image would add client JS for nothing.
         // eslint-disable-next-line @next/next/no-img-element

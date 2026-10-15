@@ -1,7 +1,7 @@
 /**
  * Experience logos: writes each company logo at 1x and 2x of its display box (lossless WebP) from the masters
  * in assets/originals/companies/ (sources in ASSETS.md). Gigantic's letters are made fully opaque first (pixels
- * the transparent outside can't reach), so they render solid on the light tile.
+ * the transparent outside can't reach), so they render solid, never showing the tile through them.
  */
 import fs from "node:fs";
 import path from "node:path";

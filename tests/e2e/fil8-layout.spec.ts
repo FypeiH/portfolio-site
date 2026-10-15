@@ -164,7 +164,11 @@ test("experience: every company shows its logo below the dates, sized, with the 
   }
   await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
   const gigantic = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator('img[src*=gigantic]') }).first();
-  await expect(gigantic).toHaveCSS("background-color", "rgb(242, 242, 242)");
+  const altyra = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator("img[src*=altyra]") }).first();
+  const tileBackground = await altyra.evaluate((el) => getComputedStyle(el).backgroundColor);
+  await expect(gigantic).toHaveCSS("background-color", tileBackground);
+  await expect(gigantic.locator("img")).toHaveAttribute("alt", "Gigantic Digital Growth logo");
+  await expect(gigantic.locator("img")).not.toHaveClass(/company-logo-mono/);
 });
 
 test("the OCR name is spelled correctly in every text and alt (the misspelling lives only inside its logo image)", async ({ page }) => {

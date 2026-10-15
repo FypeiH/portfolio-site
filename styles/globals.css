@@ -345,10 +345,6 @@
   background: var(--color-surface);
   color: var(--color-muted);
 }
-@utility company-mark-light {
-  /* Off-white tile for a logo whose dark parts would vanish on the dark site (Gigantic). */
-  background: var(--color-fg);
-}
 @utility company-logo {
   display: block;
 }
