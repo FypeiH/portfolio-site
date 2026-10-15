@@ -6,27 +6,30 @@ import { known } from "@/lib/content/placeholders";
 import type { Profile } from "@/lib/content/types";
 
 /**
- * Hero (visual-direction §3, B4; spec §1.1): the availability badge and the name small above a
- * two-line title, one supporting line and two CTAs, with an inline-SVG grid on the right. System fonts
- * only and nothing animated, so the h1 and the support line (the LCP element on mobile) paint with the
- * HTML. No images; the portrait lives in #about.
+ * Hero (visual-direction §3, B4; spec §1.1; Filipe's hierarchy, 2026-10-15): the name as the h1 in
+ * Anton, the role in two short lines, one supporting line, the availability badge and two CTAs, with an
+ * inline-SVG grid on the right. The name paints in a local fallback face until the page has loaded
+ * (styles/globals.css, hero-name), so nothing here waits for a web font. No images; the portrait lives
+ * in #about.
  */
 export function HeroSection({ profile }: { profile: Profile }) {
   const ui = getUi();
   const email = known(profile.email);
   return (
     <section id="top" aria-labelledby="top-heading" className="ui-container grid items-center gap-(--space-8) pb-(--section-py) pt-(--space-9) lg:grid-cols-12 lg:gap-x-(--gutter)">
-      <div className="lg:col-span-8">
-        <AvailabilityBadge availability={profile.availability} />
-        <h1 id="top-heading" className="mt-(--space-5)">
-          <span className="ui-label block text-accent!">{profile.name}</span>{" "}
-          <span className="hero-title mt-(--space-4) block">
-            {ui.heroTitleLine1}
-            <br />{" "}
-            {ui.heroTitleLine2}
-          </span>
+      <div className="@container lg:col-span-8">
+        <h1 id="top-heading" className="hero-name">
+          {profile.name}
         </h1>
+        <p className="hero-title mt-(--space-4)">
+          {ui.heroTitleLine1}
+          <br />{" "}
+          {ui.heroTitleLine2}
+        </p>
         <p className="mt-(--space-5) max-w-[38rem] text-lead text-muted">{ui.heroSupport}</p>
+        <div className="mt-(--space-5)">
+          <AvailabilityBadge availability={profile.availability} />
+        </div>
         <div className="mt-(--space-6) flex flex-wrap gap-4">
           <ButtonLink href={email ? `mailto:${email}` : "#contact"}>{ui.heroCtaContact}</ButtonLink>
           <ButtonLink href="#projects" variant="secondary">

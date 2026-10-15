@@ -9,9 +9,9 @@ import { RouteTracker } from "@/components/motion/RouteTracker";
 import { getUi } from "@/lib/content/load";
 import { APPLY_MOTION_PREFERENCE_JS } from "@/lib/motion-preference";
 
-// The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s only. Never in
-// section#top, so it can't be the LCP element. Not preloaded, and not used until `.fonts-ready` (after
-// the load event, see MARK_JS), so it is requested after the LCP paint.
+// The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s and the hero
+// name. Not preloaded, and not used until `.fonts-ready` (after the load event, see MARK_JS): both paint
+// in local fallback faces first, so the font is requested after the LCP paint and can't hold it up.
 const anton = localFont({
   src: "../../assets/fonts/anton-latin-400.woff2",
   weight: "400",

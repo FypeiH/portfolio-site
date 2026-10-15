@@ -18,11 +18,17 @@ describe("availability badge (spec §1.1, Filipe's decision 2026-10-15)", () => 
     expect(selective).toContain("bg-accent");
   });
 
-  it("sits in the hero before the h1, next to Will's support line", () => {
+  it("hero order: name (h1), role, Will's support line, badge, CTAs", () => {
     const html = renderToStaticMarkup(createElement(HeroSection, { profile }));
-    const badge = html.indexOf(profile.availability.label);
-    expect(badge).toBeGreaterThan(-1);
-    expect(badge).toBeLessThan(html.indexOf("<h1"));
-    expect(text(html)).toContain("Open to backend and AI roles");
+    const h1 = html.match(/<h1[^>]*>([^<]*)<\/h1>/);
+    expect(h1?.[1]).toBe(profile.name);
+    expect(h1?.[0]).toContain('class="hero-name"');
+    const at = (needle: string) => {
+      const index = html.indexOf(needle);
+      expect(index, needle).toBeGreaterThan(-1);
+      return index;
+    };
+    const order = ["<h1", "Backend engineer,", "Open to backend and AI roles", profile.availability.label, "<a "].map(at);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 });

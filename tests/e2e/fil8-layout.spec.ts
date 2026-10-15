@@ -3,24 +3,51 @@ import { isMobile } from "./helpers";
 
 /** FIL-8 round 4: shorter hero, continuous marquee, readable diagrams with a full-size view, company logos. */
 
-test("hero: availability badge, one h1 (name label + two-line title), a support line, two CTAs, no image", async ({ page }) => {
+test("hero: the name is the h1 and the largest text, then role, support line, badge, two CTAs, no image", async ({ page }) => {
   await page.goto("/");
   const h1 = page.locator("#top h1");
   await expect(page.locator("h1")).toHaveCount(1);
-  await expect(h1).toContainText("Filipe Bravo");
-  await expect(h1).toContainText("Backend engineer,");
-  await expect(h1).toContainText("growing into AI.");
-  await expect(page.locator("#top p")).toHaveCount(2);
-  // spec §1.1: the badge comes first, as text (its brackets and colour square are decorative).
-  const badge = page.locator("#top p").first();
-  await expect(badge).toHaveText("[Open to software engineering roles]");
-  await expect(badge).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
-  await expect(badge.locator('[aria-hidden="true"]')).toHaveCount(3);
-  expect(await badge.evaluate((el, h) => el.compareDocumentPosition(h!) & Node.DOCUMENT_POSITION_FOLLOWING, await h1.elementHandle())).toBeTruthy();
+  await expect(h1).toHaveText("Filipe Bravo");
+  await expect(page.getByRole("heading", { level: 1, name: "Filipe Bravo" })).toBeVisible();
+  const paragraphs = page.locator("#top p");
+  await expect(paragraphs).toHaveCount(3);
+  await expect(paragraphs.nth(0)).toContainText("Backend engineer,");
+  await expect(paragraphs.nth(0)).toContainText("growing into AI.");
+  await expect(paragraphs.nth(1)).toContainText("Open to backend and AI roles");
+  // spec §1.1: the badge is text (its brackets and colour square are decorative), now below the support line.
+  await expect(paragraphs.nth(2)).toHaveText("[Open to software engineering roles]");
+  await expect(paragraphs.nth(2)).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
   await expect(page.locator("#top a")).toHaveCount(2);
   await expect(page.locator("#top img")).toHaveCount(0);
   await expect(page.locator("#top svg")).toHaveAttribute("aria-hidden", "true");
+  const tops = await page.locator("#top h1, #top p, #top a").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  const sizes = await page.locator("#top h1, #top p").evaluateAll((els) => els.map((el) => parseFloat(getComputedStyle(el).fontSize)));
+  expect(Math.max(...sizes.slice(1))).toBeLessThan(sizes[0]! / 2);
 });
+
+for (const width of [320, 360, 375, 390]) {
+  test(`hero name: one line and no overflow at ${width} px, in the fallback face and in Anton`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    const fit = () =>
+      page.locator("#top h1").evaluate((h1) => {
+        const range = document.createRange();
+        range.selectNodeContents(h1);
+        const line = parseFloat(getComputedStyle(h1).lineHeight);
+        return { lines: Math.round(h1.getBoundingClientRect().height / line), text: range.getBoundingClientRect().width, box: h1.clientWidth, page: document.documentElement.scrollWidth - innerWidth };
+      });
+    for (const state of [await fit(), await (async () => {
+      await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+      await page.evaluate(() => document.fonts.ready);
+      return fit();
+    })()]) {
+      expect(state.lines).toBe(1);
+      expect(state.text).toBeLessThanOrEqual(state.box);
+      expect(state.page).toBe(0);
+    }
+  });
+}
 
 test("about shows the role as its eyebrow", async ({ page }) => {
   await page.goto("/");

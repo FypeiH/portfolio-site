@@ -50,13 +50,28 @@ test("the photo has alt text and explicit dimensions", async ({ page }) => {
   await expect(page.locator("#top img")).toHaveCount(0);
 });
 
-test("the web font never reaches the hero (LCP rule, visual-direction §3.2)", async ({ page }) => {
+test("the hero paints without the web font: Anton only after load, on the name only (LCP rule)", async ({ page }) => {
+  type Probe = Window & { __heroFonts: string[] };
+  await page.addInitScript(() => {
+    addEventListener("DOMContentLoaded", () => {
+      (window as unknown as Probe).__heroFonts = [...document.querySelectorAll("#top, #top *")].map((el) => getComputedStyle(el).fontFamily);
+    });
+  });
   await page.goto("/");
-  const heroFonts = await page.locator("#top, #top *").evaluateAll((els) => els.map((el) => getComputedStyle(el).fontFamily));
-  expect(heroFonts.filter((family) => /anton/i.test(family))).toEqual([]);
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector("#top h1")!).fontFamily)).not.toMatch(/anton/i);
-  // Anton is used by the marquee headings only, and only once the page has loaded (requested after the LCP paint).
+  // Before load the name uses the local "Anton Fallback*" faces, never Anton itself.
+  const beforeLoad = await page.evaluate(() => (window as unknown as Probe).__heroFonts);
+  expect(beforeLoad.length).toBeGreaterThan(0);
+  expect(beforeLoad.map((family) => family.replace(/"Anton Fallback[^"]*"/g, "")).filter((family) => /anton/i.test(family))).toEqual([]);
   await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+  // The font is requested after the load event, so it can't sit in the LCP chain.
+  const fontAfterLoad = await page.evaluate(() => {
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+    return performance.getEntriesByType("resource").filter((r) => r.name.endsWith(".woff2")).map((r) => r.startTime >= nav.loadEventStart);
+  });
+  expect(fontAfterLoad).not.toContain(false);
+  await expect.poll(() => page.locator("#top h1").evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/anton/i);
+  const rest = await page.locator("#top *:not(h1)").evaluateAll((els) => els.map((el) => getComputedStyle(el).fontFamily));
+  expect(rest.filter((family) => /anton/i.test(family))).toEqual([]);
   await expect.poll(() => page.locator("#projects-heading .marquee-track").evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/anton/i);
 });
 
