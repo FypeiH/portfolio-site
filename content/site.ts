@@ -129,6 +129,7 @@ export const site = {
     whyNoCode: "Why no code?", // callout title on private/nda projects (spec §3.4)
     disclaimerLabel: "Note",
     diagramLabel: "Architecture diagram",
+    screenshotsLabel: "Screenshots",
     updatedOn: "Updated {date}",
     previousProject: "Previous project",
     nextProject: "Next project",

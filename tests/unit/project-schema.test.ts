@@ -65,3 +65,18 @@ describe("ProjectFrontmatterSchema visibility rules (spec §3.3)", () => {
     );
   });
 });
+
+describe("ProjectFrontmatterSchema screenshots (optional gallery)", () => {
+  const shot = (n: number) => ({ src: `/images/projects/demo-${n}.webp`, alt: `Screen ${n} with fictitious data`, width: 1440, height: 900 });
+
+  it("accepts no screenshots and up to three", () => {
+    expect(issues(privateProject)).toEqual([]);
+    expect(issues({ ...privateProject, screenshots: [] })).toEqual([]);
+    expect(issues({ ...privateProject, screenshots: [shot(1), shot(2), { ...shot(3), caption: "Exported workbook" }] })).toEqual([]);
+  });
+
+  it("rejects a fourth screenshot and an empty alt", () => {
+    expect(issues({ ...privateProject, screenshots: [shot(1), shot(2), shot(3), shot(4)] })).not.toEqual([]);
+    expect(issues({ ...privateProject, screenshots: [{ ...shot(1), alt: "" }] })).not.toEqual([]);
+  });
+});
