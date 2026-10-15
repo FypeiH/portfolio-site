@@ -43,6 +43,7 @@ const MARK_JS =
 export function SiteDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={anton.variable} suppressHydrationWarning>
+      {/* eslint-disable-next-line @next/next/no-head-element -- App Router root layout: next/head is Pages Router only */}
       <head>
         <script dangerouslySetInnerHTML={{ __html: MARK_JS }} />
       </head>
