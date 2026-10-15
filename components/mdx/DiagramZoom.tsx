@@ -31,7 +31,7 @@ export function DiagramZoom({ src, alt, width, height, labels }: DiagramZoomProp
         </form>
         <div className="overflow-auto p-4 md:p-6">
           {/* eslint-disable-next-line @next/next/no-img-element -- static SVG: the image optimizer adds nothing */}
-          <img src={src} alt="" width={width} height={height} decoding="async" className="mx-auto max-w-none" />
+          <img src={src} alt="" width={width} height={height} loading="lazy" decoding="async" className="mx-auto max-w-none" />
         </div>
       </dialog>
     </>

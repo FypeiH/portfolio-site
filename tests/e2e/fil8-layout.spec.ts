@@ -49,7 +49,7 @@ test.describe("marquee", () => {
 });
 
 test.describe("case-study diagram", () => {
-  for (const slug of ["email-scraper", "fidu-bot", "portfolio-site"]) {
+  for (const slug of ["email-scraper", "fidu-bot", "portfolio-site", "contacts-report"]) {
     test(`${slug}: labels render at >= 14 px on desktop`, async ({ page }, testInfo) => {
       test.skip(isMobile(testInfo), "desktop rule; phones scale the diagram to the screen");
       await page.setViewportSize({ width: 1440, height: 900 });
@@ -89,16 +89,17 @@ test.describe("case-study diagram", () => {
   });
 });
 
-test("experience: company logos have alt text and fixed dimensions; others show initials", async ({ page }) => {
+test("experience: company logos are decorative with fixed dimensions, the name stays as text; others show initials", async ({ page }) => {
   await page.goto("/");
   const logos = page.locator("#experience [data-company-mark=logo] img");
   expect(await logos.count()).toBeGreaterThan(0);
   for (const logo of await logos.all()) {
-    await expect(logo).toHaveAttribute("alt", /^(Altyra Solutions|Gigantic Digital Growth) logo$/);
+    await expect(logo).toHaveAttribute("alt", "");
     await expect(logo).toHaveAttribute("width", /^\d+$/);
     await expect(logo).toHaveAttribute("height", /^\d+$/);
     await logo.scrollIntoViewIfNeeded();
     await expect.poll(() => logo.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+    await expect(logo.locator("xpath=ancestor::div[1]/following-sibling::h3")).toContainText(/Altyra Solutions|Gigantic Digital Growth/);
   }
   const initials = page.locator("#experience [data-company-mark=initials] span");
   await expect(initials.first()).toHaveAttribute("aria-hidden", "true");

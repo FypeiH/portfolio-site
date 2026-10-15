@@ -11,8 +11,6 @@ import path from "node:path";
 import { hashComment } from "../lib/content/diagrams";
 import { DIAGRAMS_OUTPUT_DIR, DIAGRAMS_SOURCE_DIR, staleDiagramReasons, writeDiagramsManifest } from "../lib/diagrams-manifest";
 
-const SOURCE_DIR = DIAGRAMS_SOURCE_DIR;
-const OUTPUT_DIR = DIAGRAMS_OUTPUT_DIR;
 
 const MERMAID_CONFIG = {
   theme: "dark",
@@ -49,22 +47,22 @@ function check(sources: string[]): void {
 }
 
 async function main(): Promise<void> {
-  const sources = (await readdir(SOURCE_DIR)).filter((name) => name.endsWith(".mmd"));
+  const sources = (await readdir(DIAGRAMS_SOURCE_DIR)).filter((name) => name.endsWith(".mmd"));
   if (process.argv.includes("--check")) return check(sources);
   // Loaded only to render: --check runs in the strict build, which has no Chrome.
   const [{ renderMermaid }, { default: puppeteer }] = await Promise.all([import("@mermaid-js/mermaid-cli"), import("puppeteer")]);
-  await mkdir(OUTPUT_DIR, { recursive: true });
+  await mkdir(DIAGRAMS_OUTPUT_DIR, { recursive: true });
   const browser = await puppeteer.launch({ headless: true });
   try {
     for (const name of sources) {
-      const definition = await readFile(path.join(SOURCE_DIR, name), "utf8");
+      const definition = await readFile(path.join(DIAGRAMS_SOURCE_DIR, name), "utf8");
       const { data } = await renderMermaid(browser, definition, "svg", {
         backgroundColor: "transparent",
         mermaidConfig: MERMAID_CONFIG,
         fontEmbed: false,
       });
       const svg = Buffer.from(data).toString("utf8");
-      const output = path.join(OUTPUT_DIR, name.replace(/\.mmd$/, ".svg"));
+      const output = path.join(DIAGRAMS_OUTPUT_DIR, name.replace(/\.mmd$/, ".svg"));
       await writeFile(output, `${hashComment(definition)}\n${svg}\n`);
       console.log(`rendered ${output}`);
     }

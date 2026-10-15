@@ -1,6 +1,6 @@
 import type { Screenshot } from "@/lib/content/types";
 
-/** Optional case-study gallery (1–3 images, frontmatter `screenshots`), below the body and never above the fold. */
+/** Case-study gallery from the optional frontmatter `screenshots` (up to 3 images), below the body, never above the fold. */
 export function ProjectScreenshots({ screenshots, label }: { screenshots: Screenshot[]; label: string }) {
   return (
     <section aria-labelledby="case-study-screenshots" className="mt-12">

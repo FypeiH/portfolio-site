@@ -16,10 +16,10 @@ export function HeroSection({ profile }: { profile: Profile }) {
     <section id="top" aria-labelledby="top-heading" className="ui-container grid items-center gap-(--space-8) pb-(--section-py) pt-(--space-9) lg:grid-cols-12 lg:gap-x-(--gutter)">
       <div className="lg:col-span-8">
         <h1 id="top-heading">
-          <span className="ui-label block text-accent!">{profile.name}</span>
+          <span className="ui-label block text-accent!">{profile.name}</span>{" "}
           <span className="hero-title mt-(--space-4) block">
             {ui.heroTitleLine1}
-            <br />
+            <br />{" "}
             {ui.heroTitleLine2}
           </span>
         </h1>

@@ -574,14 +574,29 @@
   text-transform: uppercase;
   color: var(--color-subtle);
   border-top: var(--border-thick) solid var(--color-fg);
-  & a {
-    display: inline-flex;
+  & a,
+  & .motion-toggle {
     align-items: center;
     min-height: 2.75rem;
     color: var(--color-fg);
     padding: 0 var(--space-1);
   }
-  & a:hover {
+  & a {
+    display: inline-flex;
+  }
+  & .motion-toggle {
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  & .motion-toggle[aria-pressed="true"] {
+    color: var(--color-accent);
+  }
+  & a:hover,
+  & .motion-toggle:hover {
     background: var(--color-fg);
     color: var(--color-bg);
   }

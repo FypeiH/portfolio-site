@@ -2,7 +2,6 @@ import type { CSSProperties } from "react";
 import { DiagramZoom } from "@/components/mdx/DiagramZoom";
 import { getUi } from "@/lib/content/load";
 import type { DiagramImage } from "@/lib/content/diagrams";
-import { uiOr } from "@/lib/content/ui";
 
 /**
  * Smallest share of its intrinsic width a diagram is drawn at from md up. Labels are rendered at 18 px
@@ -19,7 +18,7 @@ export function Diagram({ image, label }: { image: DiagramImage; label: string }
   const size = { "--diagram-w": `${image.width}px`, "--diagram-min-w": `${Math.ceil(image.width * DIAGRAM_MIN_SCALE)}px` } as CSSProperties;
   return (
     <figure className="diagram-figure ui-panel my-8 bg-surface p-4 md:p-6">
-      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={image.alt}>
+      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={label}>
         {/* eslint-disable-next-line @next/next/no-img-element -- static SVG: the image optimizer adds nothing */}
         <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" className="diagram-img" style={size} />
       </div>
@@ -32,10 +31,10 @@ export function Diagram({ image, label }: { image: DiagramImage; label: string }
             alt={image.alt}
             width={image.width}
             height={image.height}
-            labels={{ open: uiOr(ui, "diagramEnlarge", "View full size"), close: uiOr(ui, "diagramClose", "Close") }}
+            labels={{ open: ui.diagramEnlarge, close: ui.diagramClose }}
           />
           <a href={image.src} target="_blank" rel="noopener" className="ui-text-link">
-            {uiOr(ui, "diagramOpenSvg", "Open SVG in a new tab")}
+            {ui.diagramOpenSvg}
             <span aria-hidden="true">&nbsp;↗</span>
           </a>
         </span>

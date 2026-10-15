@@ -39,6 +39,7 @@ export const site = {
     pdfSuffix: "(PDF)",
     externalLink: "(opens in new tab)", // sr-only suffix
     backToTop: "Back to top",
+    motionPause: "Pause animations", // footer toggle button (aria-pressed), WCAG 2.2.2
 
     // ---------- Hero ----------
     // Two short lines, ≤ 28 chars each (rendered on separate lines).
@@ -129,6 +130,9 @@ export const site = {
     whyNoCode: "Why no code?", // callout title on private/nda projects (spec §3.4)
     disclaimerLabel: "Note",
     diagramLabel: "Architecture diagram",
+    diagramEnlarge: "View full size",
+    diagramClose: "Close",
+    diagramOpenSvg: "Open SVG in a new tab",
     screenshotsLabel: "Screenshots",
     updatedOn: "Updated {date}",
     previousProject: "Previous project",

@@ -48,12 +48,12 @@
     }
   }
 
-  /* Marquee h2: a time-based loop, transform only (compositor), paused while hovered or focused. */
+  /* Marquee h2: a time-based loop, transform only (compositor), paused on hover or by the footer toggle. */
   .marquee-track {
     animation: marquee-x 40s linear infinite;
   }
   .marquee:hover .marquee-track,
-  .marquee:focus-within .marquee-track {
+  html.motion-paused .marquee-track {
     animation-play-state: paused;
   }
 

@@ -5,7 +5,7 @@ const LOGO_WIDTH = 40;
 
 /**
  * Square tile next to the company: the official logo in monochrome when there is one, otherwise the
- * initials. The initials are decorative (the company name is in the heading right next to it).
+ * initials. Both are decorative (empty alt, aria-hidden): the company name is in the heading right next to it.
  */
 export function CompanyMark({ company }: { company: string }) {
   const logo = companyLogo(company);
@@ -16,7 +16,7 @@ export function CompanyMark({ company }: { company: string }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logo.src}
-          alt={logo.alt}
+          alt=""
           width={LOGO_WIDTH}
           height={Math.round((LOGO_WIDTH * logo.height) / logo.width)}
           loading="lazy"

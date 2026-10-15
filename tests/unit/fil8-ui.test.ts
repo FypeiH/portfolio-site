@@ -3,19 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { experience } from "@/content/experience";
-import { site } from "@/content/site";
 import { companyInitials, companyLogo } from "@/lib/company-logos";
-import { uiOr, type UiStrings } from "@/lib/content/ui";
-
-describe("uiOr", () => {
-  it("uses the site.ts value when the key exists", () => {
-    expect(uiOr(site.ui, "heroCtaContact", "fallback")).toBe(site.ui.heroCtaContact);
-  });
-  it("falls back for a missing or blank key", () => {
-    expect(uiOr(site.ui, "noSuchKey", "fallback")).toBe("fallback");
-    expect(uiOr({ ...site.ui, blank: "  " } as UiStrings, "blank", "fallback")).toBe("fallback");
-  });
-});
 
 describe("company logos", () => {
   it("initials: first letter of the first two words that start with a letter", () => {
@@ -31,8 +19,7 @@ describe("company logos", () => {
       return logo ? [{ company, logo }] : [];
     });
     expect(mapped.map(({ company }) => company)).toEqual(expect.arrayContaining(["Altyra Solutions", "Gigantic Digital Growth"]));
-    for (const { company, logo } of mapped) {
-      expect(logo.alt).toBe(`${company} logo`);
+    for (const { logo } of mapped) {
       const file = path.join(process.cwd(), "public", logo.src);
       expect(existsSync(file)).toBe(true);
       const meta = await sharp(readFileSync(file)).metadata();

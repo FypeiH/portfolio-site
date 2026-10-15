@@ -36,6 +36,7 @@ export function Section({ id, title, intro, count, children }: SectionProps) {
   const { nav } = getSite();
   const position = nav.findIndex((item) => item.id === id);
   const label = nav[position]?.label ?? title;
+  const copies = copiesFor(title);
   return (
     <section id={id} aria-labelledby={headingId} className="ui-section">
       <div className="ui-container">
@@ -50,13 +51,13 @@ export function Section({ id, title, intro, count, children }: SectionProps) {
           <span className="marquee-track">
             <span className="marquee-group">
               <span>{title}</span>
-              {copiesFor(title).map((ghost, index) => (
+              {copies.map((ghost, index) => (
                 <Copy key={index} title={title} ghost={ghost} />
               ))}
             </span>
             <span className="marquee-group" aria-hidden="true">
               <Copy title={title} ghost={false} />
-              {copiesFor(title).map((ghost, index) => (
+              {copies.map((ghost, index) => (
                 <Copy key={index} title={title} ghost={ghost} />
               ))}
             </span>

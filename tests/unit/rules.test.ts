@@ -29,6 +29,15 @@ describe("collectContentIssues", () => {
     expect(issues).toEqual([]);
   });
 
+  it("fails the build when a listed screenshot file is missing, and passes when it exists", () => {
+    const shot = { src: "/images/projects/a/dashboard.webp", alt: "Dashboard with fictitious data", width: 1440, height: 900 };
+    const snapshot = { ...base, projects: [project({ slug: "a", order: 1, screenshots: [shot] }), ...published.slice(1), emailScraper] };
+    const missing = collectContentIssues(snapshot, cleanFiles(["a", "b", "c"]), flags);
+    expect(missing).toContainEqual({ severity: "error", message: 'Screenshot of "a" is missing: public/images/projects/a/dashboard.webp' });
+    const present = collectContentIssues(snapshot, cleanFiles(["a", "b", "c"], { "public/images/projects/a/dashboard.webp": "RIFF" }), flags);
+    expect(present).toEqual([]);
+  });
+
   it("flags fewer than 3 published featured projects as a launch blocker", () => {
     const issues = collectContentIssues({ ...base, projects: [published[0]!, emailScraper] }, cleanFiles(["a"]), flags);
     expect(issues).toContainEqual({ severity: "launch", message: expect.stringContaining("1 featured projects are published") });
