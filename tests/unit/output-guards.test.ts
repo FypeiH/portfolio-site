@@ -165,3 +165,26 @@ describe("audit:prod", () => {
     expect(script).toMatch(/advisories\.length > 0[\s\S]*process\.exit\(1\)/);
   });
 });
+
+describe("Sonar v2 follow-up: HTML size budget in the build check", () => {
+  it("lists pages largest first and flags only the ones over the limit", async () => {
+    const { htmlSizes, overHtmlBudget } = await import("@/lib/html-budget");
+    const noise = (n: number) => Array.from({ length: n }, (_, i) => (i * 2654435761) % 1e9).join(",");
+    const sizes = htmlSizes([
+      { file: "small.html", html: "<p>hi</p>" },
+      { file: "big.html", html: noise(2000) },
+    ]);
+    expect(sizes.map((size) => size.file)).toEqual(["big.html", "small.html"]);
+    expect(overHtmlBudget(sizes, 1).map((size) => size.file)).toEqual(["big.html"]);
+    expect(overHtmlBudget(sizes)).toEqual([]);
+  });
+
+  it("shares one budget between the build check and Lighthouse, which fails without a Document", () => {
+    expect(JSON.parse(read("lib/html-budget.json"))).toEqual({ htmlServedKb: 40 });
+    expect(read("scripts/check-output.ts")).toContain("overHtmlBudget(");
+    const lighthouse = read("scripts/lighthouse.mjs");
+    expect(lighthouse).toContain('readFileSync("lib/html-budget.json"');
+    expect(lighthouse).not.toMatch(/resourceType === "Document"\)\?\.transferSize \?\? 0/);
+    expect(pkg.scripts["build:production"]).toContain("tsx scripts/check-output.ts");
+  });
+});
