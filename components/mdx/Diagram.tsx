@@ -35,7 +35,7 @@ export function Diagram({ image, label }: { image: DiagramImage; label: string }
           />
           <a href={image.src} target="_blank" rel="noopener" className="ui-text-link">
             {ui.diagramOpenSvg}
-            <span aria-hidden="true">&nbsp;↗</span>
+            &nbsp;<span aria-hidden="true" className="ui-arrow">↗</span>
           </a>
         </span>
       </figcaption>

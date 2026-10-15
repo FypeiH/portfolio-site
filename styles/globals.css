@@ -225,6 +225,12 @@
 
 /* ---------- Type ---------- */
 
+/* Decorative arrows (↗ ↑) in the mono face, which has them: next to sans text they sent the browser on a
+   system-wide fallback search that doubled the home page's first layout (QA FIL-8, TBT). */
+@utility ui-arrow {
+  font-family: var(--font-mono);
+}
+
 @utility ui-label {
   font: 500 var(--text-label) / 1.2 var(--font-mono);
   letter-spacing: 0.08em;

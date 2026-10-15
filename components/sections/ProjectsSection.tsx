@@ -35,7 +35,7 @@ export function ProjectsSection({ projects, githubUrl }: ProjectsSectionProps) {
         <p className="mt-(--space-6)">
           <ExternalLink href={githubUrl} className="ui-text-link">
             {ui.moreOnGithub}
-            <span aria-hidden="true">&nbsp;↗</span>
+            &nbsp;<span aria-hidden="true" className="ui-arrow">↗</span>
           </ExternalLink>
         </p>
       )}
