@@ -3,14 +3,20 @@ import { isMobile } from "./helpers";
 
 /** FIL-8 round 4: shorter hero, continuous marquee, readable diagrams with a full-size view, company logos. */
 
-test("hero: one h1 (name label + two-line title), a support line, two CTAs, no image", async ({ page }) => {
+test("hero: availability badge, one h1 (name label + two-line title), a support line, two CTAs, no image", async ({ page }) => {
   await page.goto("/");
   const h1 = page.locator("#top h1");
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(h1).toContainText("Filipe Bravo");
   await expect(h1).toContainText("Backend engineer,");
   await expect(h1).toContainText("growing into AI.");
-  await expect(page.locator("#top p")).toHaveCount(1);
+  await expect(page.locator("#top p")).toHaveCount(2);
+  // spec §1.1: the badge comes first, as text (its brackets and colour square are decorative).
+  const badge = page.locator("#top p").first();
+  await expect(badge).toHaveText("[Open to software engineering roles]");
+  await expect(badge).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
+  await expect(badge.locator('[aria-hidden="true"]')).toHaveCount(3);
+  expect(await badge.evaluate((el, h) => el.compareDocumentPosition(h!) & Node.DOCUMENT_POSITION_FOLLOWING, await h1.elementHandle())).toBeTruthy();
   await expect(page.locator("#top a")).toHaveCount(2);
   await expect(page.locator("#top img")).toHaveCount(0);
   await expect(page.locator("#top svg")).toHaveAttribute("aria-hidden", "true");
