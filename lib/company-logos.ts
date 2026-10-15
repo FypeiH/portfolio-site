@@ -13,6 +13,8 @@ export interface CompanyLogo {
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
   // Official logo from altyra.com (PNG 166×87, converted to lossless WebP; no other edits).
   "Altyra Solutions": { src: "/images/companies/altyra-solutions.webp", width: 166, height: 87, alt: "Altyra Solutions logo" },
+  // Official logo from gigantic.pt, yellow background made transparent (the CSS filter needs an alpha mask).
+  "Gigantic Digital Growth": { src: "/images/companies/gigantic-digital-growth.webp", width: 160, height: 147, alt: "Gigantic Digital Growth logo" },
 };
 
 export function companyLogo(company: string): CompanyLogo | undefined {

@@ -22,12 +22,12 @@ Official logos, taken from each owner's own public site or store listing, unmodi
 
 ## Company logos (Experience)
 
-Shown in the Experience timeline in a 56 px tile, flattened to the foreground grey with a CSS filter (`company-logo` in `styles/globals.css`), mapped by company name in `lib/company-logos.ts`. A company without a file there gets its initials instead (decorative, `aria-hidden`; the name is in the heading next to it).
+Shown in the Experience timeline in a 56 px tile, flattened to the foreground grey with a CSS filter (`company-logo` in `styles/globals.css`), mapped by company name in `lib/company-logos.ts`. A company without a file there (today only OCR) gets its initials instead (decorative, `aria-hidden`; the name is in the heading next to it).
 
 | File | Source URL | Retrieved | Notes |
 | --- | --- | --- | --- |
 | `public/images/companies/altyra-solutions.webp` | https://altyra.com/lovable-uploads/29c94a1b-009d-4189-a0e5-07db02e7796a.png (the logo on the company's own site, alt "Altyra Solutions - Company logo"; the domain is the one named in Filipe's internship report) | 2026-10-03 | Original PNG 166×87, SHA-256 `0b4893e4…14b0059`; converted to lossless WebP (676 bytes), no other edits. Added at Filipe's request (FIL-8) |
-| _(none)_ Gigantic Digital Growth | Official logo identified at https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (listed by the site's own `wp-json/wp/v2/media` API) | 2026-10-03 | **Not downloaded**: the site answers automated requests with a bot challenge (SiteGround captcha), which we don't bypass. Initials "GD" are shown until someone saves that file by hand; then convert it to WebP, add it to `lib/company-logos.ts` and this table |
+| `public/images/companies/gigantic-digital-growth.webp` | https://www.gigantic.pt/wp-content/uploads/2025/09/gigantic-logo-01.png (official logo, listed by the site's own `wp-json/wp/v2/media` API; the 2026-10-03 attempt hit a bot challenge, a plain request on 2026-10-15 returned the file) | 2026-10-15 | Original PNG 1080×1080 (black and white mark on a yellow square), SHA-256 `6f9a6037…4a95e9e`. Converted to an alpha mask so the `company-logo` filter can flatten it: yellow and white pixels transparent, black opaque (alpha = clamp((0.8 − luminance) / 0.6)), cropped to the mark with 4 px padding, resized to 160×147, lossless WebP (3,688 bytes). No other edits. Added at Filipe's request (FIL-8) |
 
 ## Diagram covers
 
