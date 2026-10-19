@@ -271,12 +271,17 @@
   -webkit-text-stroke: 4px var(--color-fg);
 }
 
+@utility hero-photo-container {
+  box-shadow: var(--shadow-hard);
+}
+
 @utility hero-photo-ascii {
   font-family: var(--font-mono);
   font-size: 3.2px;
   line-height: 1.1;
-  color: var(--color-accent-ink);
+  color: var(--color-bg);
   background: var(--color-accent);
+  border: var(--border-thick) solid var(--color-fg);
 }
 
 /* Hero role (B4): Will's two short lines, system sans 800, second in the hierarchy. */
