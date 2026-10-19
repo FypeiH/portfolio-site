@@ -39,14 +39,16 @@ export const site = {
     pdfSuffix: "(PDF)",
     externalLink: "(opens in new tab)", // sr-only suffix
     backToTop: "Back to top",
-    photoAlt: "Portrait of Filipe Bravo", // mirror of profile.avatar.alt, for the OG image
+    motionPause: "Pause animations", // footer toggle button (aria-pressed), WCAG 2.2.2
 
     // ---------- Hero ----------
-    heroCtaProjects: "View projects",
+    // Two short lines, ≤ 28 chars each (rendered on separate lines).
+    heroTitleLine1: "Backend engineer,",
+    heroTitleLine2: "growing into AI.",
+    // ≤ 140 chars.
+    heroSupport: "I build REST APIs, internal tools and automation with C#, .NET and TypeScript. Open to backend and AI roles, remote in the EU or Lisbon.",
     heroCtaContact: "Contact me",
-    heroGithub: "GitHub profile", // aria-label on icon link
-    heroLinkedin: "LinkedIn profile",
-    heroResume: "Resume (PDF)",
+    heroCtaProjects: "View projects",
 
     // ---------- Projects ----------
     projectsTitle: "Selected projects",
@@ -117,7 +119,6 @@ export const site = {
 
     // ---------- Case study ----------
     allProjects: "All projects", // BackLink (spec §2.7)
-    onThisPage: "On this page",
     metaOrganization: "Context",
     metaRole: "Role",
     metaPeriod: "Period",
@@ -129,6 +130,10 @@ export const site = {
     whyNoCode: "Why no code?", // callout title on private/nda projects (spec §3.4)
     disclaimerLabel: "Note",
     diagramLabel: "Architecture diagram",
+    diagramEnlarge: "View full size",
+    diagramClose: "Close",
+    diagramOpenSvg: "Open SVG in a new tab",
+    screenshotsLabel: "Screenshots",
     updatedOn: "Updated {date}",
     previousProject: "Previous project",
     nextProject: "Next project",
@@ -149,7 +154,7 @@ export const site = {
     notFoundProjects: "Projects",
     notFoundContact: "Contact",
 
-    // ---------- Generic error (not in spec §5.1 tree; for app/error.tsx if added) ----------
+    // ---------- Generic error (not in spec §5.1 tree; for app/(site)/error.tsx) ----------
     errorTitle: "Something went wrong",
     errorBody: "The problem is on my side, not yours. Try again, or come back in a few minutes.",
     errorRetry: "Try again",
@@ -157,18 +162,14 @@ export const site = {
 
     // ---------- Loading / images ----------
     loading: "Loading…",
-    imageError: "Image didn't load.",
 
     // ---------- Metadata / SEO ----------
     metaNotFoundTitle: "Page not found", // → "Page not found · Filipe Bravo" via title template
     metaErrorTitle: "Something went wrong",
     ogImageAlt: "Filipe Bravo, Software Engineer · Backend & AI",
-    ogProjectAlt: "{title}: case study by Filipe Bravo",
+    ogProjectAlt: "{title} — case study by Filipe Bravo", // no colon: titles may have one ("Contacts Report: ERP sales")
 
     // ---------- Preview mode only (SHOW_DRAFTS=true); never rendered in production ----------
     draftBadge: "Draft",
-
-    // ---------- AI demo (Phase B). OPTIONAL, not rendered while demoSection = false ----------
-    demoComingSoon: "AI demo coming soon.",
   },
 } satisfies SiteConfig;

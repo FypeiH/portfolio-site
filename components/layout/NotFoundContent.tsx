@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { getUi } from "@/lib/content/load";
 
-export function generateMetadata(): Metadata {
-  return { title: getUi().metaNotFoundTitle };
-}
-
-export default function NotFound() {
+export function NotFoundContent() {
   const ui = getUi();
   const links = [
     { href: "/", label: ui.notFoundHome },

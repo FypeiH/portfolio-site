@@ -15,9 +15,10 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* The track holds two identical groups: -50% is one group, so the loop has no seam. */
 @keyframes marquee-x {
   from { transform: translateX(0); }
-  to { transform: translateX(-35%); }
+  to { transform: translateX(-50%); }
 }
 
 .scroll-progress { display: none; }
@@ -33,13 +34,6 @@
     }
     [data-reveal="fade"] { animation-name: reveal-fade; }
 
-    /* Marquee h2: moves only while scrolling with the heading on screen; static without support. */
-    .marquee-track {
-      animation: marquee-x linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 100%;
-    }
-
     .scroll-progress {
       display: block;
       transform-origin: left;
@@ -52,6 +46,15 @@
       animation-timeline: scroll(root block);
       animation-range: 0 120px;
     }
+  }
+
+  /* Marquee h2: a time-based loop, transform only (compositor), paused on hover or by the footer toggle. */
+  .marquee-track {
+    animation: marquee-x 40s linear infinite;
+  }
+  .marquee:hover .marquee-track,
+  html.motion-paused .marquee-track {
+    animation-play-state: paused;
   }
 
   /* Fallback: IntersectionObserver, only once RevealObserver has set .reveal-io. */
@@ -68,8 +71,10 @@
   }
 }
 
+/* Static band: the title and one outlined copy. */
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track > [aria-hidden="true"]:nth-child(n + 3) { display: none; }
+  .marquee-group[aria-hidden="true"],
+  .marquee-group > [aria-hidden="true"]:nth-child(n + 3) { display: none; }
 }
 
 @media print {

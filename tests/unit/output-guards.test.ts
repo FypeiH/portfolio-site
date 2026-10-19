@@ -55,7 +55,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
     expect(script).toContain("Rendered output check failed");
   });
 
-  it("build:production runs the output scan, then covers/avatar/diagrams --check", () => {
+  it("build:production runs the output scan, then covers/avatar/logos/monogram/diagrams --check", () => {
     const steps = pkg.scripts["build:production"]!.split("&&").map((s) => s.trim());
     expect(steps).toEqual([
       "pnpm assets",
@@ -63,6 +63,8 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
       "tsx scripts/check-output.ts",
       "pnpm covers --check",
       "pnpm avatar --check",
+      "pnpm logos --check",
+      "pnpm monogram --check",
       "pnpm diagrams --check",
     ]);
   });
@@ -75,6 +77,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
       for (const f of fs.readdirSync(path.join(root, "content/diagrams"))) fs.copyFileSync(path.join(root, "content/diagrams", f), path.join(tmp, "content/diagrams", f));
       for (const f of fs.readdirSync(path.join(root, "assets/rendered/diagrams")))
         fs.copyFileSync(path.join(root, "assets/rendered/diagrams", f), path.join(tmp, "assets/rendered/diagrams", f));
+      fs.copyFileSync(path.join(root, "assets/diagrams.json"), path.join(tmp, "assets/diagrams.json"));
       const run = () =>
         spawnSync(path.join(root, "node_modules/.bin/tsx"), [path.join(root, "scripts/render-diagrams.ts"), "--check"], { cwd: tmp, encoding: "utf8" });
       expect(run().status).toBe(0);
@@ -139,7 +142,7 @@ describe("QA r3 O1: OG image text is checked before rendering", () => {
   });
 
   it("every OG image goes through ogImageResponse (no bare ImageResponse)", () => {
-    for (const file of ["app/opengraph-image.tsx", "app/projects/[slug]/opengraph-image.tsx"]) {
+    for (const file of ["app/(site)/opengraph-image.tsx", "app/projects/[slug]/opengraph-image.tsx"]) {
       const source = read(file);
       expect(source, file).toContain("ogImageResponse(");
       expect(source, file).not.toContain("new ImageResponse");
@@ -147,9 +150,9 @@ describe("QA r3 O1: OG image text is checked before rendering", () => {
     expect(read("lib/og.tsx")).toMatch(/assertOgText\(route, element, \{ allowed: \(\) => allowedShippedMarkers\(repoFiles\(\)\) \}\);\s*return new ImageResponse/);
   });
 
-  it("keeps the case-study OG cache-buster with template version 2", async () => {
+  it("keeps the case-study OG cache-buster with template version 3 (worst-case layout, Sonar on 9631ada)", async () => {
     const { OG_TEMPLATE_VERSION } = await import("@/lib/og-size");
-    expect(OG_TEMPLATE_VERSION).toBe(2);
+    expect(OG_TEMPLATE_VERSION).toBe(3);
     expect(read("lib/metadata.ts")).toContain("OG_TEMPLATE_VERSION");
   });
 });
@@ -162,5 +165,86 @@ describe("audit:prod", () => {
     expect(script).toContain('"--prod"');
     expect(script).toContain("pnpm-lock.yaml");
     expect(script).toMatch(/advisories\.length > 0[\s\S]*process\.exit\(1\)/);
+  });
+});
+
+describe("Sonar v2 follow-up: HTML size budget in the build check", () => {
+  it("lists pages largest first and flags only the ones over the limit", async () => {
+    const { htmlSizes, overHtmlBudget } = await import("@/lib/html-budget");
+    const noise = (n: number) => Array.from({ length: n }, (_, i) => (i * 2654435761) % 1e9).join(",");
+    const sizes = htmlSizes([
+      { file: "small.html", html: "<p>hi</p>" },
+      { file: "big.html", html: noise(2000) },
+    ]);
+    expect(sizes.map((size) => size.file)).toEqual(["big.html", "small.html"]);
+    expect(overHtmlBudget(sizes, 1).map((size) => size.file)).toEqual(["big.html"]);
+    expect(overHtmlBudget(sizes)).toEqual([]);
+  });
+
+  it("shares one budget between the build check and Lighthouse, which fails without a Document", () => {
+    expect(JSON.parse(read("lib/html-budget.json"))).toEqual({ htmlServedKb: 40 });
+    expect(read("scripts/check-output.ts")).toContain("overHtmlBudget(");
+    const lighthouse = read("scripts/lighthouse.mjs");
+    expect(lighthouse).toContain('readFileSync("lib/html-budget.json"');
+    expect(lighthouse).not.toMatch(/resourceType === "Document"\)\?\.transferSize \?\? 0/);
+    expect(pkg.scripts["build:production"]).toContain("tsx scripts/check-output.ts");
+  });
+});
+
+describe("Sonar v2 follow-up: master originals are kept but never shipped", () => {
+  const originals = ["contacts-report", "companies", "profile"].flatMap((dir) =>
+    fs.readdirSync(path.join(root, "assets/originals", dir)).map((file) => `assets/originals/${dir}/${file}`),
+  );
+
+  it("keeps the 7 masters, each listed in ASSETS.md", () => {
+    expect(originals).toHaveLength(7);
+    for (const file of originals) expect(read("ASSETS.md")).toContain(`\`${file}\``);
+  });
+
+  it("keeps only the small processed hero master, never the high-resolution photo", () => {
+    expect(fs.readdirSync(path.join(root, "assets/originals/profile"))).toEqual(["filipe-bravo-hero.webp"]);
+    expect(fs.statSync(path.join(root, "assets/originals/profile/filipe-bravo-hero.webp")).size).toBeLessThan(300 * 1024);
+  });
+
+  it("serves the hero photo only as small AVIF/WebP files (1x and 2x, 20 KB or less each)", () => {
+    const served = fs.readdirSync(path.join(root, "public/images/profile")).filter((file) => file.startsWith("filipe-bravo-hero"));
+    expect(served.sort()).toEqual(["filipe-bravo-hero-288.avif", "filipe-bravo-hero-288.webp", "filipe-bravo-hero-576.avif", "filipe-bravo-hero-576.webp"]);
+    // The photo is the desktop LCP candidate (fetchpriority high), so it is a page-weight budget, not a quality target:
+    // re-encoding with a lower quality is the fix if the 2x WebP (the largest, ~19.1 KB) ever crosses it, not a higher limit.
+    for (const file of served) expect(fs.statSync(path.join(root, "public/images/profile", file)).size).toBeLessThanOrEqual(20 * 1024);
+  });
+
+  it("is outside public/ and referenced by no app, component, lib or script code (except the generators that read or write them)", () => {
+    const code = ["app", "components", "lib", "scripts"]
+      .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" }).map((f) => `${dir}/${f}`))
+      .filter((file) => /\.(ts|tsx|mjs|js|css)$/.test(file) && !["scripts/hero-photo.ts", "scripts/company-logos.ts"].includes(file));
+    expect(code.filter((file) => read(file).includes("originals"))).toEqual([]);
+    expect(read("next.config.ts")).not.toContain("originals");
+  });
+});
+
+describe("FB monogram", () => {
+  it("is drawn from outlined paths only, so it needs no font", async () => {
+    const { monogramSvg } = await import("@/lib/monogram");
+    for (const variant of ["full", "small"] as const) {
+      const svg = monogramSvg(variant);
+      expect(svg).not.toMatch(/<text|font-family/);
+      expect(svg.match(/<path /g)).toHaveLength(2);
+    }
+  });
+
+  it("the committed favicon set is current and the ICO holds 16 and 32 px images", () => {
+    const check = spawnSync("pnpm", ["-s", "monogram", "--check"], { cwd: root, encoding: "utf8" });
+    expect(check.status, check.stderr).toBe(0);
+    const ico = fs.readFileSync(path.join(root, "app/favicon.ico"));
+    const sizes = Array.from({ length: ico.readUInt16LE(4) }, (_, i) => ico.readUInt8(6 + i * 16));
+    expect(sizes).toEqual([16, 32]);
+  });
+});
+
+describe("company logos", () => {
+  it("logos --check passes on the committed files", () => {
+    const check = spawnSync("pnpm", ["-s", "logos", "--check"], { cwd: root, encoding: "utf8" });
+    expect(check.status, check.stderr).toBe(0);
   });
 });

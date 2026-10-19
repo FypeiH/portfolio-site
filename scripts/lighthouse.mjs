@@ -37,6 +37,13 @@ const BUDGET = {
   tbtMs: 150,
   /** Brotli JS per page: 150 KB on the home page, 125 KB on case studies. */
   jsBrotliKb: (path) => (path === "/" ? 150 : 125),
+  /**
+   * The HTML document as `next start` serves it (gzip, headers included). Lantern's simulated TCP starts
+   * at 10 segments (14.6 KB) and doubles each round trip, so a document over ~43.8 KB needs a third
+   * round trip, and everything in the LCP chain waits 150 ms more for it (home: 44.3 KB, LCP +150 ms).
+   * 40 KB leaves room for content below that edge. Shared with the build check (lib/html-budget.ts).
+   */
+  htmlServedKb: JSON.parse(readFileSync("lib/html-budget.json", "utf8")).htmlServedKb,
   /** Brotli JS outside Next's rootMainFiles (app code and route-specific chunks), home page only. */
   nonRootBrotliKb: { "/": 35 },
 };
@@ -91,6 +98,15 @@ function seoIgnoringNoindex(lhr) {
   return Math.round((score / weight) * 100);
 }
 
+/** Served size of the page's HTML. A run without it would pass the budget unmeasured, so it fails. */
+function documentBytes(lhr) {
+  const doc = (lhr.audits["network-requests"]?.details?.items ?? []).find((item) => item.resourceType === "Document");
+  if (!Number.isFinite(doc?.transferSize) || doc.transferSize <= 0) {
+    throw new Error(`No Document transfer size in the Lighthouse report for ${lhr.finalDisplayedUrl ?? lhr.requestedUrl}`);
+  }
+  return doc.transferSize;
+}
+
 /** Every budget, for one run. */
 function overBudget(path, r) {
   const nonRootLimit = BUDGET.nonRootBrotliKb[path];
@@ -100,6 +116,7 @@ function overBudget(path, r) {
     ...(r.lcpMs > BUDGET.lcpMs ? [`lcp ${r.lcpMs} > ${BUDGET.lcpMs} ms`] : []),
     ...(r.cls >= BUDGET.cls ? [`cls ${r.cls}`] : []),
     ...(r.tbtMs >= BUDGET.tbtMs ? [`tbt ${r.tbtMs} ms`] : []),
+    ...(r.htmlServedKb > BUDGET.htmlServedKb ? [`html ${r.htmlServedKb} > ${BUDGET.htmlServedKb} KB served`] : []),
     ...(r.jsBrotliKb > BUDGET.jsBrotliKb(path) ? [`js ${r.jsBrotliKb} > ${BUDGET.jsBrotliKb(path)} KB br`] : []),
     ...(nonRootLimit !== undefined && r.nonRootBrotliKb > nonRootLimit
       ? [`non-root js ${r.nonRootBrotliKb} > ${nonRootLimit} KB br`]
@@ -131,6 +148,7 @@ for (const path of paths) {
       lcpMs: Math.round(audit("largest-contentful-paint")),
       cls: Number(audit("cumulative-layout-shift").toFixed(3)),
       tbtMs: Math.round(audit("total-blocking-time")),
+      htmlServedKb: kb(documentBytes(lhr)),
       jsServedKb: kb(
         (lhr.audits["network-requests"]?.details?.items ?? [])
           .filter((item) => item.resourceType === "Script")

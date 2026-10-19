@@ -136,17 +136,72 @@ const frontmatterEnd = (source: string) => /^---\n[\s\S]*?\n---/.exec(source)?.[
  *   renders `style="font-weight:700"`; the expression itself is still scanned).
  * Any `{{` that reaches the rendered output (HTML, RSC, SVG, OG text) still fails the output check.
  */
+/**
+ * Offsets of a Mermaid source that are label text, not graph syntax: inside "…" strings, |…| edge
+ * labels, shape brackets ([…], (…), {…}, nested) and old-style edge text (`A-- text -->B`). Quote and
+ * pipe state ends at a newline.
+ */
+function mermaidLabelMask(source: string, inComment: (offset: number) => boolean): Uint8Array {
+  const mask = new Uint8Array(source.length);
+  let quote = false;
+  let pipe = false;
+  let depth = 0;
+  let edge = false;
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i]!;
+    if (ch === "\n") {
+      quote = pipe = edge = false;
+      depth = 0;
+      continue;
+    }
+    if (inComment(i)) continue;
+    const inLabel = quote || pipe || depth > 0;
+    if (ch === '"') quote = !quote;
+    else if (!quote && ch === "|" && depth === 0) pipe = !pipe;
+    else if (!quote && !pipe && "[({".includes(ch)) depth++;
+    else if (!quote && !pipe && "])}".includes(ch) && depth > 0) depth--;
+    if (!inLabel) {
+      // Old-style edge text: `-- `, `== ` or `-. ` opens it (not part of a longer arrow); an arrow closes it.
+      const prev = source.slice(Math.max(0, i - 2), i);
+      if (!edge && /\s/.test(ch) && (prev === "--" || prev === "==" || prev === "-.") && !"-=.".includes(source[i - 3] ?? " ")) edge = true;
+      else if (edge && ((source.startsWith("--", i) && "->".includes(source[i + 2] ?? "")) || (source.startsWith("==", i) && "=>".includes(source[i + 2] ?? "")) || source.startsWith(".-", i)))
+        edge = false;
+    }
+    if (inLabel || quote || pipe || edge) mask[i] = 1;
+  }
+  return mask;
+}
+
+/**
+ * The braces of Mermaid hexagon node definitions (`H{{"Log trade"}}`, `I{{Decision}}`): a node id
+ * starting a token in graph syntax, directly followed by `{{`, closed by the first `}}` outside quotes
+ * on that line. Only the four brace characters are exempt; the label between them is still scanned.
+ * `{{` inside a quoted label, an edge label, a shape's text or edge text is never exempt (Sonar on 9631ada).
+ */
+function mermaidHexagonBraces(source: string, inComment: (offset: number) => boolean): [number, number][] {
+  const label = mermaidLabelMask(source, inComment);
+  const ranges: [number, number][] = [];
+  for (const m of source.matchAll(/(?<![\w-])[A-Za-z0-9_][\w-]*\{\{/g)) {
+    const open = m.index + m[0].length - 2;
+    if (label[m.index] || label[open] || inComment(open)) continue;
+    let quote = false;
+    let close = -1;
+    for (let i = open + 2; i < source.length && source[i] !== "\n"; i++) {
+      if (source[i] === '"') quote = !quote;
+      else if (!quote && source.startsWith("}}", i)) {
+        close = i;
+        break;
+      }
+    }
+    if (close >= 0) ranges.push([open, open + 2], [close, close + 2]);
+  }
+  return ranges;
+}
+
 function syntaxBraceRanges(file: string, source: string, comments: readonly [number, number][]): [number, number][] {
   const inComment = (offset: number) => comments.some(([a, b]) => offset >= a && offset < b);
   const ranges: [number, number][] = [];
-  if (file.endsWith(".mmd")) {
-    for (const m of source.matchAll(/[A-Za-z0-9_-]\{\{[^\n]*?\}\}/g)) {
-      const open = m.index + 1;
-      const close = m.index + m[0].length - 2;
-      ranges.push([open, open + 2], [close, close + 2]);
-    }
-    return ranges;
-  }
+  if (file.endsWith(".mmd")) return mermaidHexagonBraces(source, inComment);
   if (!file.endsWith(".mdx")) return ranges;
   const code = codeRanges(file, source);
   const inCode = (offset: number) => code.some(([a, b]) => offset >= a && offset < b);

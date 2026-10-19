@@ -6,7 +6,7 @@
 
 /*
  * Metric-matched stand-ins for Anton (Sonar m2). The marquee h2s use them until the page has loaded
- * (Anton is requested only then, see app/layout.tsx) and during Anton's swap period. Unadjusted, a
+ * (Anton is requested only then, see components/layout/SiteDocument.tsx) and during Anton's swap period. Unadjusted, a
  * sans-serif fallback is ~48% wider than Anton, so the copies after the title moved when Anton arrived
  * (CLS 0.05 on /#projects). size-adjust scales each face so the uppercase section titles match Anton's
  * width (measured in Chrome over every title: within +2.3% / -5.3% per title, under 1% in total); the
@@ -46,13 +46,16 @@
 
 /* Design tokens: portfolio-design/visual-direction.md §10 ("Dark + Brutal"). */
 @theme {
-  /* Fonts: no web font in body/UI; Anton only via --font-anton (next/font/local), marquee h2s only.
+  /* Fonts: no web font in body/UI; Anton only via --font-anton (next/font/local): marquee h2s and the hero name.
      Short stacks on purpose: every family the system lacks is a font-matching lookup during the first
      style/layout. The long §3.1 stacks doubled style+layout time and pushed the home LCP from ~1.88 s to
-     ~2.48 s in Lighthouse. system-ui is the platform UI font everywhere; ui-monospace is SF Mono in
-     Safari, Menlo covers Chrome/Firefox on macOS, and monospace is Consolas on Windows. */
+     ~2.48 s in Lighthouse. system-ui is the platform UI font everywhere. The mono stack is the generic
+     monospace (Consolas on Windows, DejaVu/Liberation Mono on Linux, Droid Sans Mono on Android), written
+     twice so it keeps the normal font size (a lone `monospace` triggers the browser's smaller-mono quirk).
+     Apple systems get SF Mono/Menlo below: on other systems those two names each cost a failed lookup per
+     mono font size, which was ~70% of the home page's first layout (QA FIL-8, Kaner v2 @ 6af0209). */
   --font-sans: system-ui, sans-serif;
-  --font-mono: ui-monospace, Menlo, monospace;
+  --font-mono: monospace, monospace;
   --font-display: var(--font-anton), "Anton", "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
   --font-display-fallback: "Anton Fallback Narrow", "Anton Fallback", "Anton Fallback Roboto", sans-serif;
 
@@ -110,6 +113,17 @@
   --ease-snap: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* SF Mono (Safari, all iOS browsers) and Menlo (Chrome/Firefox on macOS), as before; `.apple` is set before
+   first paint by the inline script in components/layout/SiteDocument.tsx, @supports covers Safari without JS. */
+:root.apple {
+  --font-mono: ui-monospace, Menlo, monospace;
+}
+@supports (font: -apple-system-body) {
+  :root {
+    --font-mono: ui-monospace, Menlo, monospace;
+  }
+}
+
 :root {
   /* Layout */
   --container: 75rem;
@@ -155,6 +169,8 @@
     font-size: var(--text-body);
     line-height: 1.6;
     text-rendering: optimizeLegibility;
+    /* A long word breaks instead of widening the page (e.g. with 200% text zoom at 320 px). */
+    overflow-wrap: break-word;
   }
 
   /* Base outline colour on every element: Tailwind's transition-colors includes outline-color, so a
@@ -209,6 +225,12 @@
 
 /* ---------- Type ---------- */
 
+/* Decorative arrows (↗ ↑) in the mono face, which has them: next to sans text they sent the browser on a
+   system-wide fallback search that doubled the home page's first layout (QA FIL-8, TBT). */
+@utility ui-arrow {
+  font-family: var(--font-mono);
+}
+
 @utility ui-label {
   font: 500 var(--text-label) / 1.2 var(--font-mono);
   letter-spacing: 0.08em;
@@ -229,14 +251,31 @@
   font-weight: 700;
 }
 
+/*
+ * Hero name (Filipe, 2026-10-15): the h1 and the largest text, Anton at display size like the marquee
+ * h2s, with the same switch: metric-matched local fallback faces until the page has loaded, then
+ * Anton (.fonts-ready, components/layout/SiteDocument.tsx). So it paints with the HTML and the font
+ * request never sits in the LCP chain. One line at every width: sized from its column (19cqi, ~90% of
+ * it in Anton; the fallbacks are within a few percent), so the swap can't change the line count and
+ * nothing below moves.
+ */
 @utility hero-name {
-  font: 800 var(--text-display) / 0.9 var(--font-sans);
-  letter-spacing: -0.04em;
+  /* No rem minimum: with 200% text zoom at 320 px it outgrew its column (19cqi alone always fits). */
+  font: 400 min(19cqi, 8.5rem) / 0.9 var(--font-display-fallback);
+  :where(html.fonts-ready) & {
+    font-family: var(--font-display);
+  }
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-fg);
+}
+
+/* Hero role (B4): Will's two short lines, system sans 800, second in the hierarchy. */
+@utility hero-title {
+  font: 800 clamp(1.375rem, 1rem + 1.6vw, 2.25rem) / 1.05 var(--font-sans);
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--color-fg);
-  margin-inline-start: -0.04em; /* optical alignment with the grid edge */
-  border-bottom: var(--border-thick) solid var(--color-fg);
-  padding-bottom: var(--space-4);
 }
 
 @utility page-title {
@@ -251,22 +290,28 @@
   overflow: hidden;
   contain: paint;
   border-block: var(--border-thick) solid var(--color-fg);
-  padding-block: var(--space-3);
+  padding: var(--space-3) var(--gutter);
   margin-inline: calc(var(--gutter) * -1);
 }
 
 @utility marquee-track {
   display: flex;
-  gap: 0.35em;
   width: max-content;
-  padding-inline: var(--gutter);
-  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, app/layout.tsx). */
+  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, components/layout/SiteDocument.tsx). */
   font: 400 var(--text-marquee) / 1 var(--font-display-fallback);
   :where(html.fonts-ready) & {
     font-family: var(--font-display);
   }
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* Each group ends with the same gap it has inside, so sliding by one group lands on an identical frame. */
+@utility marquee-group {
+  display: flex;
+  flex: none;
+  gap: 0.35em;
+  padding-inline-end: 0.35em;
 }
 
 /* Decorative copies: the text comes from data-text, so it's not in the DOM text (Section.tsx). */
@@ -278,6 +323,58 @@
 @utility marquee-ghost {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--color-fg);
+}
+
+/* Case-study diagram: breaks out of the 52rem text column up to 1100px; drawn at its intrinsic width
+   when it fits, never upscaled, and from md up never below --diagram-min-w (14 px labels; Diagram.tsx). */
+@utility diagram-figure {
+  --figure-w: min(1100px, 100vw - 2 * var(--gutter));
+  width: var(--figure-w);
+  margin-inline: calc((100% - var(--figure-w)) / 2);
+}
+@utility diagram-img {
+  display: block;
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--diagram-w);
+  height: auto;
+  @media (width >= 48rem) {
+    min-width: var(--diagram-min-w);
+  }
+}
+@utility diagram-dialog {
+  width: min(100vw - 2rem, 1600px);
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: var(--border-thick) solid var(--color-fg);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  &::backdrop {
+    background: rgb(10 10 10 / 0.85);
+  }
+}
+
+/* Experience: company tile (official logo in monochrome, or initials). */
+@utility company-mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  /* px, not rem: an image box that must not grow with text zoom (it overflowed 320 px at 200%). */
+  width: 128px;
+  height: 128px;
+  border: var(--border-thick) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+@utility company-logo {
+  display: block;
+}
+@utility company-logo-mono {
+  /* Any colour logo -> flat foreground grey, so every company reads the same. */
+  filter: grayscale(1) brightness(0) invert(0.95);
 }
 
 /* ---------- Controls (§6) ---------- */
@@ -442,6 +539,11 @@
   transition:
     background-color var(--dur-fast) linear,
     color var(--dur-fast) linear;
+  /* With large text a word of the organisation may be wider than the space left: break it, don't overflow. */
+  & > :last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
   :is(.ui-card:hover, .ui-card:focus-within) & {
     background: var(--color-fg);
     color: var(--color-bg);
@@ -470,6 +572,7 @@
 
 @utility ui-ruled {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1px;
   background: var(--color-border);
   border: 1px solid var(--color-border);
@@ -481,7 +584,7 @@
 
 @utility skills-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   @media (width >= 64rem) {
     grid-template-columns: 3fr 9fr;
   }
@@ -504,6 +607,33 @@
   }
 }
 
+/* Header: with large text (e.g. 200% text zoom at 320 px) the name no longer fits beside Menu, so only the
+   monogram stays (the link keeps its accessible name, aria-label). rem tracks the user's text size; at
+   the default size the name shows from a 272 px viewport up. */
+@utility site-header-bar {
+  container-type: inline-size;
+}
+@container (width < 15rem) {
+  .site-name {
+    display: none;
+  }
+}
+
+@utility site-monogram {
+  display: block;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  box-shadow: 3px 3px 0 0 var(--color-fg);
+}
+@utility hero-photo {
+  display: block;
+  width: 18rem;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border: var(--border-thick) solid var(--color-fg);
+  box-shadow: var(--shadow-hard);
+}
 @utility portrait {
   width: 224px;
   height: 224px;
@@ -521,14 +651,29 @@
   text-transform: uppercase;
   color: var(--color-subtle);
   border-top: var(--border-thick) solid var(--color-fg);
-  & a {
-    display: inline-flex;
+  & a,
+  & .motion-toggle {
     align-items: center;
     min-height: 2.75rem;
     color: var(--color-fg);
     padding: 0 var(--space-1);
   }
-  & a:hover {
+  & a {
+    display: inline-flex;
+  }
+  & .motion-toggle {
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  & .motion-toggle[aria-pressed="true"] {
+    color: var(--color-accent);
+  }
+  & a:hover,
+  & .motion-toggle:hover {
     background: var(--color-fg);
     color: var(--color-bg);
   }

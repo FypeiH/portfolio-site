@@ -43,7 +43,8 @@ export function ContactSection({ email, links, cv }: ContactSectionProps) {
             <li key={link.href}>
               <ExternalLink href={link.href} className="ui-link inline-flex min-h-11 items-center text-h3 font-bold uppercase">
                 {link.label}
-                <span aria-hidden="true">&nbsp;↗</span>
+                {/* The mono arrow is drawn smaller than the bold sans one it replaced: 1.35em keeps the approved size. */}
+                &nbsp;<span aria-hidden="true" className="ui-arrow text-[1.35em] leading-none">↗</span>
               </ExternalLink>
             </li>
           ))}

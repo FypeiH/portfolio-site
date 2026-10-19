@@ -16,9 +16,41 @@ Official logos, taken from each owner's own public site or store listing, unmodi
 
 | File | Source URL | Retrieved | Permission | Cover |
 | --- | --- | --- | --- | --- |
-| `assets/project-logos/takefreetours.svg` | https://takefreetours.com/wp-content/uploads/2024/07/Take-Free-Tours-logo.svg (the site header logo) | 2026-09-30 | Usado com autorização do cliente, confirmada pelo Filipe Bravo a 2026-10-03 | `assets/rendered/covers/email-scraper.svg` (logo beside the email-scraper diagram) and `assets/rendered/covers/takefreetours.svg` (logo alone on the page colour); vector, embedded |
-| `assets/project-logos/benched-app-icon-1024.png` | App Store icon of Benched (id 6744754854): `artworkUrl512` from https://itunes.apple.com/lookup?id=6744754854, requested at 1024×1024 PNG | 2026-09-30 | Usado com autorização do cliente, confirmada pelo Filipe Bravo a 2026-10-03 | `assets/rendered/covers/benched.webp` (raster, so the cover is WebP; no PNG ships) |
+| `assets/project-logos/takefreetours.svg` | https://takefreetours.com/wp-content/uploads/2024/07/Take-Free-Tours-logo.svg (the site header logo) | 2026-09-30 | Used with the client's permission, confirmed by Filipe Bravo on 2026-10-03 | `assets/rendered/covers/email-scraper.svg` (logo beside the email-scraper diagram) and `assets/rendered/covers/takefreetours.svg` (logo alone on the page colour); vector, embedded |
+| `assets/project-logos/benched-app-icon-1024.png` | App Store icon of Benched (id 6744754854): `artworkUrl512` from https://itunes.apple.com/lookup?id=6744754854, requested at 1024×1024 PNG | 2026-09-30 | Used with the client's permission, confirmed by Filipe Bravo on 2026-10-03 | `assets/rendered/covers/benched.webp` (raster, so the cover is WebP; no PNG ships) |
 | ~~`assets/project-logos/ramos-correia-logo-white.png`~~ (removed 2026-10-03) | https://ramoscorreia.com/wp-content/uploads/2025/07/logotipo_nrc_white.png (largest logo on the site; no SVG is published) | 2026-09-30 | n/a | **Removed from the repo** (unused: Ramos Correia & Associados is experience-only, so no cover was ever generated or shipped) |
+
+## Company logos (Experience)
+
+Shown in the Experience timeline in a 128 px tile below the dates (at every width), mapped by company name in `lib/company-logos.ts`. `pnpm logos` (`scripts/company-logos.ts`) writes each logo from its master in `assets/originals/companies/` as lossless WebP fitted in a 112 px box at 1x and 2x (`<slug>-1x.webp`, `<slug>-2x.webp`); the 2x file is never upscaled, so a master smaller than 224 px caps it at its own size (Altyra, see below). 112 px is the smallest box at which Gigantic's small "DIGITAL GROWTH" text is legible on a DPR-1 screen (checked 2026-10-15 against 96, 104, 120–144: at 96–104 its letters run together; the text is ~5 px tall at 112). Flattened to the foreground grey with a CSS filter (`company-logo-mono` in `styles/globals.css`), except Gigantic, which Filipe asked to show in its yellow colours (`keepColours`) on the same dark tile as the others (master `gigantic-logo-yellow.png`, from `/workspace/portfolio-assets/gigantic/`). Each logo has an empty alt: it is decorative, because the h3 beside it already names the company as written in `content/experience.ts` (the "Tecnology" spelling exists only inside OCR's wordmark image, never in text or alt). A company without a file there gets its initials instead (none today; decorative, `aria-hidden`).
+
+| File | Source URL | Retrieved | Permission | Notes |
+| --- | --- | --- | --- | --- |
+| `public/images/companies/altyra-solutions-{1x,2x}.webp` (master `assets/originals/companies/altyra-solutions.webp`) | https://altyra.com/lovable-uploads/29c94a1b-009d-4189-a0e5-07db02e7796a.png (the logo on the company's own site, alt "Altyra Solutions - Company logo"; the domain is the one named in Filipe's internship report) | 2026-10-03 | Used with permission, confirmed by Filipe Bravo on 2026-10-15 | Original PNG 166×87, SHA-256 `0b4893e4…14b0059`, kept as a pixel-identical lossless WebP master (676 bytes); served trimmed and fitted to 112×59 at 1x; the 2x file is the master's own 166×87 (≈1.5x density on retina screens; no larger source exists). Added at Filipe's request (FIL-8) |
+| `public/images/companies/gigantic-digital-growth-{1x,2x}.webp` | `gigantic-logo-yellow.png` supplied by Filipe on 2026-10-15 (yellow body, black letters and "DIGITAL GROWTH", transparent background, 2048×1855, SHA-256 `c8487fc1…f7bc5d6fc`). It replaced the black variant (`gigantic-logo-black.png`, SHA-256 `8b352335…952a1f99e`), used until 2026-10-15 | 2026-10-15 | Used with permission, confirmed by Filipe Bravo on 2026-10-15 | Trimmed/resized only; no other edits (112×101 / 224×203, lossless WebP); shown in colour, without the grey filter, on the same dark tile as the other logos. Added at Filipe's request (FIL-8) |
+| `public/images/companies/ocr-technology-and-productivity-{1x,2x}.webp` | `ocr-logo-white.png` supplied by Filipe on 2026-10-15 (white logo for dark backgrounds, transparent background, 289×93, SHA-256 `d46fb88c…9ebe620`; the wordmark's own spelling "Tecnology" is kept). Filipe also sent `ocr-logo-black.png` for light backgrounds, not used | 2026-10-15 | Used with permission, confirmed by Filipe Bravo on 2026-10-15 | Trimmed and fitted to 112×33 / 224×65, lossless WebP; no other edits. Added at Filipe's request (FIL-8) |
+
+## Hero photo
+
+Filipe's own photo, supplied by him on 2026-10-15 for the hero (FIL-8). Treated by `scripts/hero-photo.ts` with image processing only (face-first crop, tone curve, duotone over the whole frame, seeded grain); no masking, no generative or AI step. Shown only from the lg breakpoint (`components/sections/HeroPhoto.tsx`); phones never download it.
+
+| File | Source | Retrieved | Permission | Notes |
+| --- | --- | --- | --- | --- |
+| `public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}` | `filipe-hero-original.png` supplied by Filipe (1024×1536 PNG, 2,431,535 bytes, SHA-256 `b9db36db…230715870`). **Not committed**: it stays outside the repo (`/workspace/portfolio-assets/photo/` on the agent box); rerun with `pnpm tsx scripts/hero-photo.ts --source=<file>` | 2026-10-15 | Filipe's own photo, supplied by him for this use | Cropped around the face (576×720 from x 82, y 120 of the source, 4:5), the whole frame, original background included, mapped to a near-black → #FF5A1F duotone with a steep tone curve and seeded grain. Displayed at 288×360, alt "" (decorative next to the h1; the About photo carries "Portrait of Filipe Bravo"); AVIF q50 6,133 / 18,779 bytes and WebP q56 6,928 / 19,588 bytes (1x / 2x), each encoded once from the treated pixels (not from the lossy master). Processed master: `assets/originals/profile/filipe-bravo-hero.webp` (576×720, 46,260 bytes); it replaced the earlier 800×1000 cut-out master |
+
+## FB monogram and favicons
+
+Hand-built, no AI imagery. `scripts/monogram-glyphs.py` outlines Anton's F and B from `assets/og/anton-latin-400.ttf` (SIL OFL 1.1, `assets/fonts/Anton-OFL.txt`) into `lib/monogram-glyphs.ts`, so the mark needs no font. `lib/monogram.ts` composes two variants: **full** (near-black tile, 4/64 accent border, accent letters; the header mark, inline SVG with a CSS hard shadow, and the apple-touch icon) and **small** (accent tile, near-black letters, no border, wider F–B gap so they stay apart at 16 px; the favicons). `pnpm monogram` writes `app/icon.svg`, `app/favicon.ico` (PNG 16 + 32), `app/icon1.png` (32) and `app/apple-icon.png` (180), which Next links through its file-based metadata; `build:production` runs `pnpm monogram --check`. They replace the earlier dot favicon.
+
+## Case-study screenshots
+
+Filipe's own captures of his app, taken in its demo mode with fictitious data (no client name, logo or real records), supplied on 2026-10-15. Listed in the project's `screenshots` frontmatter and lazy-loaded below the case-study body (`components/project/ProjectScreenshots.tsx`). Only the WebP ships; the PNG masters are kept in `assets/originals/contacts-report/` (see Originals below).
+
+| File | Master (PNG, SHA-256) | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/projects/contacts-report/contacts-report-dashboard.webp` | `contacts-report-dashboard.png` (`177d8a36…fdd64935`) | 1600×1000, 56,670 bytes | Dashboard: filters and the five summary cards. Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
+| `public/images/projects/contacts-report/contacts-report-contact-detail.webp` | `contacts-report-contact-detail.png` (`1a4e2a4b…37333429`) | 1600×1000, 61,946 bytes | Expanded contact with its quotes (Orçamento Série A/B) and contracts (Contrato Anual/Serviços). Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
+| `public/images/projects/contacts-report/contacts-report-excel-groups.webp` | `contacts-report-excel-groups.png` (`4bff4206…d6743e03`) | 1600×1000, 106,232 bytes | Excel export in LibreOffice Calc with outline groups; line items are Produto A/B, Artigo standard, Componente X, Serviço de consultoria/manutenção. Filipe's own work, fake data with neutral product names (regenerated 2026-10-15) |
 
 ## Diagram covers
 
@@ -27,3 +59,18 @@ Official logos, taken from each owner's own public site or store listing, unmodi
 ## Where generated images live
 
 Rendered diagrams and covers are committed under `assets/rendered/` and copied into `public/` per build by `scripts/publish-assets.ts` (published projects only, drafts too when `SHOW_DRAFTS=true`), so a production deployment never serves a draft's images. `public/diagrams/` and `public/covers/` are gitignored. Both are served with `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'` (`next.config.ts`), and every SVG source is sanitized before it is nested in a cover (`lib/project-covers-compose.ts`).
+
+## Originals
+
+Master files the shipped assets were made from, kept so they can be regenerated without asking for them again. `assets/` is outside `public/` and nothing imports these files, so they are never served or bundled (`tests/unit/output-guards.test.ts`). SHA-256 as listed in the tables above.
+
+| File | Made into |
+| --- | --- |
+| `assets/originals/contacts-report/contacts-report-dashboard.png` | `public/images/projects/contacts-report/contacts-report-dashboard.webp` |
+| `assets/originals/contacts-report/contacts-report-contact-detail.png` | `public/images/projects/contacts-report/contacts-report-contact-detail.webp` |
+| `assets/originals/contacts-report/contacts-report-excel-groups.png` | `public/images/projects/contacts-report/contacts-report-excel-groups.webp` |
+| `assets/originals/companies/gigantic-logo-yellow.png` | `public/images/companies/gigantic-digital-growth-{1x,2x}.webp` |
+| `assets/originals/companies/ocr-logo-white.png` | `public/images/companies/ocr-technology-and-productivity-{1x,2x}.webp` |
+| `assets/originals/profile/filipe-bravo-hero.webp` (processed master, not the original photo) | `public/images/profile/filipe-bravo-hero-*.{avif,webp}` |
+
+The variants not used (`gigantic-logo-black.png`, replaced by the yellow one on 2026-10-15, and `ocr-logo-black.png`) are not committed.

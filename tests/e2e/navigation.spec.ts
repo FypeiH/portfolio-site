@@ -22,13 +22,15 @@ test.describe("anchor navigation", () => {
     await expectHeadingBelowHeader(page, "experience");
   });
 
-  test("hero CTAs jump to projects and contact", async ({ page }) => {
+  test("hero CTAs: email first, then a jump to projects", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "View projects" }).click();
+    const ctas = page.locator("#top a");
+    await expect(ctas).toHaveCount(2);
+    await expect(ctas.nth(0)).toHaveText("Contact me");
+    await expect(ctas.nth(0)).toHaveAttribute("href", "mailto:filipe.abravo@gmail.com");
+    await expect(ctas.nth(1)).toHaveText("View projects");
+    await ctas.nth(1).click();
     await expectHeadingBelowHeader(page, "projects");
-    await page.goto("/");
-    await page.getByRole("link", { name: "Contact me" }).click();
-    await expectHeadingBelowHeader(page, "contact");
   });
 
   test("skip link targets main", async ({ page }) => {
@@ -53,6 +55,20 @@ test.describe("routes", () => {
     const main = page.getByRole("main");
     for (const name of ["Home", "Projects", "Contact"]) await expect(main.getByRole("link", { name, exact: true })).toBeVisible();
   });
+
+  // Unmatched URLs and unknown slugs render app/global-not-found.tsx, outside the (site) layout: it must
+  // bring the same document, header, footer and stylesheet itself.
+  for (const url of ["/does-not-exist", "/projects/does-not-exist"]) {
+    test(`${url} is a styled 404 inside the site header and footer`, async ({ page }) => {
+      const response = await page.goto(url);
+      expect(response?.status()).toBe(404);
+      await expect(page).toHaveTitle("Page not found · Filipe Bravo");
+      await expect(page.getByRole("banner")).toBeVisible();
+      await expect(page.getByRole("contentinfo")).toBeVisible();
+      const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      expect(background).toBe("rgb(10, 10, 10)");
+    });
+  }
 
   test("every card links to an existing case study", async ({ page, request }) => {
     await page.goto("/");
