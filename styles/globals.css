@@ -267,7 +267,8 @@
   }
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--color-fg);
+  color: var(--color-bg);
+  -webkit-text-stroke: 4px var(--color-fg);
 }
 
 /* Hero role (B4): Will's two short lines, system sans 800, second in the hierarchy. */
@@ -291,7 +292,6 @@
   contain: paint;
   border-block: var(--border-thick) solid var(--color-fg);
   padding: var(--space-3) var(--gutter);
-  margin-inline: calc(var(--gutter) * -1);
 }
 
 @utility marquee-track {
