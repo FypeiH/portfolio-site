@@ -68,8 +68,8 @@
   --color-subtle: #858585; /* small mono meta on bg/surface only */
   --color-border: #2e2e2e; /* decorative rules only */
   --color-border-strong: #6b6b6b; /* control/tag borders, >= 3:1 */
-  --color-accent: #ff5a1f;
-  --color-accent-strong: #ff7a45;
+  --color-accent: #ff7e30;
+  --color-accent-strong: #ff7e56;
   --color-accent-ink: #0a0a0a; /* text on accent; never fg */
   --color-success: #4ade80; /* availability square only */
 
