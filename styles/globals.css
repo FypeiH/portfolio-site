@@ -269,7 +269,7 @@
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--color-bg);
-  -webkit-text-stroke: 4px var(--color-fg);
+  -webkit-text-stroke: min(0.47cqi, 4px) var(--color-fg);
 }
 
 @utility hero-photo-container {
