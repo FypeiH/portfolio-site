@@ -32,11 +32,13 @@ Shown in the Experience timeline in a 128 px tile below the dates (at every widt
 
 ## Hero photo
 
+> Since `version/filipe` the hero shows an ASCII portrait (`HERO_ASCII` in `lib/hero-photo.ts`) instead of this photo: the served files and `scripts/hero-photo.ts` were removed. The notes below record how the earlier photo was made.
+
 Filipe's own photo, supplied by him on 2026-10-15 for the hero (FIL-8). Treated by `scripts/hero-photo.ts` with image processing only (face-first crop, tone curve, duotone over the whole frame, seeded grain); no masking, no generative or AI step. Shown only from the lg breakpoint (`components/sections/HeroPhoto.tsx`); phones never download it.
 
 | File | Source | Retrieved | Permission | Notes |
 | --- | --- | --- | --- | --- |
-| `public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}` | `filipe-hero-original.png` supplied by Filipe (1024×1536 PNG, 2,431,535 bytes, SHA-256 `b9db36db…230715870`). **Not committed**: it stays outside the repo (`/workspace/portfolio-assets/photo/` on the agent box); rerun with `pnpm tsx scripts/hero-photo.ts --source=<file>` | 2026-10-15 | Filipe's own photo, supplied by him for this use | Cropped around the face (576×720 from x 82, y 120 of the source, 4:5), the whole frame, original background included, mapped to a near-black → #FF5A1F duotone with a steep tone curve and seeded grain. Displayed at 288×360, alt "" (decorative next to the h1; the About photo carries "Portrait of Filipe Bravo"); AVIF q50 6,133 / 18,779 bytes and WebP q56 6,928 / 19,588 bytes (1x / 2x), each encoded once from the treated pixels (not from the lossy master). Processed master: `assets/originals/profile/filipe-bravo-hero.webp` (576×720, 46,260 bytes); it replaced the earlier 800×1000 cut-out master |
+| ~~`public/images/profile/filipe-bravo-hero-{288,576}.{avif,webp}`~~ (removed in `version/filipe`) | `filipe-hero-original.png` supplied by Filipe | 2026-10-15 | Filipe's own photo, supplied by him for this use | The hero now shows Filipe's ASCII portrait (`HERO_ASCII` in `lib/hero-photo.ts`, a `<pre role="img">`), so these files and `scripts/hero-photo.ts` are gone. The processed master below is kept as the source |
 
 ## FB monogram and favicons
 
@@ -71,6 +73,6 @@ Master files the shipped assets were made from, kept so they can be regenerated 
 | `assets/originals/contacts-report/contacts-report-excel-groups.png` | `public/images/projects/contacts-report/contacts-report-excel-groups.webp` |
 | `assets/originals/companies/gigantic-logo-yellow.png` | `public/images/companies/gigantic-digital-growth-{1x,2x}.webp` |
 | `assets/originals/companies/ocr-logo-white.png` | `public/images/companies/ocr-technology-and-productivity-{1x,2x}.webp` |
-| `assets/originals/profile/filipe-bravo-hero.webp` (processed master, not the original photo) | `public/images/profile/filipe-bravo-hero-*.{avif,webp}` |
+| `assets/originals/profile/filipe-bravo-hero.webp` (processed master, not the original photo) | none since `version/filipe` (the hero is ASCII art); kept as the source of the earlier hero photo |
 
 The variants not used (`gigantic-logo-black.png`, replaced by the yellow one on 2026-10-15, and `ocr-logo-black.png`) are not committed.

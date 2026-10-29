@@ -18,35 +18,29 @@ test("hero: the name is the h1 and the largest text, then role, support line, ba
   await expect(paragraphs.nth(2)).toHaveText("[Open to software engineering roles]");
   await expect(paragraphs.nth(2)).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
   await expect(page.locator("#top a")).toHaveCount(2);
-  await expect(page.locator("#top svg")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator("#top svg")).toHaveCount(0); // the decorative HeroGrid SVG was removed with the ASCII portrait
   const tops = await page.locator("#top h1, #top p, #top a").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
   const sizes = await page.locator("#top h1, #top p").evaluateAll((els) => els.map((el) => parseFloat(getComputedStyle(el).fontSize)));
   expect(Math.max(...sizes.slice(1))).toBeLessThan(sizes[0]! / 2);
 });
 
-test("hero photo: the real portrait, sized and prioritised on wide screens, never downloaded on phones", async ({ page }, testInfo) => {
+test("hero portrait: ASCII art on wide screens, hidden on phones, no image downloaded", async ({ page }, testInfo) => {
   const requested: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("filipe-bravo-hero")) requested.push(request.url());
   });
   await page.goto("/", { waitUntil: "networkidle" });
-  const photo = page.locator("#top img");
-  await expect(photo).toHaveCount(1);
-  await expect(photo).toHaveAttribute("alt", "");
-  await expect(photo).toHaveAttribute("width", "288");
-  await expect(photo).toHaveAttribute("height", "360");
+  await expect(page.locator("#top img")).toHaveCount(0);
+  const portrait = page.locator("#top pre.hero-photo-ascii");
+  await expect(portrait).toHaveCount(1);
+  await expect(portrait).toHaveAttribute("role", "img");
+  expect(requested).toEqual([]);
   if (isMobile(testInfo)) {
-    await expect(photo).toBeHidden();
-    expect(requested).toEqual([]);
+    await expect(portrait).toBeHidden();
     return;
   }
-  await expect(photo).toBeVisible();
-  await expect(photo).toHaveAttribute("fetchpriority", "high");
-  await expect.poll(() => photo.evaluate((el: HTMLImageElement) => el.complete && el.currentSrc)).toMatch(/filipe-bravo-hero-(288|576)\.avif$/);
-  expect(requested).toHaveLength(1);
-  const box = (await photo.boundingBox())!;
-  expect([Math.round(box.width), Math.round(box.height)]).toEqual([288, 360]);
+  await expect(portrait).toBeVisible();
 });
 
 for (const width of [320, 360, 375, 390]) {
