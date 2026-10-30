@@ -6,8 +6,8 @@
   },
   "assets/rendered/diagrams/contacts-report.svg": {
     "source": "content/diagrams/contacts-report.mmd",
-    "sourceSha256": "d23dcc8f798c448554c867ae202d876da35cac5e6280746d45f7b1d0a3382a31",
-    "sha256": "e99985e95b96838de7adeda0e8b2603abb1e7ec0db1b3287f64573033230a3c9"
+    "sourceSha256": "8286cb8124e3c5ce6fa1384427d4238ced4284e88d98f3bd14899f1ab255cfc2",
+    "sha256": "006cc72a417b1e4fd81c14aa154f6e5304b8c228cce0197ed66cde5682727adb"
   },
   "assets/rendered/diagrams/dynamic-cv.svg": {
     "source": "content/diagrams/dynamic-cv.mmd",
