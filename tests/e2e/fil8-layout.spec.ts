@@ -351,3 +351,16 @@ for (const width of [320, 360, 375, 390]) {
     });
   }
 }
+
+test("FIL-40: the contact email link is a target of at least 24×24 px at 360 px (WCAG 2.5.8)", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/");
+  const link = page.locator('#contact a[href^="mailto:"]');
+  await link.scrollIntoViewIfNeeded();
+  const rects = await link.evaluate((el) => [...el.getClientRects()].map((r) => ({ width: r.width, height: r.height })));
+  expect(rects.length).toBeGreaterThan(0);
+  for (const rect of rects) {
+    expect(rect.width).toBeGreaterThanOrEqual(24);
+    expect(rect.height).toBeGreaterThanOrEqual(24);
+  }
+});
