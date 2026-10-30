@@ -309,3 +309,45 @@ for (const width of [320, 390]) {
     }
   });
 }
+
+for (const width of [320, 360, 375, 390]) {
+  for (const zoom of ["100%", "200%"]) {
+    test(`availability badge at ${width} px, ${zoom} text: one line, nothing cut, no horizontal scroll`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      await page.evaluate((z) => (document.documentElement.style.fontSize = z), zoom);
+      await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+      await page.evaluate(() => document.fonts.ready);
+      const badge = page.locator("#top p").nth(2);
+      await expect(badge).toHaveText("[Open to software engineering roles]");
+      const state = await badge.evaluate((p) => {
+        // Flex items are separate boxes, so count line boxes per text node and compare their vertical centres.
+        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        const rects: DOMRect[] = [];
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          rects.push(...[...range.getClientRects()].filter((r) => r.width > 0));
+        }
+        const style = getComputedStyle(p);
+        const centres = rects.map((r) => r.top + r.height / 2);
+        const sameLine = Math.max(...centres) - Math.min(...centres) < parseFloat(style.lineHeight) / 2;
+        return {
+          lines: sameLine && rects.length === 3 ? 1 : rects.length,
+          height: p.getBoundingClientRect().height,
+          lineHeight: parseFloat(style.lineHeight),
+          fontSize: parseFloat(style.fontSize),
+          overflow: p.scrollWidth - p.clientWidth,
+          right: p.getBoundingClientRect().right,
+          docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      });
+      expect(state.lines).toBe(1);
+      expect(state.height).toBeLessThan(state.lineHeight * 1.5);
+      expect(state.fontSize).toBeGreaterThanOrEqual(10.5);
+      expect(state.overflow).toBe(0);
+      expect(state.right).toBeLessThanOrEqual(width);
+      expect(state.docOverflow).toBeLessThanOrEqual(0);
+    });
+  }
+}

@@ -239,6 +239,20 @@
   color: var(--color-subtle);
 }
 
+/* Hero availability badge: always one line. The size follows the hero column (cqi, not rem), so it fits
+   at 320 px even with 200% text zoom; it never grows past --text-label and never drops below 10.5 px. */
+@utility availability-badge {
+  white-space: nowrap;
+  gap: 0.5em;
+  font: 500 var(--text-label) / 1.2 var(--font-mono);
+  text-transform: uppercase;
+  font-size: max(10.5px, min(var(--text-label), 4cqi));
+  letter-spacing: 0.01em;
+  @media (min-width: 480px) {
+    letter-spacing: 0.08em;
+  }
+}
+
 @utility ui-micro {
   font: 400 var(--text-micro) / 1.2 var(--font-mono);
   letter-spacing: 0.06em;
