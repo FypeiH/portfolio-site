@@ -4,6 +4,24 @@
 import type { Experience } from "@/lib/content/types";
 
 export const experience = [
+  // Effect: freelance, Oct 2026. Client named with Filipe's authorization (30/10/2026). No client data or figures.
+  // No Effect logo yet: CompanyMark falls back to the initials tile ("E").
+  {
+    id: "effect",
+    company: "Effect",
+    role: "Freelance Software Developer",
+    employmentType: "freelance",
+    location: "Remote",
+    start: "2026-10",
+    end: "2026-10",
+    summary: "Built an internal web app over the company's PHC ERP, from first brief to deployment, as a freelancer.",
+    highlights: [
+      "Built a read-only sales report over the PHC ERP (ASP.NET Core, SQL Server) showing contacts with their quotes and contracts, with filters and a streaming Excel export.",
+      "Added a lead identifier that matches an email or domain against several ERP tables and falls back to an AI lookup of the company's legal name, NIF and CAE, with validation and sources.",
+    ],
+    stack: ["C#", ".NET", "ASP.NET Core", "Razor Pages", "SQL Server", "Dapper", "AI API"],
+    projects: ["contacts-report"],
+  },
   {
     id: "gigantic",
     company: "Gigantic Digital Growth",

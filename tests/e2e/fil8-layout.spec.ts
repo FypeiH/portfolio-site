@@ -237,7 +237,13 @@ test("experience: every company shows its logo below the dates, sized, decorativ
     expect(tile.y).toBeGreaterThanOrEqual(dates.y + dates.height);
     expect(Math.abs(tile.x - dates.x)).toBeLessThanOrEqual(1);
   }
-  await expect(page.locator("#experience [data-company-mark=initials]")).toHaveCount(0);
+  // Only Effect has no logo: it gets the initials tile, same 128 px size, no <img>.
+  const initials = page.locator("#experience [data-company-mark=initials]");
+  await expect(initials).toHaveCount(1);
+  await expect(initials).toHaveText("E");
+  await expect(initials.locator("img")).toHaveCount(0);
+  const initialsBox = (await initials.boundingBox())!;
+  expect([Math.round(initialsBox.width), Math.round(initialsBox.height)]).toEqual([128, 128]);
   const gigantic = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator('img[src*=gigantic]') }).first();
   const altyra = page.locator("#experience [data-company-mark=logo]").filter({ has: page.locator("img[src*=altyra]") }).first();
   const tileBackground = await altyra.evaluate((el) => getComputedStyle(el).backgroundColor);
