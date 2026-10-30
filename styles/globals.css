@@ -285,6 +285,9 @@
   background: var(--color-accent);
   border: var(--border-thick) solid var(--color-fg);
   border-radius: var(--border-radius);
+  /* The art loads after paint: reserve its 610 × 130 character box so nothing shifts. */
+  width: calc(610ch + 2 * var(--border-thick));
+  height: calc(130lh + 2 * var(--border-thick));
 }
 
 /* Hero role (B4): Will's two short lines, system sans 800, second in the hierarchy. */

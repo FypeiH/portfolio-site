@@ -25,22 +25,48 @@ test("hero: the name is the h1 and the largest text, then role, support line, ba
   expect(Math.max(...sizes.slice(1))).toBeLessThan(sizes[0]! / 2);
 });
 
-test("hero portrait: ASCII art on wide screens, hidden on phones, no image downloaded", async ({ page }, testInfo) => {
+test("hero portrait: ASCII art loaded on the client at lg only, in a reserved box, no image downloaded", async ({ page }, testInfo) => {
   const requested: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("filipe-bravo-hero")) requested.push(request.url());
   });
+  let prerendered = "";
+  page.on("response", async (response) => {
+    if (response.request().resourceType() === "document") prerendered = await response.text();
+  });
   await page.goto("/", { waitUntil: "networkidle" });
+  expect(prerendered).toContain('aria-label="Filipe&#x27;s face in ASCII art"');
+  expect(prerendered).not.toContain("@@@@@@@@@@");
   await expect(page.locator("#top img")).toHaveCount(0);
   const portrait = page.locator("#top pre.hero-photo-ascii");
   await expect(portrait).toHaveCount(1);
   await expect(portrait).toHaveAttribute("role", "img");
+  await expect(portrait).toHaveAttribute("aria-label", "Filipe's face in ASCII art");
   expect(requested).toEqual([]);
   if (isMobile(testInfo)) {
     await expect(portrait).toBeHidden();
+    await expect(portrait).toHaveText("");
     return;
   }
   await expect(portrait).toBeVisible();
+  await expect(portrait).not.toHaveText("");
+  const box = await portrait.evaluate((pre) => {
+    const filled = pre.getBoundingClientRect();
+    const text = pre.textContent;
+    pre.textContent = "";
+    const empty = pre.getBoundingClientRect();
+    pre.textContent = text;
+    return { filled: [filled.width, filled.height], empty: [empty.width, empty.height], scroll: [pre.scrollWidth, pre.scrollHeight], client: [pre.clientWidth, pre.clientHeight] };
+  });
+  expect(box.empty).toEqual(box.filled);
+  expect(box.scroll[1]!).toBeLessThanOrEqual(box.client[1]! + 2); // client floors, scroll rounds the fractional lh height
+});
+
+test("hero portrait: below lg the art is never fetched", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator("#top pre.hero-photo-ascii")).toBeHidden();
+  await expect(page.locator("#top pre.hero-photo-ascii")).toHaveText("");
 });
 
 for (const width of [320, 360, 375, 390]) {
