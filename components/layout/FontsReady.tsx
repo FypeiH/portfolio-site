@@ -6,9 +6,8 @@ export const FONTS_READY_CLASS = "fonts-ready";
 
 /**
  * Switches the hero name and the marquee headings to Anton (`html.fonts-ready`, styles/globals.css) once
- * the page has hydrated and loaded, a frame later. Next's chunks load after the first paint
- * (lib/defer-chunks.ts), so the font request and the re-layout it causes come after the LCP paint and
- * after the bootstrap, never in Lighthouse's LCP chain or next to the first paint as an extra long task.
+ * the page has hydrated and loaded, a frame later, so the font request and the re-layout it causes come
+ * after the LCP paint and after the bootstrap, never in Lighthouse's LCP chain.
  * Without JavaScript the fallback faces stay.
  */
 export function FontsReady() {
