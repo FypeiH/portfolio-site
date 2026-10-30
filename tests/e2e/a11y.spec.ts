@@ -63,7 +63,7 @@ test("the hero paints without the web font: Anton only after load, on the name o
   // Before load the name uses the local "Anton Fallback*" faces, never Anton itself.
   const beforeLoad = await page.evaluate(() => (window as unknown as Probe).__heroFonts);
   expect(beforeLoad.length).toBeGreaterThan(0);
-  expect(beforeLoad.map((family) => family.replace(/"Anton Fallback[^"]*"/g, "")).filter((family) => /anton/i.test(family))).toEqual([]);
+  expect(beforeLoad.map((family) => family.replace(/"?Anton Fallback[^",]*"?/g, "")).filter((family) => /anton/i.test(family))).toEqual([]);
   await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
   // The font is requested after the load event, so it can't sit in the LCP chain.
   const fontAfterLoad = await page.evaluate(() => {
