@@ -18,35 +18,55 @@ test("hero: the name is the h1 and the largest text, then role, support line, ba
   await expect(paragraphs.nth(2)).toHaveText("[Open to software engineering roles]");
   await expect(paragraphs.nth(2)).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
   await expect(page.locator("#top a")).toHaveCount(2);
-  await expect(page.locator("#top svg")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator("#top svg")).toHaveCount(0); // the decorative HeroGrid SVG was removed with the ASCII portrait
   const tops = await page.locator("#top h1, #top p, #top a").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
   const sizes = await page.locator("#top h1, #top p").evaluateAll((els) => els.map((el) => parseFloat(getComputedStyle(el).fontSize)));
   expect(Math.max(...sizes.slice(1))).toBeLessThan(sizes[0]! / 2);
 });
 
-test("hero photo: the real portrait, sized and prioritised on wide screens, never downloaded on phones", async ({ page }, testInfo) => {
+test("hero portrait: ASCII art loaded on the client at lg only, in a reserved box, no image downloaded", async ({ page }, testInfo) => {
   const requested: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("filipe-bravo-hero")) requested.push(request.url());
   });
+  let prerendered = "";
+  page.on("response", async (response) => {
+    if (response.request().resourceType() === "document") prerendered = await response.text();
+  });
   await page.goto("/", { waitUntil: "networkidle" });
-  const photo = page.locator("#top img");
-  await expect(photo).toHaveCount(1);
-  await expect(photo).toHaveAttribute("alt", "");
-  await expect(photo).toHaveAttribute("width", "288");
-  await expect(photo).toHaveAttribute("height", "360");
+  expect(prerendered).toContain('aria-label="Filipe&#x27;s face in ASCII art"');
+  expect(prerendered).not.toContain("@@@@@@@@@@");
+  await expect(page.locator("#top img")).toHaveCount(0);
+  const portrait = page.locator("#top pre.hero-photo-ascii");
+  await expect(portrait).toHaveCount(1);
+  await expect(portrait).toHaveAttribute("role", "img");
+  await expect(portrait).toHaveAttribute("aria-label", "Filipe's face in ASCII art");
+  expect(requested).toEqual([]);
   if (isMobile(testInfo)) {
-    await expect(photo).toBeHidden();
-    expect(requested).toEqual([]);
+    await expect(portrait).toBeHidden();
+    await expect(portrait).toHaveText("");
     return;
   }
-  await expect(photo).toBeVisible();
-  await expect(photo).toHaveAttribute("fetchpriority", "high");
-  await expect.poll(() => photo.evaluate((el: HTMLImageElement) => el.complete && el.currentSrc)).toMatch(/filipe-bravo-hero-(288|576)\.avif$/);
-  expect(requested).toHaveLength(1);
-  const box = (await photo.boundingBox())!;
-  expect([Math.round(box.width), Math.round(box.height)]).toEqual([288, 360]);
+  await expect(portrait).toBeVisible();
+  await expect(portrait).not.toHaveText("");
+  const box = await portrait.evaluate((pre) => {
+    const filled = pre.getBoundingClientRect();
+    const text = pre.textContent;
+    pre.textContent = "";
+    const empty = pre.getBoundingClientRect();
+    pre.textContent = text;
+    return { filled: [filled.width, filled.height], empty: [empty.width, empty.height], scroll: [pre.scrollWidth, pre.scrollHeight], client: [pre.clientWidth, pre.clientHeight] };
+  });
+  expect(box.empty).toEqual(box.filled);
+  expect(box.scroll[1]!).toBeLessThanOrEqual(box.client[1]! + 2); // client floors, scroll rounds the fractional lh height
+});
+
+test("hero portrait: below lg the art is never fetched", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator("#top pre.hero-photo-ascii")).toBeHidden();
+  await expect(page.locator("#top pre.hero-photo-ascii")).toHaveText("");
 });
 
 for (const width of [320, 360, 375, 390]) {
@@ -288,4 +308,46 @@ for (const width of [320, 390]) {
       expect(await article.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     }
   });
+}
+
+for (const width of [320, 360, 375, 390]) {
+  for (const zoom of ["100%", "200%"]) {
+    test(`availability badge at ${width} px, ${zoom} text: one line, nothing cut, no horizontal scroll`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      await page.evaluate((z) => (document.documentElement.style.fontSize = z), zoom);
+      await page.waitForFunction(() => document.documentElement.classList.contains("fonts-ready"));
+      await page.evaluate(() => document.fonts.ready);
+      const badge = page.locator("#top p").nth(2);
+      await expect(badge).toHaveText("[Open to software engineering roles]");
+      const state = await badge.evaluate((p) => {
+        // Flex items are separate boxes, so count line boxes per text node and compare their vertical centres.
+        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        const rects: DOMRect[] = [];
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          rects.push(...[...range.getClientRects()].filter((r) => r.width > 0));
+        }
+        const style = getComputedStyle(p);
+        const centres = rects.map((r) => r.top + r.height / 2);
+        const sameLine = Math.max(...centres) - Math.min(...centres) < parseFloat(style.lineHeight) / 2;
+        return {
+          lines: sameLine && rects.length === 3 ? 1 : rects.length,
+          height: p.getBoundingClientRect().height,
+          lineHeight: parseFloat(style.lineHeight),
+          fontSize: parseFloat(style.fontSize),
+          overflow: p.scrollWidth - p.clientWidth,
+          right: p.getBoundingClientRect().right,
+          docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      });
+      expect(state.lines).toBe(1);
+      expect(state.height).toBeLessThan(state.lineHeight * 1.5);
+      expect(state.fontSize).toBeGreaterThanOrEqual(10.5);
+      expect(state.overflow).toBe(0);
+      expect(state.right).toBeLessThanOrEqual(width);
+      expect(state.docOverflow).toBeLessThanOrEqual(0);
+    });
+  }
 }

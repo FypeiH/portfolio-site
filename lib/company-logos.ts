@@ -13,6 +13,7 @@ export const COMPANY_LOGO_BOX = 112;
 /** Master file per logo (scripts/company-logos.ts). */
 export const LOGO_FILES: Readonly<Record<string, { master: string }>> = {
   "altyra-solutions": { master: "altyra-solutions.webp" },
+  effect: { master: "effect-logo-white.png" },
   "gigantic-digital-growth": { master: "gigantic-logo-yellow.png" },
   "ocr-technology-and-productivity": { master: "ocr-logo-white.png" },
 };
@@ -29,6 +30,7 @@ export interface CompanyLogo {
 }
 
 const LOGOS: Readonly<Record<string, CompanyLogo>> = {
+  Effect: { slug: "effect", width: 112, height: 32 },
   "Altyra Solutions": { slug: "altyra-solutions", width: 112, height: 59 },
   // Yellow logo, kept in colour on the dark tile at Filipe's request.
   "Gigantic Digital Growth": { slug: "gigantic-digital-growth", width: 112, height: 101, keepColours: true },

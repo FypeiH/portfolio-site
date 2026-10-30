@@ -44,9 +44,9 @@
   },
   "contacts-report": {
     "sources": {
-      "assets/rendered/diagrams/contacts-report.svg": "47a358965165d14e381ee1893e59307660d5d6449c810c81827aa3a99cc3640b"
+      "assets/rendered/diagrams/contacts-report.svg": "43bd85c2344bd4ff0a9650873981db42dd8aea6c500311556eac9ee166bd764a"
     },
     "output": "assets/rendered/covers/contacts-report.svg",
-    "sha256": "206be0ae0b3c7938400809480423a551c197781e55052752bf06fb3a950c4e4c"
+    "sha256": "e1f89137e9fee21db1bbd39eed3756c56ad882255a2d310349992ee02ae47c20"
   }
 }

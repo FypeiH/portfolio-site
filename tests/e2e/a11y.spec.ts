@@ -46,12 +46,10 @@ test("the photo has alt text and explicit dimensions", async ({ page }) => {
   await expect(photo).toHaveAttribute("width", "224");
   await expect(photo).toHaveAttribute("height", "224");
   await expect(page.locator("#about").getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
-  // The hero's duotone portrait (wide screens only) is decorative next to the h1, so it isn't announced twice.
-  const heroPhoto = page.locator("#top img");
-  await expect(heroPhoto).toHaveAttribute("alt", "");
+  // The hero portrait is ASCII art (wide screens only), a <pre role="img"> with its own label, not a second photo.
+  await expect(page.locator("#top img")).toHaveCount(0);
   await expect(page.getByRole("img", { name: "Portrait of Filipe Bravo" })).toHaveCount(1);
-  await expect(heroPhoto).toHaveAttribute("width", "288");
-  await expect(heroPhoto).toHaveAttribute("height", "360");
+  await expect(page.locator("#top pre[role='img']")).toHaveAttribute("aria-label", "Filipe's face in ASCII art");
 });
 
 test("the hero paints without the web font: Anton only after load, on the name only (LCP rule)", async ({ page }) => {
