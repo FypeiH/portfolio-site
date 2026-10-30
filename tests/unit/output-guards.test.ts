@@ -196,8 +196,8 @@ describe("Sonar v2 follow-up: master originals are kept but never shipped", () =
     fs.readdirSync(path.join(root, "assets/originals", dir)).map((file) => `assets/originals/${dir}/${file}`),
   );
 
-  it("keeps the 7 masters, each listed in ASSETS.md", () => {
-    expect(originals).toHaveLength(7);
+  it("keeps the 8 masters, each listed in ASSETS.md", () => {
+    expect(originals).toHaveLength(8);
     for (const file of originals) expect(read("ASSETS.md")).toContain(`\`${file}\``);
   });
 
