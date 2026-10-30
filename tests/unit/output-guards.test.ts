@@ -60,6 +60,7 @@ describe("QA r3 S1/S2: served SVGs are scanned", () => {
     expect(steps).toEqual([
       "pnpm assets",
       "cross-env CONTENT_STRICT=true next build",
+      "tsx scripts/defer-chunks.ts",
       "tsx scripts/check-output.ts",
       "pnpm covers --check",
       "pnpm avatar --check",
