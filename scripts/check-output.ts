@@ -12,9 +12,9 @@ import { isScannableOutput, scanRenderedOutput } from "../lib/content/output-sca
 import { repoFiles } from "../lib/content/repo-files";
 import { scanSvgOutput } from "../lib/content/svg-scan";
 import { allowedShippedMarkers } from "../lib/content/scan";
+import { SERVER_DIR, prerenderFiles } from "../lib/content/build-output";
 import { HTML_BUDGET_KB, htmlSizes, overHtmlBudget } from "../lib/html-budget";
 
-const OUTPUT_DIR = ".next/server/app";
 const PUBLIC_DIR = "public";
 
 function walk(dir: string): string[] {
@@ -24,13 +24,19 @@ function walk(dir: string): string[] {
   });
 }
 
-const files = walk(OUTPUT_DIR).filter(isScannableOutput);
+// Prerendered routes live under .next/server/app or, with the Vercel build adapter (production
+// deployments), under .next/server/route-cache (lib/content/build-output.ts).
+const files = prerenderFiles(SERVER_DIR, walk(SERVER_DIR)).filter((file) => isScannableOutput(file.route));
+if (files.length === 0) {
+  console.error(`Rendered output check failed: no prerendered routes found in ${SERVER_DIR} (app/ or route-cache/).`);
+  process.exit(1);
+}
 // Non-placeholder marker texts the source scan exempted with `placeholder-ok` (TODO, TBD, FIXME, lorem
 // ipsum) are allowed here too. A `{{…}}` is never allowed, in code or anywhere else.
 const allowed = allowedShippedMarkers(repoFiles());
 const svgs = fs.existsSync(PUBLIC_DIR) ? walk(PUBLIC_DIR).filter((file) => file.endsWith(".svg")) : [];
 const hits = [
-  ...files.flatMap((file) => scanRenderedOutput(file, fs.readFileSync(file, "utf8"), allowed)),
+  ...files.flatMap((file) => scanRenderedOutput(path.join("app", file.route), fs.readFileSync(file.path, "utf8"), allowed)),
   ...svgs.flatMap((file) => scanSvgOutput(file, fs.readFileSync(file, "utf8"))),
 ];
 if (hits.length > 0) {
@@ -40,10 +46,10 @@ if (hits.length > 0) {
 }
 console.log(`Rendered output check: ${files.length} files and ${svgs.length} SVGs, no placeholder markers.`);
 
-const pages = files.filter((file) => file.endsWith(".html"));
-const sizes = htmlSizes(pages.map((file) => ({ file: path.relative(OUTPUT_DIR, file), html: fs.readFileSync(file, "utf8") })));
+const pages = files.filter((file) => file.route.endsWith(".html"));
+const sizes = htmlSizes(pages.map((file) => ({ file: file.route, html: fs.readFileSync(file.path, "utf8") })));
 if (!sizes.some((size) => size.file === "index.html")) {
-  console.error(`HTML size check failed: no index.html in ${OUTPUT_DIR}.`);
+  console.error(`HTML size check failed: no prerendered index.html in ${SERVER_DIR}/app or ${SERVER_DIR}/route-cache.`);
   process.exit(1);
 }
 const over = overHtmlBudget(sizes);
