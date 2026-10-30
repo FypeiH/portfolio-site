@@ -4,15 +4,15 @@
 import type { Experience } from "@/lib/content/types";
 
 export const experience = [
-  // Effect: freelance, Oct 2026. Client named with Filipe's authorization (30/10/2026). No client data or figures.
-  // No Effect logo yet: CompanyMark falls back to the initials tile ("E").
+  // Effect: freelance, Sep–Oct 2026. Client named with Filipe's authorization (30/10/2026). No client data or figures.
+  // Logo: public/images/companies/effect-{1x,2x}.webp (see ASSETS.md).
   {
     id: "effect",
     company: "Effect",
     role: "Freelance Software Developer",
     employmentType: "freelance",
     location: "Remote",
-    start: "2026-10",
+    start: "2026-09",
     end: "2026-10",
     summary: "Built an internal web app over the company's PHC ERP, from first brief to deployment, as a freelancer.",
     highlights: [
