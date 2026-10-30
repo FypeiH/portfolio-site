@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { ProductionAnalytics } from "@/components/analytics/ProductionAnalytics";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { FontsReady } from "@/components/layout/FontsReady";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { RouteTracker } from "@/components/motion/RouteTracker";
@@ -10,7 +11,7 @@ import { getUi } from "@/lib/content/load";
 import { APPLY_MOTION_PREFERENCE_JS } from "@/lib/motion-preference";
 
 // The only web font: Anton 400, subset to ASCII + § · — (10.7 KB), for the marquee h2s and the hero
-// name. Not preloaded, and not used until `.fonts-ready` (after the load event, see MARK_JS): both paint
+// name. Not preloaded, and not used until `.fonts-ready` (after hydration and load, FontsReady.tsx): both paint
 // in local fallback faces first, so the font is requested after the LCP paint and can't hold it up.
 const anton = localFont({
   src: "../../assets/fonts/anton-latin-400.woff2",
@@ -25,17 +26,15 @@ const anton = localFont({
 });
 
 /**
- * Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3), and `.fonts-ready` once the
- * page has loaded: only then do the marquee headings switch to Anton, so the font request starts after
- * the LCP paint and can never sit in its critical chain (QA FIL-8 r2, N1: Lighthouse counted the font
- * in the LCP graph whenever it finished before the paint, ~2.5 s instead of ~1.9 s). Also applies a
+ * Sets `.js` before first paint so no-JS fallbacks never flash (spec §4.3). `.fonts-ready` is set by
+ * FontsReady.tsx after hydration (QA FIL-8 r2, N1: Lighthouse counted the font in the LCP graph whenever it
+ * finished before the paint, ~2.5 s instead of ~1.9 s). Also applies a
  * saved "pause animations" choice (components/motion/MotionToggle.tsx), and marks Apple systems (`.apple`), the
  * only ones whose mono font (SF Mono/Menlo) is named in the CSS (styles/globals.css). The site sends no page CSP.
  */
 const MARK_JS =
   "var d=document.documentElement;d.classList.add('js');" +
   "if(/Mac|iPhone|iPad|iPod/.test(navigator.platform))d.classList.add('apple');" +
-  "addEventListener('load',function(){d.classList.add('fonts-ready')},{once:true});" +
   APPLY_MOTION_PREFERENCE_JS;
 
 /**
@@ -54,6 +53,7 @@ export function SiteDocument({ children }: { children: ReactNode }) {
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <FontsReady />
         <RevealObserver />
         <RouteTracker />
         <ProductionAnalytics />

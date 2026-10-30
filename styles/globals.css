@@ -269,7 +269,7 @@
 /*
  * Hero name (Filipe, 2026-10-15): the h1 and the largest text, Anton at display size like the marquee
  * h2s, with the same switch: metric-matched local fallback faces until the page has loaded, then
- * Anton (.fonts-ready, components/layout/SiteDocument.tsx). So it paints with the HTML and the font
+ * Anton (.fonts-ready, components/layout/FontsReady.tsx). So it paints with the HTML and the font
  * request never sits in the LCP chain. One line at every width: sized from its column (19cqi, ~90% of
  * it in Anton; the fallbacks are within a few percent), so the swap can't change the line count and
  * nothing below moves.
@@ -330,7 +330,7 @@
 @utility marquee-track {
   display: flex;
   width: max-content;
-  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, components/layout/SiteDocument.tsx). */
+  /* Metric-matched fallback until the page has loaded; then Anton (.fonts-ready below, components/layout/FontsReady.tsx). */
   font: 400 var(--text-marquee) / 1 var(--font-display-fallback);
   :where(html.fonts-ready) & {
     font-family: var(--font-display);
