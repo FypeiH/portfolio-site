@@ -11,9 +11,9 @@ test("hero: the name is the h1 and the largest text, then role, support line, ba
   await expect(page.getByRole("heading", { level: 1, name: "Filipe Bravo" })).toBeVisible();
   const paragraphs = page.locator("#top p");
   await expect(paragraphs).toHaveCount(3);
-  await expect(paragraphs.nth(0)).toContainText("Backend engineer,");
-  await expect(paragraphs.nth(0)).toContainText("growing into AI.");
-  await expect(paragraphs.nth(1)).toContainText("Open to backend and AI roles");
+  await expect(paragraphs.nth(0)).toContainText("Full-stack engineer,");
+  await expect(paragraphs.nth(0)).toContainText("backend at heart, into AI.");
+  await expect(paragraphs.nth(1)).toContainText("Open to full-stack, backend, frontend and AI roles");
   // spec §1.1: the badge is text (its brackets and colour square are decorative), now below the support line.
   await expect(paragraphs.nth(2)).toHaveText("[Open to software engineering roles]");
   await expect(paragraphs.nth(2)).toMatchAriaSnapshot("- paragraph: Open to software engineering roles");
