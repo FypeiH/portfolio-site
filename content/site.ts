@@ -43,10 +43,10 @@ export const site = {
 
     // ---------- Hero ----------
     // Two short lines, ≤ 28 chars each (rendered on separate lines).
-    heroTitleLine1: "Backend engineer,",
-    heroTitleLine2: "growing into AI.",
-    // ≤ 140 chars.
-    heroSupport: "I build REST APIs, internal tools and automation with C#, .NET and TypeScript. Open to backend and AI roles, remote in the EU or Lisbon.",
+    heroTitleLine1: "Full-stack engineer,",
+    heroTitleLine2: "backend at heart, into AI.",
+    // ≤ 170 chars.
+    heroSupport: "I build APIs and internal tools with C#, .NET and TypeScript. Open to full-stack, backend, frontend and AI roles, remote-first, or hybrid/on-site in Lisbon or Faro.",
     heroCtaContact: "Contact me",
     heroCtaProjects: "View projects",
 

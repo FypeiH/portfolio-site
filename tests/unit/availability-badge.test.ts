@@ -28,7 +28,7 @@ describe("availability badge (spec §1.1, Filipe's decision 2026-10-15)", () => 
       expect(index, needle).toBeGreaterThan(-1);
       return index;
     };
-    const order = ["<h1", "Backend engineer,", "Open to backend and AI roles", profile.availability.label, "<a "].map(at);
+    const order = ["<h1", "Full-stack engineer,", "Open to full-stack, backend, frontend and AI roles", profile.availability.label, "<a "].map(at);
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 });
