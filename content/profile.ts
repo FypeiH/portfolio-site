@@ -27,7 +27,7 @@ export const profile = {
     // areas and startDate are optional and not given in the source, so they're omitted.
     roles: ["Backend Engineer (main focus)", "Full-stack / Frontend Engineer", "AI Engineer"],
     workModes: ["remote", "hybrid", "onsite"], // remote first: Filipe prefers remote
-    locations: ["Remote", "Lisbon (hybrid/on-site)", "Faro (hybrid/on-site)"],
+    locations: ["Remote (EU)", "Lisbon (hybrid/on-site)", "Faro (hybrid/on-site)"],
     note: "I prefer remote, and I'm also open to hybrid or on-site work in Lisbon or Faro.",
   },
 
