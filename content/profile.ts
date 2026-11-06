@@ -1,5 +1,5 @@
 // content/profile.ts
-// Source of facts: portfolio-input/cv.txt (CV v3, 30/09/2026) + spec §3.5. English only (D11, PM decision).
+// Source of facts: ATS English CV (Nov 2026, FypeiH/CV feat/ats-cv) + portfolio-input/cv.txt. English only (D11, PM decision).
 // Placeholders use the spec's double-brace syntax (detected by lib/content/placeholders.ts) with a "TODO:" prefix.
 // NEVER add: phone number, references (PM decision + spec §3.1/§8.2b).
 import type { Profile } from "@/lib/content/types";
@@ -72,8 +72,8 @@ export const profile = {
     { kind: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/filipe-bravo" },
   ],
 
-  // Public PDF must NOT contain the phone number (spec Q-CV). Supplied 30/09/2026, phone removed.
-  cv: { href: "/cv/filipe-bravo-cv.pdf", label: "Resume (PDF)", updatedAt: "2026-09" },
+  // Public PDF from ATS English export (Nov 2026). Filename kept so href stays stable.
+  cv: { href: "/cv/filipe-bravo-cv.pdf", label: "Resume (PDF)", updatedAt: "2026-11" },
 
   avatar: { src: "/images/profile/filipe-bravo.webp", alt: "Portrait of Filipe Bravo", width: 640, height: 640 },
 
